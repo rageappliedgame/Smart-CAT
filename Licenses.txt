@@ -10,7 +10,7 @@ ArffTools		https://raw.githubusercontent.com/chausner/ArffTools/master/LICENSE.m
 DropDownControls	https://opensource.org/licenses/BSD-3-Clause				/ BSD 3
 			see https://github.com/BradSmith1985/DropDownControls
 			see https://www.brad-smith.info/blog/projects/dropdown-controls
-PanelManager		Based on https://dotnetrix.co.uk/custom.htm ? 				/ na
+PanelManager		see https://dotnetrix.co.uk/custom.htm ? 				/ na
 			An expansion of PanelManager might be an improvement.
 ExceptionDialog											/ na
 IniFile												/ na

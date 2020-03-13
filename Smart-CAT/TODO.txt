@@ -1,0 +1,60 @@
+﻿[DONE]
+
+ 1) DONE - Replace arff file/IO creation (using weka) by https://github.com/chausner/ArffTools so weka is only used for ML itself.
+ 2) DONE - ConsoleDialog does not show text (write small test program). TraceListener seems to work properly.
+ 3) DONE - Add new analysis button at the end that jumps to ML Optimization step.
+ 4) DONE - Remove Labeling screen
+ 5) DONE - Combine all Automatic ML steps into a single one.
+ 6) DONE - Compentency -> Just a label
+ 			 Facet -> Just a label
+			   Variable(s) (picked of header of xlsx) -> MultiSelect Checbox.
+ 7) DONE - ML Only NaiveBayes and Deciscion Tree (remove other two methods as well in the code).
+ 8) DONE - Port Deciscion Tree case statements.
+ 9) DONE - Disabled unused ECD's Task/TaskModel is not used.
+10) DONE - Disabled unused ECD's EvidenceModel?
+11) DONE - Bound Observable Mapper /Definitions to ECD.
+12) DONE - Pruned Data and removed constructors using other Data fields.
+13) DONE - Using imported xlsx in the whole wizard.
+14) DONE - IniFiles for output.
+15) DONE - Added GroupedComboBox. 
+			See https://www.brad-smith.info/blog/projects/dropdown-controls and 
+			See https://github.com/BradSmith1985/DropDownControls
+16) DONE - Remove 'Prob for class' from ini files
+17) DONE - Link Competencies\Facets and variables to data structures.
+18) DONE - Make sure the ML functionality is called at the correct spots.
+19) DONE - Visualize output.
+20) DONE - Show performance with a tree combobox above (comptencies and their facets).
+21) DONE - Add visualization as result (tree combobox as seelector and a histogram with bucket intervals).
+22) DONE - Flow might be better if we ask to generate labels or not and then run analysis straith on.
+23) DONE - Endless progressbar next to Next button.
+24) DONE - Link ML Optimalization choice to SelectMLforCompetencies choices.
+25) DONE - Before ML Analysis an optional step Labelling (that runs only once).
+26) DONE - Runs before ML. Other clustering can be removed.
+27) DONE - Rename ECD Configuration header to Statistical Model.
+28) DONE - Automatically label before running analysis.
+29) DONE - Add Uni-Dimensional Competencies to GroupedListBox for graph display.
+29) DONE - Add check for at least one value of each (0,1,2) in DecisionTreesAccord_C (old checkClass1/2/3 code).
+30) DONE - Complete Porting of reading arff to ArffTools.
+31) DONE - Remove dependency on Weka and IVKM.
+32) DDNE - Add logging to errorBox.
+33) DONE - Added Exception Dialog.
+34) DONE - Use a temporary copy of the input spreadsheet.
+35) DONE - Output Raw Data from test data (should match indexes).
+36) DONE - Loading and Saving ECD settings no longer use hardcoded filenames.
+
+[TODO]
+
+a) * Compute Uni-Dimensional competencies.
+
+b) Clean Data Directory?
+c) HtmlHelp (one topic/panel). Pdf as backup.
+
+d) Show output as a table (Instance 1:0 Classified as:0 is output) part.
+e) Split methods for labels/not.
+f) More checks (rectangular/numeric data)
+g) Why do we save the extra columns. Is it not faster to recalculate them every run?
+
+Integrate AppCenter: https://appcenter.ms/orgs/OUNL/apps/GSAT/ (but it brings quite some dependencies).
+
+Removed IVKM v7.2.4630.5 packages.
+Removed StealthAssessmentWizard\weka.dll

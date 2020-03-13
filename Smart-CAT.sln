@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.852
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{78D21C0D-FA82-4132-8A70-D7F91B4A1D85}"
+	ProjectSection(SolutionItems) = preProject
+		License.txt = License.txt
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Smart-CAT", "Smart-CAT\Smart-CAT.csproj", "{30120B54-9B1A-475D-8C1E-0A938749F41F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF} = {DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArffTools", "ArffTools\ArffTools\ArffTools.csproj", "{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assemblies", "Assemblies", "{F285D663-6C3A-49CA-AD07-4214FCA2BB01}"
+	ProjectSection(SolutionItems) = preProject
+		Assemblies\DropDownControls.dll = Assemblies\DropDownControls.dll
+		Assemblies\PanelManager.dll = Assemblies\PanelManager.dll
+		Assemblies\Swiss.ExceptionDialog.dll = Assemblies\Swiss.ExceptionDialog.dll
+		Assemblies\Swiss.IniFile.dll = Assemblies\Swiss.IniFile.dll
+		Assemblies\Swiss.MicrosoftChart.dll = Assemblies\Swiss.MicrosoftChart.dll
+		Assemblies\Swiss.WaitCursor.dll = Assemblies\Swiss.WaitCursor.dll
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug (.NET 3.5)|Any CPU = Debug (.NET 3.5)|Any CPU
+		Debug|Any CPU = Debug|Any CPU
+		Release (.NET 3.5)|Any CPU = Release (.NET 3.5)|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Debug (.NET 3.5)|Any CPU.ActiveCfg = Debug|Any CPU
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Debug (.NET 3.5)|Any CPU.Build.0 = Debug|Any CPU
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Release (.NET 3.5)|Any CPU.ActiveCfg = Release|Any CPU
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Release (.NET 3.5)|Any CPU.Build.0 = Release|Any CPU
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30120B54-9B1A-475D-8C1E-0A938749F41F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Debug (.NET 3.5)|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Debug (.NET 3.5)|Any CPU.Build.0 = Debug|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Release (.NET 3.5)|Any CPU.ActiveCfg = Release|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Release (.NET 3.5)|Any CPU.Build.0 = Release|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD0BDBFE-F3C7-40AB-9DE8-8D14C542B6BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F285D663-6C3A-49CA-AD07-4214FCA2BB01} = {78D21C0D-FA82-4132-8A70-D7F91B4A1D85}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {25BDEC69-3571-4422-AB02-0D7FF92AA2B3}
+	EndGlobalSection
+EndGlobal

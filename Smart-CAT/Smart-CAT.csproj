@@ -66,7 +66,7 @@
     <Compile Include="Utils.cs" />
     <Compile Include="VandVOptions.cs" />
     <Compile Include="Worker.cs" />
-    <Content Include="LICENSE.TXT" />
+    <Content Include="License.TXT" />
     <EmbeddedResource Include="InputSelectDialog.resx">
       <DependentUpon>InputSelectDialog.cs</DependentUpon>
     </EmbeddedResource>

@@ -1,0 +1,18 @@
+[3rd Party NuPackage]
+Stateless		http://www.apache.org/licenses/LICENSE-2.0				/ Apache 2.0
+Accord.*		http://accord-framework.net/license.txt 				/ GNU LESSER GENERAL PUBLIC LICENSE 2.1
+AForge			http://www.aforgenet.com/framework/license.html 			/ LGPL v3 license
+R.NET.*	(RDitNet)	https://licenses.nuget.org/MIT						/ MIT
+EPPLus			https://licenses.nuget.org/LGPL-3.0-or-later				/ LGPL v3 license
+ArffTools		https://raw.githubusercontent.com/chausner/ArffTools/master/LICENSE.md	/MIT
+
+[3rd Party Controls]
+DropDownControls	https://opensource.org/licenses/BSD-3-Clause				/ BSD 3
+			see https://github.com/BradSmith1985/DropDownControls
+			see https://www.brad-smith.info/blog/projects/dropdown-controls
+PanelManager		Based on https://dotnetrix.co.uk/custom.htm ? 				/ na
+			An expansion of PanelManager might be an improvement.
+ExceptionDialog											/ na
+IniFile												/ na
+MicrosoftChart											/ na
+WaitCursor											/ na

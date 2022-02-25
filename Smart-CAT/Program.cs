@@ -33,7 +33,7 @@ namespace StealthAssessmentWizard
     using System.Diagnostics;
     using System.Reflection;
     using System.Windows.Forms;
-
+    using OfficeOpenXml;
     using Swiss;
 
     static class Program
@@ -72,6 +72,15 @@ namespace StealthAssessmentWizard
             ExceptionDlg.AppInfo.Add("AppCommonData", IniFile.AppCommonData);
             ExceptionDlg.AppInfo.Add("AppExe", IniFile.AppExe);
             ExceptionDlg.AppInfo.Add("AppIni", IniFile.AppIni);
+
+            //! If you are a commercial business and have
+            //! purchased commercial licenses use the static property
+            //! LicenseContext of the ExcelPackage class :
+            // ExcelPackage.LicenseContext = LicenseContext.Commercial;
+
+            //! If you use EPPlus in a noncommercial context
+            //! according to the Polyform Noncommercial license:
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);

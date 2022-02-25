@@ -104,7 +104,7 @@ namespace StealthAssessmentWizard
                     // 
                     if (!p.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))
                     {
-                        using (ExcelWorksheet ws = p.Workbook.Worksheets[1])
+                        using (ExcelWorksheet ws = p.Workbook.Worksheets[0])
                         {
                             Logger.Info($"Spreadsheet Raw Data Size {ws.Dimension.Rows - 1} x {ws.Dimension.Columns}.");
 

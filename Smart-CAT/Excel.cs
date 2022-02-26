@@ -89,8 +89,8 @@ namespace StealthAssessmentWizard
         internal static Tuple<string[], string[][]> EPPlus(string filename)
         {
             //! Variables for storing the data.
-            string[] AllObservables = new string[] { };
-            string[][] AllData = new string[][] { };
+            string[] AllObservables = Array.Empty<string>();
+            string[][] AllData = Array.Empty<string[]>();
 
             FileInfo fileInfo = new FileInfo(filename);
 

@@ -209,7 +209,7 @@ namespace StealthAssessmentWizard
 
                     catch (IndexOutOfRangeException)
                     {
-                        Facets[x] = new string[0];
+                        Facets[x] = Array.Empty<string>();
                     }
 
                 }
@@ -355,7 +355,7 @@ namespace StealthAssessmentWizard
                     }
                 }
 
-                return new Tuple<string[][][][], string[][][]>(new string[0][][][], StatisticalSubmodel);
+                return new Tuple<string[][][][], string[][][]>(Array.Empty<string[][][]>(), StatisticalSubmodel);
             }
         }
 

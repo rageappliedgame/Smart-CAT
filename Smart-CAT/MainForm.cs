@@ -1083,7 +1083,7 @@ namespace StealthAssessmentWizard
 
                             IEnumerable<String> items = Data.AllGameLogs.Item1;
 
-                            using (InputSelectDialog id = new InputSelectDialog("Edit Competency", "Enter the name of a Competency", lv.SelectedItems[0].Group.Header, items, new string[] { }))
+                            using (InputSelectDialog id = new InputSelectDialog("Edit Competency", "Enter the name of a Competency", lv.SelectedItems[0].Group.Header, items, Array.Empty<string>()))
                             {
                                 id.SelectorEnabled = false;
 
@@ -1141,7 +1141,7 @@ namespace StealthAssessmentWizard
                                 ? String.Empty
                                 : lv.SelectedItems[0].SubItems[1]?.Text;
                             IEnumerable<String> chekeditems = String.IsNullOrEmpty(sub)
-                                ? new string[] { }
+                                ? Array.Empty<string>()
                                 : lv.SelectedItems[0].SubItems[1].Text.Split(',');
 
                             using (InputSelectDialog id = new InputSelectDialog("Edit Facet", "Enter the new name of a Facet", lv.SelectedItems[0].Text, items, chekeditems))

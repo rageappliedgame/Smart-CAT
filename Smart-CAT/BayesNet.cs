@@ -74,7 +74,7 @@ namespace StealthAssessmentWizard
         /// </returns>
         public static int[] DecisionTreesAccord_C(ArffReader reader, string Competency)
         {
-            int[] predicted = new int[] { };
+            int[] predicted = Array.Empty<int>();
 
             ArffHeader header = reader.ReadHeader();
             Object[][] randData = reader.ReadAllInstances();
@@ -873,7 +873,7 @@ namespace StealthAssessmentWizard
             var cv = new NaiveBayesLearning<NormalDistribution>();
             cv.Options.InnerOption = new NormalOptions { Regularization = 1e-5 }; // to avoid zero variances
 
-            int[] predicted = new int[] { };
+            int[] predicted = Array.Empty<int>();
 
             ArffHeader header = reader.ReadHeader();
             Object[][] randData = reader.ReadAllInstances();
@@ -1372,19 +1372,18 @@ namespace StealthAssessmentWizard
         /// </returns>
         public static Tuple<string[], double[][]> CorrelationAnalysisMulti(string[] MultiCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
         {
-            int[] classifications = new int[] { };
-            int[] external = new int[] { };
+            int[] classifications = Array.Empty<int>();
+            int[] external = Array.Empty<int>();
             Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[MultiCompetencies.Length], new double[MultiCompetencies.Length][]);
 
-
-            //Check if same legends exist for the multi-competecies in external data.
+            // Check if same legends exist for the multicompetencies in external data.
             for (int i = 0; i < MultiCompetencies.Length; i++)
             {
                 for (int x = 0; x < ExternalData.Item1.Length; x++)
                 {
                     if (string.Equals(MultiCompetencies[i], ExternalData.Item1[x]) == true)
                     {
-                        //Initialize arrays. 
+                        // Initialize arrays. 
 #warning check if size of arrays is same.
 
                         classifications = new int[Output[i].Length];
@@ -1432,8 +1431,8 @@ namespace StealthAssessmentWizard
         /// </returns>
         public static Tuple<string[], double[][]> CorrelationAnalysisUni(string[] UniCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
         {
-            int[] classifications = new int[] { };
-            int[] external = new int[] { };
+            int[] classifications = Array.Empty<int>();
+            int[] external = Array.Empty<int>();
             Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[UniCompetencies.Length], new double[UniCompetencies.Length][]);
 
 
@@ -1664,7 +1663,7 @@ namespace StealthAssessmentWizard
         internal static void GenerateArffFilesForCA(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> RandomLabelledData, Tuple<int[][], int[][][]> OutputLabels)
         {
             //! Declaring Variables.
-            double[][] vals = new double[][] { };
+            double[][] vals = Array.Empty<double[]>();
 
             //! Generated .arff files for the declared competencies.
             for (int x = 0; x < CompetencyModel.Item1.Length; x++)
@@ -1801,8 +1800,8 @@ namespace StealthAssessmentWizard
         internal static void GenerateArffFilesForCompetencies(Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
         {
             //! Declaring Variables.
-            double[][] vals = new double[][] { };
-            string[][] valsClass = new string[][] { };
+            double[][] vals = Array.Empty<double[]>();
+            string[][] valsClass = Array.Empty<string[]>();
             string[] Class = new string[3] { "0", "1", "2" };
 
             for (int x = 0; x < CompetencyModel.Item1.Length; x++)
@@ -1942,8 +1941,8 @@ namespace StealthAssessmentWizard
         internal static void GenerateArffFilesForFacets(Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, double[][][][] Instances, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
         {
             //! Declaring Variables.
-            double[][] vals = new double[][] { };
-            string[][] valsClass = new string[][] { };
+            double[][] vals = Array.Empty<double[]>();
+            string[][] valsClass = Array.Empty<string[]>();
             string[] Class = new string[3] { "0", "1", "2" };
 
             for (int x = 0; x < CompetencyModel.Item1.Length; x++)
@@ -2221,7 +2220,7 @@ namespace StealthAssessmentWizard
         internal static void GenerateArffFilesforRandomization(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> ExternalDataCF)
         {
             //! Declaring Variables.
-            double[][] vals = new double[][] { };
+            double[][] vals = Array.Empty<double[]>();
 
             //! Generated .arff files for the declared competencies.
             for (int x = 0; x < CompetencyModel.Item1.Length; x++)
@@ -2360,17 +2359,14 @@ namespace StealthAssessmentWizard
                 {
                     //! PROBLEM HERE IS THAT Item1 has a length of 18 and Item2 (used for the size of the LabelledDataCompetencies) has a length of 11.
                     //! SEEMS Item2 does not contain the calculated facets & competencies yet.
-
+                    //! AllGameLogs (after loading the ini) contains 18 and 11 items in it's two arrays.
                     if (CompetencyModel.Item1[x] == AllGameLogs.Item1[i])
                     {
-#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                         LabelledDataCompetencies[x] = new int[AllGameLogs.Item2[i].Length];
                         break;
                     }
                     else
                     {
-#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
-#warning crashes on a new analysis of a spresheet with a Smart-CAT worksheet. Perhaps easier to delete this tab.
                         LabelledDataCompetencies[x] = new int[AllGameLogs.Item2[i].Length];
                     }
                 }
@@ -2625,10 +2621,10 @@ namespace StealthAssessmentWizard
         internal static Tuple<string[], string[][]> LoadAllData(string filename)
         {
             //! Stores all the observables found at the game logs file.
-            string[] AllObservables = new string[] { };
+            string[] AllObservables = Array.Empty<string>();
 
             //! Stores all the data for the observables found at the game logs file.
-            string[][] AllData = new string[][] { };
+            string[][] AllData = Array.Empty<string[]>();
 
             //! Stores all data and observables found at the game logs file.
             Tuple<string[], string[][]> AllDataset = new Tuple<string[], string[][]>(AllObservables, AllData);
@@ -3481,8 +3477,8 @@ namespace StealthAssessmentWizard
         internal static void GenerateArffFilesForUniCompetencies(string[] UniCompetencyModel, string[][] UniEvidenceModel, double[][][] InstancesUni, bool[][] CheckLabelsUni, int[][] LabelledDataUni)
         {
             //! Declaring Variables.
-            double[][] vals = new double[][] { };
-            string[][] valsClass = new string[][] { };
+            double[][] vals = Array.Empty<double[]>();
+            string[][] valsClass = Array.Empty<string[]>();
             string[] Class = new string[3] { "0", "1", "2" };
 
             for (int x = 0; x < UniCompetencyModel.Length; x++)

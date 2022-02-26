@@ -30,7 +30,9 @@
 namespace StealthAssessmentWizard
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
 
     /// <summary>
     /// A data.
@@ -47,50 +49,53 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Stores all data and observables found at the game logs file.
         /// </summary>
-        internal static Tuple<string[], string[][]> AllGameLogs = Tuple.Create<string[], string[][]>(new string[] { }, new string[][] { });
+        internal static Tuple<string[], string[][]> AllGameLogs = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
 
         /// <summary>
         /// Stores information whether the data for the given facets and competencies is labelled to
         /// decide ML approach.
         /// </summary>
-        internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(new bool[][] { }, new bool[][][] { });
+        internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(Array.Empty<bool[]>(), Array.Empty<bool[][]>());
 
         /// <summary>
         /// Stores all the elements declared at the Competency Model.
         /// </summary>
-        internal static Tuple<string[], string[][]> CompetencyModel = Tuple.Create<string[], string[][]>(new String[] { }, new string[][] { });
+        internal static Tuple<string[], string[][]> CompetencyModel = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
 
-        internal static String[] UniCompetencyModel = new string[] { };
+        /// <summary>
+        /// The uni competency model.
+        /// </summary>
+        internal static String[] UniCompetencyModel = Array.Empty<string>();
 
         /// <summary>
         /// The correlations (Competencies, Facets).
         /// </summary>
-        internal static Tuple<double[][], double[][][]> Correlations = Tuple.Create<double[][], double[][][]>(new double[][] { }, new double[][][] { });
+        internal static Tuple<double[][], double[][][]> Correlations = Tuple.Create<double[][], double[][][]>(Array.Empty<double[]>(), Array.Empty<double[][]>());
 
         /// <summary>
         /// The instance.
         /// </summary>
-        internal static Tuple<double[][][][], double[][][][]> Inst = new Tuple<double[][][][], double[][][][]>(new double[][][][] { }, new double[][][][] { });
+        internal static Tuple<double[][][][], double[][][][]> Inst = new Tuple<double[][][][], double[][][][]>(Array.Empty<double[][][]>(), Array.Empty<double[][][]>());
 
         /// <summary>
         /// Stores instances per statistical submodel.
         /// </summary>
-        internal static double[][][][] Instances = new double[][][][] { };
+        internal static double[][][][] Instances = Array.Empty<double[][][]>();
 
         /// <summary>
         /// Stores the labelling data for the given facets and competencies.
         /// </summary>
-        internal static Tuple<int[][], int[][][]> LabelledData = Tuple.Create<int[][], int[][][]>(new int[][] { }, new int[][][] { });
+        internal static Tuple<int[][], int[][][]> LabelledData = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
 
         /// <summary>
         /// The labeled output competencies.
         /// </summary>
-        internal static Tuple<int[][], int[][][], int[][]> LabelledOutputC = Tuple.Create<int[][], int[][][], int[][]>(new int[][] { }, new int[][][] { }, new int[][] { });
+        internal static Tuple<int[][], int[][][], int[][]> LabelledOutputC = Tuple.Create<int[][], int[][][], int[][]>(Array.Empty<int[]>(), Array.Empty<int[][]>(), Array.Empty<int[]>());
 
         /// <summary>
         /// The labeled output facets.
         /// </summary>
-        internal static Tuple<int[][], int[][][], int[][][]> LabelledOutputF = Tuple.Create<int[][], int[][][], int[][][]>(new int[][] { }, new int[][][] { }, new int[][][] { });
+        internal static Tuple<int[][], int[][][], int[][][]> LabelledOutputF = Tuple.Create<int[][], int[][][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>(), Array.Empty<int[][]>());
 
         /// <summary>
         /// Options for controlling the miles.
@@ -100,7 +105,7 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// The output labels.
         /// </summary>
-        internal static Tuple<int[][], int[][][]> OutputLabels = Tuple.Create<int[][], int[][][]>(new int[][] { }, new int[][][] { });
+        internal static Tuple<int[][], int[][][]> OutputLabels = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
 
         /// <summary>
         /// The performance.
@@ -110,46 +115,46 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Stores the pruned observables and the correlation analysis results.
         /// </summary>
-        internal static Tuple<string[][][][], double[][][][][]> PrunedResults = Tuple.Create<string[][][][], double[][][][][]>(new string[][][][] { }, new double[][][][][] { });
+        internal static Tuple<string[][][][], double[][][][][]> PrunedResults = Tuple.Create<string[][][][], double[][][][][]>(Array.Empty<string[][][]>(), Array.Empty<double[][][][]>());
 
         /// <summary>
         /// Stores the external data for the given facets and competencies.
         /// </summary>
-        internal static Tuple<int[][], int[][][]> RandomLabelledData = Tuple.Create<int[][], int[][][]>(new int[][] { }, new int[][][] { });
+        internal static Tuple<int[][], int[][][]> RandomLabelledData = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
 
         /// <summary>
         /// Stores the Statistical Submodel .
         /// </summary>
-        internal static string[][][] StatisticalSubmodel = new string[][][] { };
+        internal static string[][][] StatisticalSubmodel = Array.Empty<string[][]>();
 
-        internal static string[][] UniEvidenceModel = new string[][] { };
+        internal static string[][] UniEvidenceModel = Array.Empty<string[]>();
 
         /// <summary>
         /// Options for controlling the validation and verification.
         /// </summary>
         internal static VandVOptions VandVOptions = new VandVOptions(Double.NaN, Double.NaN);
 
-        internal static Tuple<double[][][], double[][][]> InstUni = new Tuple<double[][][], double[][][]>(new double[][][] { }, new double[][][] { });
+        internal static Tuple<double[][][], double[][][]> InstUni = new Tuple<double[][][], double[][][]>(Array.Empty<double[][]>(), Array.Empty<double[][]>());
 
-        internal static double[][][] InstancesUni = new double[][][] { };
+        internal static double[][][] InstancesUni = Array.Empty<double[][]>();
 
-        internal static bool[][] CheckLabelsUni = new bool[][] { };
+        internal static bool[][] CheckLabelsUni = Array.Empty<bool[]>();
 
-        internal static int[][] LabelledDataUni = new int[][] { };
+        internal static int[][] LabelledDataUni = Array.Empty<int[]>();
 
-        internal static Tuple<int[][], int[][], int[][]> UniLabelledOutputC = Tuple.Create<int[][], int[][], int[][]>(new int[][] { }, new int[][] { }, new int[][] { });
+        internal static Tuple<int[][], int[][], int[][]> UniLabelledOutputC = Tuple.Create<int[][], int[][], int[][]>(Array.Empty<int[]>(), Array.Empty<int[]>(), Array.Empty<int[]>());
 
-        internal static Tuple<string[], double[][]> spearmansMulti = new Tuple<string[], double[][]>(new string[] { }, new double[][] { });
+        internal static Tuple<string[], double[][]> spearmansMulti = new Tuple<string[], double[][]>(Array.Empty<string>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[][]> spearmansUni = new Tuple<string[], double[][]>(new string[] { }, new double[][] { });
+        internal static Tuple<string[], double[][]> spearmansUni = new Tuple<string[], double[][]>(Array.Empty<string>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[], string[][], double[][]> cronbachAlphaMulti = new Tuple<string[], double[], string[][], double[][]>(new string[] { }, new double[] { }, new string[][] { }, new double[][] { }) { };
+        internal static Tuple<string[], double[], string[][], double[][]> cronbachAlphaMulti = new Tuple<string[], double[], string[][], double[][]>(Array.Empty<string>(), Array.Empty<double>(), Array.Empty<string[]>(), Array.Empty<double[]>()) { };
 
-        internal static Tuple<string[], double[]> cronbachAlphaUni = new Tuple<string[], double[]>(new string[] { }, new double[] { }) { };
+        internal static Tuple<string[], double[]> cronbachAlphaUni = new Tuple<string[], double[]>(Array.Empty<string>(), Array.Empty<double>()) { };
 
         internal static double pSignificance = new double();
 
-        internal static Tuple<string[], string[][]> ExternalData = Tuple.Create<string[], string[][]>(new string[] { }, new string[][] { });
+        internal static Tuple<string[], string[][]> ExternalData = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
 
         #endregion Fields
 
@@ -196,10 +201,15 @@ namespace StealthAssessmentWizard
                 //! 2) Statistical Submodel.
                 Data.StatisticalSubmodel = ECD.LoadEvidenceModel(filename).Item2;
 
-#warning Can't load & assign Observables directly, dimensions might mismatch.
-
                 //! 3) ObservablesModel.
-                Data.AllGameLogs = new Tuple<string[], string[][]>(ECD.LoadObservables(filename), Data.AllGameLogs.Item2);
+
+                //! a) Extend Item2 with empty data to the size of obs fails.
+                //! b) However truncating obs to the size of Item2 seems to work OK as
+                //!    this data is loaded later where the sheet matches the size of obs.
+                //
+                string[] obs = ECD.LoadObservables(filename);
+                Array.Resize(ref obs, Data.AllGameLogs.Item2.Length);
+                Data.AllGameLogs = new Tuple<string[], string[][]>(obs, Data.AllGameLogs.Item2);
 
                 //! 4) Uni CompetencyModel.
                 Data.UniCompetencyModel = ECD.LoadUniCompetencyModel(filename);

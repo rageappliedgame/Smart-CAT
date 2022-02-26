@@ -109,7 +109,9 @@ namespace StealthAssessmentWizard
         /// </summary>
         ///
         /// <param name="domain"> The domain. </param>
+#pragma warning disable IDE0051 // Remove unused private members
         private static void PrintLoadedAssemblies(AppDomain domain)
+#pragma warning restore IDE0051 // Remove unused private members
         {
             Debug.WriteLine("LOADED ASSEMBLIES:");
             Debug.Indent();

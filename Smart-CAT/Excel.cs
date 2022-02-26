@@ -42,7 +42,7 @@ namespace StealthAssessmentWizard
     /// </summary>
     public static class Excel
     {
-        private const string GSATScratchPad = "Smart-CAT";
+        internal const string GSATScratchPad = "Smart-CAT";
 
         /// <summary>
         /// Returns true if the file exists and is locked for R/W access.

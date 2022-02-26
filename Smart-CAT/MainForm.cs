@@ -206,6 +206,9 @@ namespace StealthAssessmentWizard
                                 {
                                     ListViewItem lvi = lv.Items.Add(id.Input, id.Input, 0);
                                     lvi.SubItems.Add(String.Join(",", id.CheckedItems.Select(p => p.ToString())));
+                                    lvi.ForeColor = id.CheckedItems.Count() == 0
+                                        ? Color.Red
+                                        : listView1.ForeColor;
                                     lvi.Group = lv.Groups[0];
                                 }
                                 break;
@@ -226,6 +229,7 @@ namespace StealthAssessmentWizard
                                     String fid = $"Facet #{lv.Items.Count + 1}";
                                     ListViewItem lvi = lv.Items.Add(fid, fid, 0);
                                     lvi.SubItems.Add(String.Empty);
+                                    lvi.ForeColor = Color.Red;
                                     lvi.Group = lv.Groups.Add(id.Input, id.Input);
                                 }
                                 break;
@@ -346,6 +350,8 @@ namespace StealthAssessmentWizard
                             break;
                     }
 
+                    //! Input Spreadsheet.
+                    // 
                     using (ExcelPackage ep = new ExcelPackage(new FileInfo(openFileDialog1.FileName)))
                     {
                         Debug.WriteLine($"WorkSheets: {ep.Workbook.Worksheets.Count}");
@@ -359,12 +365,14 @@ namespace StealthAssessmentWizard
 
                         //! Compensate for 1 header row.
                         // 
-                        int rawSize = ep.Workbook.Worksheets[1].Dimension.Rows - 1;
+                        int rawSize = ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Rows - 1;  //0
                         int trainSize = (int)Math.Round((double)rawSize * percentsplit / 100);
                         int testSize = rawSize - trainSize;
 
                         //---R
 
+                        //! Save Results Spreadsheet.
+                        // 
                         using (ExcelPackage package = new ExcelPackage(new FileInfo(saveFileDialog1.FileName)))
                         {
                             for (Int32 i = 0; i < Data.CompetencyModel.Item1.Length; i++)
@@ -608,11 +616,12 @@ namespace StealthAssessmentWizard
 
                                             //! Raw Data.
                                             Int32 tmp = 1;
-                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[1].Dimension.Columns + 1; c++)
+                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Columns + 1; c++)
                                             {
-                                                if (obs.Contains(ep.Workbook.Worksheets[1].Cells[1, c].Value.ToString()))
+                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[1, c].Value.ToString()))
                                                 {
-                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[1].Cells[r + trainSize + 2, c].Value;
+                                                    //! Copy some data into save results.
+                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[r + trainSize + 2, c].Value;
                                                     tmp += 1;
                                                 }
                                             }
@@ -838,11 +847,11 @@ namespace StealthAssessmentWizard
 
                                             //! Raw Data.
                                             Int32 tmp = 1;
-                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[1].Dimension.Columns + 1; c++)
+                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Columns + 1; c++)
                                             {
-                                                if (obs.Contains(ep.Workbook.Worksheets[1].Cells[1, c].Value.ToString()))
+                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[1, c].Value.ToString()))
                                                 {
-                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[1].Cells[r + trainSize + 2, c].Value;
+                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[r + trainSize + 2, c].Value;
                                                     tmp += 1;
                                                 }
                                             }
@@ -945,6 +954,8 @@ namespace StealthAssessmentWizard
         {
             ListView lv = (ListView)((ContextMenuStrip)sender).SourceControl;
 
+            Boolean selected = (lv != null && lv.SelectedItems.Count == 1 && lv.SelectedItems[0].Group != null);
+
             addCompetencyToolStripMenuItem.Enabled = true;
             editCompetencyToolStripMenuItem.Enabled = true;
             removeCompetencyToolStripMenuItem.Enabled = true;
@@ -952,9 +963,9 @@ namespace StealthAssessmentWizard
             toolStripSeparator3.Visible = lv == listView1;
             facetToolStripMenuItem.Visible = lv == listView1;
 
-            addFacetToolStripMenuItem.Enabled = lv == listView1;
-            editFacetToolStripMenuItem.Enabled = lv == listView1;
-            removeFacetToolStripMenuItem.Enabled = lv == listView1;
+            addFacetToolStripMenuItem.Enabled = selected && lv == listView1;
+            editFacetToolStripMenuItem.Enabled = selected && lv == listView1;
+            removeFacetToolStripMenuItem.Enabled = selected && lv == listView1;
         }
 
         /// <summary>
@@ -982,7 +993,9 @@ namespace StealthAssessmentWizard
                         lvi.Group = listView1.Groups[gndx];
 
                         String[] vars = Data.StatisticalSubmodel[c][f];
-
+                        lvi.ForeColor = vars.Length == 0
+                            ? Color.Red
+                            : listView1.ForeColor;
                         lvi.SubItems.Add(String.Join(",", vars));
                     }
                 }
@@ -1144,6 +1157,9 @@ namespace StealthAssessmentWizard
 
                                     lvi.Text = id.Input;
                                     lvi.Name = id.Input;
+                                    lvi.ForeColor = id.CheckedItems.Count() == 0
+                                           ? Color.Red
+                                           : listView1.ForeColor;
                                     lvi.SubItems[1].Text = String.Join(",", id.CheckedItems.Select(p => p.ToString()));
                                 }
                             }

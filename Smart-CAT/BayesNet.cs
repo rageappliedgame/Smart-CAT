@@ -1509,7 +1509,7 @@ namespace StealthAssessmentWizard
                     {
                         ObsPerComp[i][noCount] = StatisticalSubmodel[i][x][y];
                         InstObsPerComp[i][noCount] = new double[Insts[i][x][y].Length];
-                        for (int d=0; d< Insts[i][x][y].Length; d++)
+                        for (int d = 0; d < Insts[i][x][y].Length; d++)
                         {
                             InstObsPerComp[i][noCount][d] = Insts[i][x][y][d];
                         }
@@ -1568,7 +1568,7 @@ namespace StealthAssessmentWizard
                         //get cronbach's a per facet
                         GenericVector RelRes = alphaFacet[0].AsList();
                         NumericVector nvRelRes = RelRes[0].AsNumeric();
-                        CronAlphaFacet[i][x] = Math.Round(nvRelRes.First(),4);
+                        CronAlphaFacet[i][x] = Math.Round(nvRelRes.First(), 4);
                     }
                     else
                     {
@@ -1600,7 +1600,7 @@ namespace StealthAssessmentWizard
                     //get cronbach's a per facet
                     GenericVector RelRes = alphaComp[0].AsList();
                     NumericVector nvRelRes = RelRes[0].AsNumeric();
-                    CronAlphaComp[i] = Math.Round(nvRelRes.First(),4);
+                    CronAlphaComp[i] = Math.Round(nvRelRes.First(), 4);
                 }
                 else
                 {
@@ -1608,7 +1608,7 @@ namespace StealthAssessmentWizard
                 }
             }
 
-            return new Tuple<string[],double[], string[][], double[][]>(CompetencyModel.Item1, CronAlphaComp, CompetencyModel.Item2, CronAlphaFacet); 
+            return new Tuple<string[], double[], string[][], double[][]>(CompetencyModel.Item1, CronAlphaComp, CompetencyModel.Item2, CronAlphaFacet);
         }
 
         public static Tuple<string[], double[]> ReliabilityAnalysisUni(string[] CompetencyModel, double[][][] InstUni, string[][] UniEvidenceModel)
@@ -1646,7 +1646,7 @@ namespace StealthAssessmentWizard
                 //get cronbach's a per facet
                 GenericVector RelRes = alphaComp[0].AsList();
                 NumericVector nvRelRes = RelRes[0].AsNumeric();
-                CronAlphaComp[i] = Math.Round(nvRelRes.First(),4);
+                CronAlphaComp[i] = Math.Round(nvRelRes.First(), 4);
 
             }
 
@@ -1654,14 +1654,14 @@ namespace StealthAssessmentWizard
             return new Tuple<string[], double[]>(CompetencyModel, CronAlphaComp);
         }
 
-         /// <summary>
-            /// Generates .arff files for correlation analysis.
-            /// </summary>
-            ///
-            /// <param name="CompetencyModel">    The competency model. </param>
-            /// <param name="RandomLabelledData"> Information describing the random labelled. </param>
-            /// <param name="OutputLabels">       The output labels. </param>
-         internal static void GenerateArffFilesForCA(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> RandomLabelledData, Tuple<int[][], int[][][]> OutputLabels)
+        /// <summary>
+        /// Generates .arff files for correlation analysis.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel">    The competency model. </param>
+        /// <param name="RandomLabelledData"> Information describing the random labelled. </param>
+        /// <param name="OutputLabels">       The output labels. </param>
+        internal static void GenerateArffFilesForCA(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> RandomLabelledData, Tuple<int[][], int[][][]> OutputLabels)
         {
             //! Declaring Variables.
             double[][] vals = new double[][] { };
@@ -2358,13 +2358,19 @@ namespace StealthAssessmentWizard
             {
                 for (int i = 0; i < AllGameLogs.Item1.Length; i++)
                 {
+                    //! PROBLEM HERE IS THAT Item1 has a length of 18 and Item2 (used for the size of the LabelledDataCompetencies) has a length of 11.
+                    //! SEEMS Item2 does not contain the calculated facets & competencies yet.
+
                     if (CompetencyModel.Item1[x] == AllGameLogs.Item1[i])
                     {
+#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                         LabelledDataCompetencies[x] = new int[AllGameLogs.Item2[i].Length];
                         break;
                     }
                     else
                     {
+#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
+#warning crashes on a new analysis of a spresheet with a Smart-CAT worksheet. Perhaps easier to delete this tab.
                         LabelledDataCompetencies[x] = new int[AllGameLogs.Item2[i].Length];
                     }
                 }
@@ -2376,11 +2382,13 @@ namespace StealthAssessmentWizard
                     {
                         if (CompetencyModel.Item2[x][y] == AllGameLogs.Item1[i])
                         {
+#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                             LabelledDataFacets[x][y] = new int[AllGameLogs.Item2[i].Length];
                             break;
                         }
                         else
                         {
+#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                             LabelledDataFacets[x][y] = new int[AllGameLogs.Item2[i].Length];
                         }
                     }
@@ -4079,5 +4087,5 @@ namespace StealthAssessmentWizard
         }
 
         #endregion Methods
-   }
+    }
 }

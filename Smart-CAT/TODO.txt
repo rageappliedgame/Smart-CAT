@@ -42,6 +42,17 @@
 35) DONE - Output Raw Data from test data (should match indexes).
 36) DONE - Loading and Saving ECD settings no longer use hardcoded filenames.
 
+2022
+37) DONE - Explicitly change the EPPlus license to non commercial.
+38) DONE - Fixed incorrect logging of the ini file loaded by default. Utils.MakePathRelative was corrected.
+39) DONE - Fixed an issue with the index of the first worksheet (changed in v5) being 1 instead of 0.
+40) DONE - Color Facets Red if they do not have items selected yet.
+41) DONE - Disable Add/Edit/Remove Facet Menuitems when no item is selected (so we do not know the group/competency).
+
+[TODO]
+- Running GameLogs again showed an error.
+- Smart-CAT tab shows a lot of numbers added as text.
+
 [TODO]
 
 a) * Compute Uni-Dimensional competencies.

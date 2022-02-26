@@ -65,7 +65,7 @@ namespace StealthAssessmentWizard
         {
 
             return filename
-                            .Replace(IniFile.AppData, "%AppData%")
+                            .Replace(Path.GetDirectoryName(IniFile.AppData), "%AppData%")
                             .Replace(IniFile.AppDir, ".");
         }
 

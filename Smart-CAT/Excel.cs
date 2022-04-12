@@ -43,6 +43,7 @@ namespace StealthAssessmentWizard
     public static class Excel
     {
         internal const string GSATScratchPad = "Smart-CAT";
+        internal const string ModelScratchPad = "Model";
 
         /// <summary>
         /// Returns true if the file exists and is locked for R/W access.
@@ -98,8 +99,6 @@ namespace StealthAssessmentWizard
             {
                 using (ExcelPackage p = new ExcelPackage(fileInfo))
                 {
-
-
                     //! Save the size of the worksheet.
                     // 
                     if (!p.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))
@@ -241,6 +240,14 @@ namespace StealthAssessmentWizard
             }
         }
 
+        /// <summary>
+        /// Adds a labelsfor uni competencies.
+        /// </summary>
+        ///
+        /// <param name="UniCompetencyModel"> The uni competency model. </param>
+        /// <param name="UniCheckLabels">     The uni check labels. </param>
+        /// <param name="UniLabelledData">    Information describing the uni labelled. </param>
+        /// <param name="filename">           Filename of the file. </param>
         internal static void AddLabelsforUniCompetencies(string[] UniCompetencyModel, bool[][] UniCheckLabels, int[][] UniLabelledData, string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
@@ -271,6 +278,93 @@ namespace StealthAssessmentWizard
                                 }
                             }
                         }
+
+                        p.Save();
+                    }
+                }
+            }
+        }
+
+
+        internal static void AddModel(string filename)
+        {
+            //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
+            // 
+            FileInfo fileInfo = new FileInfo(filename);
+
+            if (fileInfo.Exists)
+            {
+                using (ExcelPackage p = new ExcelPackage(fileInfo))
+                {
+                    //! Create an empty model worksheet.
+                    // 
+                    if (p.Workbook.Worksheets.Any(q => q.Name.Equals(ModelScratchPad)))
+                    {
+                        p.Workbook.Worksheets.Delete(ModelScratchPad);
+                    }
+                    p.Workbook.Worksheets.Add(ModelScratchPad);
+
+                    int row = 1;
+                    int col = 1;
+
+                    using (ExcelWorksheet ws = p.Workbook.Worksheets[ModelScratchPad])
+                    {
+                        ws.Cells[row, col].Style.Font.Bold = true;
+                        ws.Cells[row++, col++].Value = "Observables";
+
+                        foreach (String obs in Data.AllGameLogs.Item1)
+                        {
+                            ws.Cells[row, col++].Value = obs;
+                            if ((col - 2) % 8 == 0)
+                            {
+                                col = 2;
+                                row++;
+                            }
+                        }
+                        row += 2;
+                        col = 1;
+
+                        ws.Cells[row, col].Style.Font.Bold = true;
+                        ws.Cells[row, col].Value = "Statistical Submodel";
+                        row += 1;
+                        col++;
+
+                        //! 1) CompetencyModel.
+                        string[] Competencies = Data.CompetencyModel.Item1;
+                        string[][] Facets = Data.CompetencyModel.Item2;
+
+                        for (int x = 0; x < Competencies.Length; x++)
+                        {
+                            ws.Cells[row++, col++].Value = Competencies[x];
+
+                            for (int y = 0; y < Facets[x].Length; y++)
+                            {
+                                ws.Cells[row++, col++].Value = Facets[x][y];
+
+                                for (int z = 0; z < Data.StatisticalSubmodel[x][y].Length; z++)
+                                {
+                                    ws.Cells[row++, col].Value = Data.StatisticalSubmodel[x][y][z];
+                                }
+                                col = 3;
+                            }
+                            col = 2;
+                        }
+
+                        //ECD.SaveCompetencyModel(CompetencyModel, filename);
+
+                        ////! 2) Statistical Submodel.
+                        //ECD.SaveEvidenceModel(Data.StatisticalSubmodel, filename);
+
+                        ////! 3) Load Observables.
+                        ////! NOTE: Observables might be empty (they are extracted from the data file).
+                        //ECD.SaveObservables(Data.AllGameLogs.Item1, filename);
+
+                        ////! 4) Uni CompetencyModel.
+                        //ECD.SaveUniCompetencyModel(Data.UniCompetencyModel, filename);
+
+                        ////! 5) Uni Statistical Submodel.
+
+                        //ECD.SaveUniEvidenceModel(Data.UniEvidenceModel, filename);
 
                         p.Save();
                     }

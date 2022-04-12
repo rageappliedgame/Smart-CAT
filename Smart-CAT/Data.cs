@@ -168,7 +168,7 @@ namespace StealthAssessmentWizard
             Logger.Info($"Saving ECD to: '{Utils.MakePathRelative(filename)}'.");
 
             //! 1) CompetencyModel.
-            ECD.SaveCompetencyModel(CompetencyModel, filename);
+            ECD.SaveCompetencyModel(Data.CompetencyModel, filename);
 
             //! 2) Statistical Submodel.
             ECD.SaveEvidenceModel(Data.StatisticalSubmodel, filename);
@@ -182,6 +182,11 @@ namespace StealthAssessmentWizard
 
             //! 5) Uni Statistical Submodel.
             ECD.SaveUniEvidenceModel(Data.UniEvidenceModel, filename);
+        }
+
+        internal static void SaveModelToExcel(String filename)
+        {
+            Excel.AddModel(filename);
         }
 
         /// <summary>

@@ -49,6 +49,11 @@
 40) DONE - Color Facets Red if they do not have items selected yet.
 41) DONE - Disable Add/Edit/Remove Facet Menuitems when no item is selected (so we do not know the group/competency).
 
+42) DONE - Fixed installation issue on BV5/6 (use escaped backward slashes and test for homedrive existence)
+43) DONE - Cleared statistical model definition when loading a new file (after Start New).
+44) DONE - Renamed GSAT Tab to Smart-Cat.
+45) DONE - Added Model to Output Spreadsheet for documentation.
+
 [TODO]
 - Running GameLogs again showed an error.
 - Smart-CAT tab shows a lot of numbers added as text.
@@ -73,12 +78,31 @@ Removed StealthAssessmentWizard\weka.dll
 [12-04-2022]
 Meeting with Kostas
 
-DONE - Fixed installation issue on BV5/6 (use escaped backward slashes and test for homedrive existence)
-
 TODO - Move Smart-Cat tab into separate sheet (original file in project folder + timestamp in filename).
-	 - Move ini file into a separate tab for documentation.
 	 - Add an option to load the model from such spreadsheet.
+	 - Write UniModel (if present) to SpreadSheet's model sheet.
 	 - Ask load existing project or start a new one (and create a folder for it if new).
 	 - Remove excel files from csproj.
 	 - Check if a matching model is loaded.
+	 - Get rid of Tuples (replace by classes).
+
+
+Data.AllGameLogs.Item1 = Observables
+Data.AllGameLogs.Item2 = Columns of Data for each Observable
+
+	item1	item2
+	o1		[12,23...]
+	o2		[22,33,44...]
+
+Data.CompetencyModel.Item1 = Competency
+Data.CompetencyModel.Item2 = Array with Facet Names (per competency)
+
+	item1	item2 
+	c1		[f1,f2]
+	c2		[fa,fb,fc]
+
+Data.StatisticalSubmodel = string[][][] = Ragged 2D array with lists of observables per competenct/facet pair [competency][facet]->[observables]
+
+Data.UniCompetencyModel (String[])
+Data.UniEvidenceModel	(String[][])	= ragged 2D array
 

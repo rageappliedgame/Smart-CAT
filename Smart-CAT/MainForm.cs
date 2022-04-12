@@ -1345,7 +1345,8 @@ namespace StealthAssessmentWizard
                     StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = openFileDialog1.FileName;
                     StateMachine.exitWorkers[StateMachine.States.OptimizeML].argument = openFileDialog1.FileName;
 
-
+                    //! Clear Model after loading a new input file.
+                    // 
                     Data.CompetencyModel = new Tuple<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
                     Data.StatisticalSubmodel = Array.Empty<string[][]>();
                 }
@@ -1924,6 +1925,7 @@ namespace StealthAssessmentWizard
 
             Data.DumpStatisticalSubModels();
 
+            Data.SaveModelToExcel(filename);
             Data.SaveDataAsDefault(Path.ChangeExtension(filename, ".ini"));
 
             //! Needs to move to after the ML Options.

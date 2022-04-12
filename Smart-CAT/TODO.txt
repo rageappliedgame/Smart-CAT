@@ -85,7 +85,8 @@ TODO - Move Smart-Cat tab into separate sheet (original file in project folder +
 	 - Remove excel files from csproj.
 	 - Check if a matching model is loaded.
 	 - Get rid of Tuples (replace by classes).
-
+	
+	 - Check with 2 competencies (see GameLogsFM.ini with an extra Competency/Facet). Might be related to a wrong sized Smart-Cat sheet.
 
 Data.AllGameLogs.Item1 = Observables
 Data.AllGameLogs.Item2 = Columns of Data for each Observable

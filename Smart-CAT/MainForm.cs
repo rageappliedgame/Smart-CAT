@@ -1344,6 +1344,10 @@ namespace StealthAssessmentWizard
                     StateMachine.exitWorkers[StateMachine.States.ImportData].argument = openFileDialog1.FileName;
                     StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = openFileDialog1.FileName;
                     StateMachine.exitWorkers[StateMachine.States.OptimizeML].argument = openFileDialog1.FileName;
+
+
+                    Data.CompetencyModel = new Tuple<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
+                    Data.StatisticalSubmodel = Array.Empty<string[][]>();
                 }
             }
 

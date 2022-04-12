@@ -80,4 +80,5 @@ TODO - Move Smart-Cat tab into separate sheet (original file in project folder +
 	 - Add an option to load the model from such spreadsheet.
 	 - Ask load existing project or start a new one (and create a folder for it if new).
 	 - Remove excel files from csproj.
+	 - Check if a matching model is loaded.
 

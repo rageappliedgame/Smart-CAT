@@ -112,7 +112,9 @@ namespace StealthAssessmentWizard
             {
                 Logger.Info($"MyDocuments issues, using alternative method");
 
-                if (!String.IsNullOrEmpty(homedrive))
+                //! Fix for OUNL BV5/6 where the HOMEDRIVE isn't mapped as a drive only as a (HOMESHARE) UNC path.
+                // 
+                if (!String.IsNullOrEmpty(homedrive) && Directory.Exists(Path.Combine(homedrive + homepath)))
                 {
                     mydocuments = Path.Combine(
                         homedrive + homepath, mydocfolder);
@@ -145,7 +147,7 @@ namespace StealthAssessmentWizard
                 //! There are several options to initialize the engine, but by default the following suffice:
                 engine = REngine.GetInstance();
 
-                Logger.Info($"Using R v{engine.DllVersion}.");
+                Logger.Info($"Using R v{engine.DllVersion} from '{engine.Filename}'.");
 
                 //! R uses only major.minor for custom library folders.
                 // 
@@ -155,7 +157,11 @@ namespace StealthAssessmentWizard
                     ver = ver.Substring(0, ver.LastIndexOf('.'));
                 }
 
-                String rpath = $"{mydocuments.Replace("\\", "/")}/R/win-library/{ver}";
+                //! Gives issues with network shares (they need the \\ which should be escaped).
+                // String rpath = $"{mydocuments.Replace("\\", "/")}/R/win-library/{ver}";
+
+                String rpath = Path.Combine(mydocuments, @"R\win-library", ver);
+                rpath = rpath.Replace(@"\", @"\\");
 
                 Logger.Info($"R Install Path: '{rpath}'.");
 
@@ -223,53 +229,53 @@ namespace StealthAssessmentWizard
                 }
 
                 Logger.Info($"Finding download source for 1.6.9 version of R psych package and its dependencies.");
-/*
-                //! Psych dependends on mnormt.
-                // 
+                /*
+                                //! Psych dependends on mnormt.
+                                // 
 
-                //---R
-                try
-                {
-                    Logger.Info($"Checking presence of R 'mnormt' package.");
+                                //---R
+                                try
+                                {
+                                    Logger.Info($"Checking presence of R 'mnormt' package.");
 
-                    engine.Evaluate($"library('mnormt', lib.loc = '{rpath}')");
-                }
-                catch (EvaluationException)
-                {
-                    Logger.Info($"Downloading and Installing R 'mnormt' package.");
+                                    engine.Evaluate($"library('mnormt', lib.loc = '{rpath}')");
+                                }
+                                catch (EvaluationException)
+                                {
+                                    Logger.Info($"Downloading and Installing R 'mnormt' package.");
 
-                    engine.Evaluate($"install.packages('mnormt', repos='{CRAN}', lib='{rpath}')");
-                }
-                
-                //---R
+                                    engine.Evaluate($"install.packages('mnormt', repos='{CRAN}', lib='{rpath}')");
+                                }
 
-                //https://cran.r-project.org/package=%{packname}&version=%{version}#/%{packname}_%{version}.tar.gz
-                // 
+                                //---R
 
-                try
-                {
-                    Logger.Info($"Checking presence of R 'psych' package.");
+                                //https://cran.r-project.org/package=%{packname}&version=%{version}#/%{packname}_%{version}.tar.gz
+                                // 
 
-                    engine.Evaluate($"library('psych', lib.loc = '{rpath}')");
-                }
-                catch (EvaluationException)
-                {
-                    Logger.Info($"Downloading and Installing R 'psych' package.");
+                                try
+                                {
+                                    Logger.Info($"Checking presence of R 'psych' package.");
 
-                    //! Fails because downloaded file is a tar.gz (but is saved without extension).
-                    // 
-                    //engine.Evaluate($"install.packages('{CRAN}/package=psych&version=1.6.9', repos=NULL, type='source', lib='{rpath}')");
-                    // 
-                    engine.Evaluate($"install.packages('{CRAN}/src/contrib/Archive/psych/psych_1.6.9.tar.gz', repos=NULL, type='source', lib='{rpath}')");
+                                    engine.Evaluate($"library('psych', lib.loc = '{rpath}')");
+                                }
+                                catch (EvaluationException)
+                                {
+                                    Logger.Info($"Downloading and Installing R 'psych' package.");
 
-                    Logger.Info("Loading 'psych' package into R.");
-                    engine.Evaluate($"library('psych', lib.loc = '{rpath}')");
-                }
+                                    //! Fails because downloaded file is a tar.gz (but is saved without extension).
+                                    // 
+                                    //engine.Evaluate($"install.packages('{CRAN}/package=psych&version=1.6.9', repos=NULL, type='source', lib='{rpath}')");
+                                    // 
+                                    engine.Evaluate($"install.packages('{CRAN}/src/contrib/Archive/psych/psych_1.6.9.tar.gz', repos=NULL, type='source', lib='{rpath}')");
+
+                                    Logger.Info("Loading 'psych' package into R.");
+                                    engine.Evaluate($"library('psych', lib.loc = '{rpath}')");
+                                }
 
 
 
-                //---R
-*/
+                                //---R
+                */
 
                 try
                 {

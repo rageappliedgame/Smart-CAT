@@ -69,3 +69,15 @@ Integrate AppCenter: https://appcenter.ms/orgs/OUNL/apps/GSAT/ (but it brings qu
 
 Removed IVKM v7.2.4630.5 packages.
 Removed StealthAssessmentWizard\weka.dll
+
+[12-04-2022]
+Meeting with Kostas
+
+DONE - Fixed installation issue on BV5/6 (use escaped backward slashes and test for homedrive existence)
+
+TODO - Move Smart-Cat tab into separate sheet (original file in project folder + timestamp in filename).
+	 - Move ini file into a separate tab for documentation.
+	 - Add an option to load the model from such spreadsheet.
+	 - Ask load existing project or start a new one (and create a folder for it if new).
+	 - Remove excel files from csproj.
+

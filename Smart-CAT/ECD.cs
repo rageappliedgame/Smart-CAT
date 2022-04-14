@@ -476,6 +476,19 @@ namespace StealthAssessmentWizard
             }
         }
 
+        internal static void SaveObservables(Observables<String> observables, String filename = null)
+        {
+            using (IniFile ini = new IniFile(filename))
+            {
+                //! Save observables
+                ini.EraseSection("ObservableModel");
+
+                ini.WriteList("ObservableModel", "Observables", observables.Names.ToList(), ListSeparator_Comma);
+
+                ini.UpdateFile();
+            }
+        }
+
         /// <summary>
         /// Task model.
         /// </summary>

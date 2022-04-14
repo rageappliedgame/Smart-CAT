@@ -184,7 +184,7 @@ namespace StealthAssessmentWizard
 
             Boolean UniDimensional = (lv == listView2);
 
-            IEnumerable<String> items = Data.AllGameLogs.Item1;
+            IEnumerable<String> items = Data.Observables.Names;
 
             if (lv != null)
             {
@@ -260,7 +260,7 @@ namespace StealthAssessmentWizard
             {
                 String group = lv.SelectedItems[0].Group.Name;
 
-                IEnumerable<String> items = Data.AllGameLogs.Item1;
+                IEnumerable<String> items = Data.Observables.Names;
 
                 switch (UniDimensional)
                 {
@@ -1053,7 +1053,7 @@ namespace StealthAssessmentWizard
                                 ? String.Empty
                                 : lv.SelectedItems[0].SubItems[1]?.Text;
 
-                            IEnumerable<String> items = Data.AllGameLogs.Item1;
+                            IEnumerable<String> items = Data.Observables.Names;
 
                             IEnumerable<String> chekeditems = lv.SelectedItems[0].SubItems[1].Text.Split(',');
 
@@ -1081,7 +1081,7 @@ namespace StealthAssessmentWizard
                                 ? String.Empty
                                 : lv.SelectedItems[0].SubItems[1]?.Text;
 
-                            IEnumerable<String> items = Data.AllGameLogs.Item1;
+                            IEnumerable<String> items = Data.Observables.Names;
 
                             using (InputSelectDialog id = new InputSelectDialog("Edit Competency", "Enter the name of a Competency", lv.SelectedItems[0].Group.Header, items, Array.Empty<string>()))
                             {
@@ -1136,7 +1136,7 @@ namespace StealthAssessmentWizard
                         {
                             Int32 ndx = lv.SelectedItems[0].Index;
 
-                            IEnumerable<String> items = Data.AllGameLogs.Item1;
+                            IEnumerable<String> items = Data.Observables.Names;
                             String sub = lv.SelectedItems[0].SubItems.Count == 1
                                 ? String.Empty
                                 : lv.SelectedItems[0].SubItems[1]?.Text;
@@ -1791,15 +1791,15 @@ namespace StealthAssessmentWizard
             Logger.Info($"Loading Game Logs from: '{Utils.MakePathRelative(filename)}'.");
 
             Debug.Write("Loading all game logs... ");
-            Data.AllGameLogs = BayesNet.LoadAllData(filename);
+            Data.Observables = BayesNet.LoadAllData(filename);
             Debug.WriteLine("Completed.\r\n");
 
             //Data.DumpObservables();
 
             //! Load only the instances for the declared statistical sub-models.
             Debug.Write("Loading instances for the declared statistical submodels... ");
-            Data.Inst = BayesNet.LoadInstances(Data.AllGameLogs, Data.CompetencyModel, Data.StatisticalSubmodel);
-            Data.InstUni = BayesNet.LoadInstancesUni(Data.AllGameLogs, Data.UniCompetencyModel, Data.UniEvidenceModel);
+            Data.Inst = BayesNet.LoadInstances(Data.Observables, Data.CompetencyModel, Data.StatisticalSubmodel);
+            Data.InstUni = BayesNet.LoadInstancesUni(Data.Observables, Data.UniCompetencyModel, Data.UniEvidenceModel);
             Debug.WriteLine("Completed.\r\n");
 
             //! Visualize ECD Configuration using two ListViews.
@@ -1824,16 +1824,16 @@ namespace StealthAssessmentWizard
 
             //! Check for labeled data.
             Debug.Write("Checking for labeled data to decide ML approach... ");
-            Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
-            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+            Data.CheckLabels = BayesNet.CheckLabelling(Data.Observables, Data.CompetencyModel);
+            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.Observables, Data.UniCompetencyModel);
             Debug.WriteLine("Completed.\r\n");
 
             (sender as BackgroundWorker).ReportProgress(5);
 
             //! Retrieve labeled data.
             Debug.Write("Retrieving labeled data...");
-            Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.AllGameLogs);
-            Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.AllGameLogs);
+            Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.Observables);
+            Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.Observables);
             Debug.WriteLine("Completed.\r\n");
         }
 
@@ -1930,9 +1930,9 @@ namespace StealthAssessmentWizard
 
             //! Needs to move to after the ML Options.
             //
-            Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
+            Data.CheckLabels = BayesNet.CheckLabelling(Data.Observables, Data.CompetencyModel);
 
-            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.Observables, Data.UniCompetencyModel);
 
             if (!BayesNet.AllLabelled(Data.CheckLabels))
             {
@@ -1941,8 +1941,8 @@ namespace StealthAssessmentWizard
                 {
                     //! Redo part of Step1 as StatisticalSubmodel may have changed.
                     Debug.Write("Loading instances for the declared statistical submodels... ");
-                    Data.Inst = BayesNet.LoadInstances(Data.AllGameLogs, Data.CompetencyModel, Data.StatisticalSubmodel);
-                    Data.InstUni = BayesNet.LoadInstancesUni(Data.AllGameLogs, Data.UniCompetencyModel, Data.UniEvidenceModel);
+                    Data.Inst = BayesNet.LoadInstances(Data.Observables, Data.CompetencyModel, Data.StatisticalSubmodel);
+                    Data.InstUni = BayesNet.LoadInstancesUni(Data.Observables, Data.UniCompetencyModel, Data.UniEvidenceModel);
                     Debug.WriteLine("Completed.\r\n");
 
                     //! Normalization of the instances for the declared statistical submodels.
@@ -1955,8 +1955,8 @@ namespace StealthAssessmentWizard
                 {
                     //! Retrieve labeled data.
                     Debug.Write("Retrieving labeled data...");
-                    Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.AllGameLogs);
-                    Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.AllGameLogs);
+                    Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.Observables);
+                    Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.Observables);
                     Debug.WriteLine("Completed.\r\n");
 
                     //! Generate .arff files for facets.
@@ -2001,10 +2001,10 @@ namespace StealthAssessmentWizard
                     Excel.AddLabelsforUniCompetencies(Data.UniCompetencyModel, Data.CheckLabelsUni, Data.UniLabelledOutputC.Item3, filename);
                     Debug.WriteLine("Adding labels completed.\r\n");
 
-                    Data.AllGameLogs = BayesNet.LoadAllData(filename);
+                    Data.Observables = BayesNet.LoadAllData(filename);
 
-                    Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
-                    Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+                    Data.CheckLabels = BayesNet.CheckLabelling(Data.Observables, Data.CompetencyModel);
+                    Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.Observables, Data.UniCompetencyModel);
                 }
             }
 
@@ -2094,7 +2094,7 @@ namespace StealthAssessmentWizard
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
-                Data.Inst = BayesNet.LoadInstances(Data.AllGameLogs, Data.CompetencyModel, Data.StatisticalSubmodel);
+                Data.Inst = BayesNet.LoadInstances(Data.Observables, Data.CompetencyModel, Data.StatisticalSubmodel);
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
@@ -2104,12 +2104,12 @@ namespace StealthAssessmentWizard
 
                 //! Check for labeled data.
                 Debug.Write("Checking for labeled data to decide ML approach... ");
-                Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
+                Data.CheckLabels = BayesNet.CheckLabelling(Data.Observables, Data.CompetencyModel);
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Retrieve labeled data.
                 Debug.Write("Retrieving labeled data...");
-                Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.AllGameLogs);
+                Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.Observables);
                 Debug.WriteLine("Completed.\r\n");
             }
 
@@ -2139,7 +2139,7 @@ namespace StealthAssessmentWizard
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
-                Data.InstUni = BayesNet.LoadInstancesUni(Data.AllGameLogs, Data.UniCompetencyModel, Data.UniEvidenceModel);
+                Data.InstUni = BayesNet.LoadInstancesUni(Data.Observables, Data.UniCompetencyModel, Data.UniEvidenceModel);
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
@@ -2149,12 +2149,12 @@ namespace StealthAssessmentWizard
 
                 //! Check for labeled data.
                 Debug.Write("Checking for labeled data to decide ML approach... ");
-                Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+                Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.Observables, Data.UniCompetencyModel);
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Retrieve labeled data.
                 Debug.Write("Retrieving labeled data...");
-                Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.AllGameLogs);
+                Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.Observables);
                 Debug.WriteLine("Completed.\r\n");
             }
 
@@ -2348,7 +2348,7 @@ namespace StealthAssessmentWizard
                     Logger.Info($"Loading External Data from: '{Utils.MakePathRelative(filename)}'.");
 
                     Debug.Write("Loading external data... ");
-                    Data.ExternalData = BayesNet.LoadAllData(filename);
+                    Data.Observables = BayesNet.LoadAllData(filename);
                     Debug.WriteLine("Completed.\r\n");
 
                     //Data.DumpObservables();

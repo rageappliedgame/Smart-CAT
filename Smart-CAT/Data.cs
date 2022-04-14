@@ -40,6 +40,10 @@ namespace StealthAssessmentWizard
     public static class Data
     {
         #region Fields
+
+        /// <summary>
+        /// Stores all data and observables found at the game logs file.
+        /// </summary>
         internal static Observables<String> Observables = new Observables<String>();
 
         /// <summary>
@@ -48,12 +52,7 @@ namespace StealthAssessmentWizard
         internal static Exceptions aExceptions = new Exceptions();
 
         /// <summary>
-        /// Stores all data and observables found at the game logs file.
-        /// </summary>
-        internal static Tuple<string[], string[][]> AllGameLogs = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
-
-        /// <summary>
-        /// Stores information whether the data for the given facets and competencies is labelled to
+        /// Stores information whether the data for the given facets and competencies is labeled to
         /// decide ML approach.
         /// </summary>
         internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(Array.Empty<bool[]>(), Array.Empty<bool[][]>());
@@ -176,7 +175,7 @@ namespace StealthAssessmentWizard
 
             //! 3) Load Observables.
             //! NOTE: Observables might be empty (they are extracted from the data file).
-            ECD.SaveObservables(Data.AllGameLogs.Item1, filename);
+            ECD.SaveObservables(Data.Observables, filename);
 
             //! 4) Uni CompetencyModel.
             ECD.SaveUniCompetencyModel(Data.UniCompetencyModel, filename);
@@ -212,10 +211,18 @@ namespace StealthAssessmentWizard
                 //! a) Extend Item2 with empty data to the size of obs fails.
                 //! b) However truncating obs to the size of Item2 seems to work OK as
                 //!    this data is loaded later where the sheet matches the size of obs.
-                //
-                string[] obs = ECD.LoadObservables(filename);
-                Array.Resize(ref obs, Data.AllGameLogs.Item2.Length);
-                Data.AllGameLogs = new Tuple<string[], string[][]>(obs, Data.AllGameLogs.Item2);
+
+                //! Truncate only (remove surplus of observables)...
+                foreach (String observable in ECD.LoadObservables(filename))
+                {
+                    int index = Data.Observables.FindIndex(p => p.ObservableName.Equals(observable));
+                    if (index == -1)
+                    {
+                        Logger.Info($"Removing observable: '{observable}' as no data is found.");
+
+                        Data.Observables.RemoveAt(index);
+                    }
+                }
 
                 //! 4) Uni CompetencyModel.
                 Data.UniCompetencyModel = ECD.LoadUniCompetencyModel(filename);
@@ -267,13 +274,11 @@ namespace StealthAssessmentWizard
         /// </summary>
         internal static void DumpObservables()
         {
-            //ConsoleDialog.HighVideo();
             //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
-            //ConsoleDialog.NormVideo();
 
-            //foreach (String o in Data.AllGameLogs.Item1)
+            //foreach (String observable in Data.Observables.Names)
             //{
-            //    Debug.WriteLine($"{o}");
+            //    Debug.WriteLine($"{observable}");
             //}
 
             //Debug.WriteLine(String.Empty);

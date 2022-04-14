@@ -87,11 +87,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;string[],string[][]&gt;
         /// </returns>
-        internal static Tuple<string[], string[][]> EPPlus(string filename)
+        internal static Observables<String> EPPlus(string filename)
         {
             //! Variables for storing the data.
-            string[] AllObservables = Array.Empty<string>();
-            string[][] AllData = Array.Empty<string[]>();
+            Observables<String> observables = new Observables<String>();
 
             FileInfo fileInfo = new FileInfo(filename);
 
@@ -122,32 +121,20 @@ namespace StealthAssessmentWizard
 
                     using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
                     {
-                        AllObservables = new String[ws.Dimension.Columns];
-
-                        for (Int32 i = 0; i < ws.Dimension.Columns; i++)
-                        {
-                            Data.Observables.Add(new ObservableData<String>(ws.Dimension.Rows - 1, ws.Cells[1, i + 1].Value.ToString()));
-
-                            AllObservables[i] = ws.Cells[1, i + 1].Value.ToString();
-                        }
-
-                        AllData = new String[ws.Dimension.Columns][];
-
                         for (Int32 c = 0; c < ws.Dimension.Columns; c++)
                         {
-                            AllData[c] = new String[ws.Dimension.Rows - 1];
+                            observables.Add(new Observable<String>(ws.Dimension.Rows - 1, ws.Cells[1, c + 1].Value.ToString()));
+
                             for (Int32 r = 0; r < ws.Dimension.Rows - 1; r++)
                             {
-                                Data.Observables[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
-
-                                AllData[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
+                                observables[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
                             }
                         }
                     }
                 }
             }
 
-            return new Tuple<string[], string[][]>(AllObservables, AllData);
+            return observables;
         }
 
         /// <summary>
@@ -316,9 +303,9 @@ namespace StealthAssessmentWizard
                         ws.Cells[row, col].Style.Font.Bold = true;
                         ws.Cells[row++, col++].Value = "Observables";
 
-                        foreach (String obs in Data.AllGameLogs.Item1)
+                        foreach (String observable in Data.Observables.Names)
                         {
-                            ws.Cells[row, col++].Value = obs;
+                            ws.Cells[row, col++].Value = observable;
                             if ((col - 2) % 8 == 0)
                             {
                                 col = 2;
@@ -353,22 +340,6 @@ namespace StealthAssessmentWizard
                             }
                             col = 2;
                         }
-
-                        //ECD.SaveCompetencyModel(CompetencyModel, filename);
-
-                        ////! 2) Statistical Submodel.
-                        //ECD.SaveEvidenceModel(Data.StatisticalSubmodel, filename);
-
-                        ////! 3) Load Observables.
-                        ////! NOTE: Observables might be empty (they are extracted from the data file).
-                        //ECD.SaveObservables(Data.AllGameLogs.Item1, filename);
-
-                        ////! 4) Uni CompetencyModel.
-                        //ECD.SaveUniCompetencyModel(Data.UniCompetencyModel, filename);
-
-                        ////! 5) Uni Statistical Submodel.
-
-                        //ECD.SaveUniEvidenceModel(Data.UniEvidenceModel, filename);
 
                         p.Save();
                     }

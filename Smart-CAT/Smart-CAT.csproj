@@ -40,6 +40,7 @@
     <Compile Include="BayesNet.cs" />
     <Compile Include="GCI.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Models\ObservableData.cs" />
     <Compile Include="PerformanceModels.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="ECD.cs" />

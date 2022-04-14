@@ -40,6 +40,7 @@ namespace StealthAssessmentWizard
     public static class Data
     {
         #region Fields
+        internal static Observables<String> Observables = new Observables<String>();
 
         /// <summary>
         /// This variable allows access to functions of the Exceptions class.

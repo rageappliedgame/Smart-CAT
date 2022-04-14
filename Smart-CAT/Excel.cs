@@ -126,6 +126,8 @@ namespace StealthAssessmentWizard
 
                         for (Int32 i = 0; i < ws.Dimension.Columns; i++)
                         {
+                            Data.Observables.Add(new ObservableData<String>(ws.Dimension.Rows - 1, ws.Cells[1, i + 1].Value.ToString()));
+
                             AllObservables[i] = ws.Cells[1, i + 1].Value.ToString();
                         }
 
@@ -136,6 +138,8 @@ namespace StealthAssessmentWizard
                             AllData[c] = new String[ws.Dimension.Rows - 1];
                             for (Int32 r = 0; r < ws.Dimension.Rows - 1; r++)
                             {
+                                Data.Observables[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
+
                                 AllData[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
                             }
                         }

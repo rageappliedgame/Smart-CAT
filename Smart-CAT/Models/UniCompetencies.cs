@@ -34,114 +34,20 @@ namespace StealthAssessmentWizard
     using System.Collections.Generic;
     using System.Linq;
     using System.Runtime.Serialization;
- 
 
     /// <summary>
-    /// An observable.
+    /// The Uni Dimensional Competencies -> UniCompentency(ies).
     /// </summary>
-    ///
-    /// <typeparam name="T"> Generic type parameter. </typeparam>
     [DataContract]
-    public class Observable<T>
+    public class UniCompetencies : IList<UniCompetency>
     {
         #region Fields
 
         /// <summary>
         /// The items.
         /// </summary>
-        [IgnoreDataMember]
-        public T[] Items = Array.Empty<T>();
-
-        #endregion Fields
-
-        #region Constructors
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        ///
-        /// <param name="size"> The size. </param>
-        /// <param name="name"> The name. </param>
-        public Observable(int size, string name)
-        {
-            this.ObservableName = name;
-            Items = new T[size];
-        }
-
-        #endregion Constructors
-
-        #region Properties
-
-        /// <summary>
-        /// Gets the length.
-        /// </summary>
-        ///
-        /// <value>
-        /// The length.
-        /// </value>
-        public int Length => Items.Length;
-
-        /// <summary>
-        /// Gets or sets the name of the observable.
-        /// </summary>
-        ///
-        /// <value>
-        /// The name of the observable.
-        /// </value>
-        [DataMember]
-        public String ObservableName { get; private set; }
-
-        #endregion Properties
-
-        #region Indexers
-
-        /// <summary>
-        /// Indexer to get or set items within this collection using array index syntax.
-        /// </summary>
-        ///
-        /// <param name="i"> Zero-based index of the entry to access. </param>
-        ///
-        /// <returns>
-        /// The indexed item.
-        /// </returns>
-        public T this[int i]
-        {
-            get { return Items[i]; }
-            set { Items[i] = value; }
-        }
-
-        #endregion Indexers
-
-        #region Methods
-
-        /// <summary>
-        /// Convert this object into a string representation.
-        /// </summary>
-        ///
-        /// <returns>
-        /// A string that represents this object.
-        /// </returns>
-        public override string ToString()
-        {
-            return JsonHelper.JsonSerializer(this);
-        }
-
-        #endregion Methods
-    }
-
-    /// <summary>
-    /// The Observables.
-    /// </summary>
-    [DataContract]
-    public class Observables : IList<Observable<String>>
-    {
-        #region Fields
-
-        /// <summary>
-        /// The items.
-        /// </summary>
-        [DataMember]
-        public List<Observable<String>> Items = new List<Observable<String>>();
+        [DataMember(Name = "Competencies")]
+        public List<UniCompetency> Items = new List<UniCompetency>();
 
         #endregion Fields
 
@@ -182,7 +88,7 @@ namespace StealthAssessmentWizard
         /// <value>
         /// The names.
         /// </value>
-        public IEnumerable<String> Names => this.Select(p => p.ObservableName);
+        public IEnumerable<String> Names => this.Select(p => p.CompetencyName);
 
         #endregion Properties
 
@@ -202,7 +108,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// The element at the specified index.
         /// </returns>
-        public Observable<String> this[int i]
+        public UniCompetency this[int i]
         {
             get { return Items[i]; }
             set { Items[i] = value; }
@@ -222,7 +128,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="item"> The object to add to the
         ///                     <see cref="T:System.Collections.Generic.ICollection`1" />. </param>
-        public void Add(Observable<String> item)
+        public void Add(UniCompetency item)
         {
             Items.Add(item);
         }
@@ -252,7 +158,7 @@ namespace StealthAssessmentWizard
         /// <see cref="T:System.Collections.Generic.ICollection`1" />; otherwise,
         /// <see langword="false" />.
         /// </returns>
-        public bool Contains(Observable<String> item)
+        public bool Contains(UniCompetency item)
         {
             return Items.Contains(item);
         }
@@ -278,7 +184,7 @@ namespace StealthAssessmentWizard
         ///                           <see cref="T:System.Array" /> must have zero-based indexing. </param>
         /// <param name="arrayIndex"> The zero-based index in <paramref name="array" /> at which copying
         ///                           begins. </param>
-        public void CopyTo(Observable<String>[] array, int arrayIndex)
+        public void CopyTo(UniCompetency[] array, int arrayIndex)
         {
             Items.CopyTo(array, arrayIndex);
         }
@@ -290,7 +196,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public IEnumerator<Observable<String>> GetEnumerator()
+        public IEnumerator<UniCompetency> GetEnumerator()
         {
             return Items.GetEnumerator();
         }
@@ -319,7 +225,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// The index of <paramref name="item" /> if found in the list; otherwise, -1.
         /// </returns>
-        public int IndexOf(Observable<String> item)
+        public int IndexOf(UniCompetency item)
         {
             return Items.IndexOf(item);
         }
@@ -338,7 +244,7 @@ namespace StealthAssessmentWizard
         ///                      inserted. </param>
         /// <param name="item">  The object to insert into the
         ///                      <see cref="T:System.Collections.Generic.IList`1" />. </param>
-        public void Insert(int index, Observable<String> item)
+        public void Insert(int index, UniCompetency item)
         {
             Items.Insert(index, item);
         }
@@ -362,7 +268,7 @@ namespace StealthAssessmentWizard
         /// <paramref name="item" /> is not found in the original
         /// <see cref="T:System.Collections.Generic.ICollection`1" />.
         /// </returns>
-        public bool Remove(Observable<String> item)
+        public bool Remove(UniCompetency item)
         {
             return Items.Remove(item);
         }
@@ -380,6 +286,57 @@ namespace StealthAssessmentWizard
         public void RemoveAt(int index)
         {
             Items.RemoveAt(index);
+        }
+
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        ///
+        /// <returns>
+        /// A string that represents the current object.
+        /// </returns>
+        public override string ToString()
+        {
+            return JsonHelper.JsonSerializer(this);
+        }
+
+        /// <summary>
+        /// Converts this object to a tuple.
+        /// </summary>
+        ///
+        /// <returns>
+        /// This object as a String[].
+        /// </returns>
+        public String[] ToTuple()
+        {
+            return this.Select(p => p.CompetencyName).ToArray();
+        }
+
+        /// <summary>
+        /// Converts this object to an uni evidence model.
+        /// </summary>
+        ///
+        /// <returns>
+        /// This object as a string[][][].
+        /// </returns>
+        public string[][] ToUniEvidenceModel()
+        {
+            //[CompetencyModel]
+            //Competencies=Skating, Running
+            //Facets=Facet1C1,Facet2C1,Facet3C1: Facet1C2,Facet2C2    
+            //
+            //[EvidenceModel]
+            //Statistical Submodel=Obs1C1,Obs2C1,Obs3C1|Obs4C1|Obs5C1: Obs1C2,Obs2C2,Obs3C2|Obs4C2
+
+            List<string[]> unistatisticalsubmodel = new List<string[]>();
+
+            for (int c = 0; c < Count; c++)
+            {
+                //! per Competency add Observables.
+                unistatisticalsubmodel.Add(this[c].Items);
+            }
+
+            return unistatisticalsubmodel.ToArray();
         }
 
         #endregion Methods

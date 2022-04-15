@@ -32,25 +32,23 @@ namespace StealthAssessmentWizard
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Runtime.Serialization;
- 
 
     /// <summary>
-    /// An observable.
+    /// An uni competency.
     /// </summary>
     ///
-    /// <typeparam name="T"> Generic type parameter. </typeparam>
+    /// ### <typeparam name="T"> Generic type parameter. </typeparam>
     [DataContract]
-    public class Observable<T>
+    public class Competency : IList<Facet>
     {
         #region Fields
 
         /// <summary>
         /// The items.
         /// </summary>
-        [IgnoreDataMember]
-        public T[] Items = Array.Empty<T>();
+        [DataMember(Name = "Facets")]
+        public List<Facet> Items = new List<Facet>();
 
         #endregion Fields
 
@@ -60,12 +58,10 @@ namespace StealthAssessmentWizard
         /// Constructor.
         /// </summary>
         ///
-        /// <param name="size"> The size. </param>
         /// <param name="name"> The name. </param>
-        public Observable(int size, string name)
+        public Competency( string name)
         {
-            this.ObservableName = name;
-            Items = new T[size];
+            this.CompetencyName = name;
         }
 
         #endregion Constructors
@@ -73,79 +69,14 @@ namespace StealthAssessmentWizard
         #region Properties
 
         /// <summary>
-        /// Gets the length.
+        /// Gets or sets the name of the competency.
         /// </summary>
         ///
         /// <value>
-        /// The length.
-        /// </value>
-        public int Length => Items.Length;
-
-        /// <summary>
-        /// Gets or sets the name of the observable.
-        /// </summary>
-        ///
-        /// <value>
-        /// The name of the observable.
+        /// The name of the competency.
         /// </value>
         [DataMember]
-        public String ObservableName { get; private set; }
-
-        #endregion Properties
-
-        #region Indexers
-
-        /// <summary>
-        /// Indexer to get or set items within this collection using array index syntax.
-        /// </summary>
-        ///
-        /// <param name="i"> Zero-based index of the entry to access. </param>
-        ///
-        /// <returns>
-        /// The indexed item.
-        /// </returns>
-        public T this[int i]
-        {
-            get { return Items[i]; }
-            set { Items[i] = value; }
-        }
-
-        #endregion Indexers
-
-        #region Methods
-
-        /// <summary>
-        /// Convert this object into a string representation.
-        /// </summary>
-        ///
-        /// <returns>
-        /// A string that represents this object.
-        /// </returns>
-        public override string ToString()
-        {
-            return JsonHelper.JsonSerializer(this);
-        }
-
-        #endregion Methods
-    }
-
-    /// <summary>
-    /// The Observables.
-    /// </summary>
-    [DataContract]
-    public class Observables : IList<Observable<String>>
-    {
-        #region Fields
-
-        /// <summary>
-        /// The items.
-        /// </summary>
-        [DataMember]
-        public List<Observable<String>> Items = new List<Observable<String>>();
-
-        #endregion Fields
-
-        #region Properties
+        public String CompetencyName { get; set; }
 
         /// <summary>
         /// Gets the number of elements contained in the
@@ -175,15 +106,6 @@ namespace StealthAssessmentWizard
             get { return false; }
         }
 
-        /// <summary>
-        /// Gets the names.
-        /// </summary>
-        ///
-        /// <value>
-        /// The names.
-        /// </value>
-        public IEnumerable<String> Names => this.Select(p => p.ObservableName);
-
         #endregion Properties
 
         #region Indexers
@@ -202,7 +124,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// The element at the specified index.
         /// </returns>
-        public Observable<String> this[int i]
+        public Facet this[int i]
         {
             get { return Items[i]; }
             set { Items[i] = value; }
@@ -222,7 +144,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="item"> The object to add to the
         ///                     <see cref="T:System.Collections.Generic.ICollection`1" />. </param>
-        public void Add(Observable<String> item)
+        public void Add(Facet item)
         {
             Items.Add(item);
         }
@@ -252,7 +174,7 @@ namespace StealthAssessmentWizard
         /// <see cref="T:System.Collections.Generic.ICollection`1" />; otherwise,
         /// <see langword="false" />.
         /// </returns>
-        public bool Contains(Observable<String> item)
+        public bool Contains(Facet item)
         {
             return Items.Contains(item);
         }
@@ -278,7 +200,7 @@ namespace StealthAssessmentWizard
         ///                           <see cref="T:System.Array" /> must have zero-based indexing. </param>
         /// <param name="arrayIndex"> The zero-based index in <paramref name="array" /> at which copying
         ///                           begins. </param>
-        public void CopyTo(Observable<String>[] array, int arrayIndex)
+        public void CopyTo(Facet[] array, int arrayIndex)
         {
             Items.CopyTo(array, arrayIndex);
         }
@@ -290,7 +212,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public IEnumerator<Observable<String>> GetEnumerator()
+        public IEnumerator<Facet> GetEnumerator()
         {
             return Items.GetEnumerator();
         }
@@ -319,7 +241,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// The index of <paramref name="item" /> if found in the list; otherwise, -1.
         /// </returns>
-        public int IndexOf(Observable<String> item)
+        public int IndexOf(Facet item)
         {
             return Items.IndexOf(item);
         }
@@ -338,7 +260,7 @@ namespace StealthAssessmentWizard
         ///                      inserted. </param>
         /// <param name="item">  The object to insert into the
         ///                      <see cref="T:System.Collections.Generic.IList`1" />. </param>
-        public void Insert(int index, Observable<String> item)
+        public void Insert(int index, Facet item)
         {
             Items.Insert(index, item);
         }
@@ -362,7 +284,7 @@ namespace StealthAssessmentWizard
         /// <paramref name="item" /> is not found in the original
         /// <see cref="T:System.Collections.Generic.ICollection`1" />.
         /// </returns>
-        public bool Remove(Observable<String> item)
+        public bool Remove(Facet item)
         {
             return Items.Remove(item);
         }

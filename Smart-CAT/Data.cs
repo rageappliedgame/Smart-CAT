@@ -44,7 +44,17 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Stores all data and observables found at the game logs file.
         /// </summary>
-        internal static Observables<String> Observables = new Observables<String>();
+        internal static Observables observables = new Observables();
+
+        /// <summary>
+        /// The unicompetencies.
+        /// </summary>
+        internal static UniCompetencies unicompetencies = new UniCompetencies();
+
+        /// <summary>
+        /// Stores all the elements declared at the Competency Model.
+        /// </summary>
+        internal static Competencies competencies = new Competencies();
 
         /// <summary>
         /// This variable allows access to functions of the Exceptions class.
@@ -56,16 +66,6 @@ namespace StealthAssessmentWizard
         /// decide ML approach.
         /// </summary>
         internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(Array.Empty<bool[]>(), Array.Empty<bool[][]>());
-
-        /// <summary>
-        /// Stores all the elements declared at the Competency Model.
-        /// </summary>
-        internal static Tuple<string[], string[][]> CompetencyModel = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
-
-        /// <summary>
-        /// The uni competency model.
-        /// </summary>
-        internal static String[] UniCompetencyModel = Array.Empty<string>();
 
         /// <summary>
         /// The correlations (Competencies, Facets).
@@ -125,9 +125,11 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Stores the Statistical Submodel .
         /// </summary>
-        internal static string[][][] StatisticalSubmodel = Array.Empty<string[][]>();
+        //[Obsolete("Evidence now in (Uni)Competencies")]
+        //internal static string[][][] StatisticalSubmodel = Array.Empty<string[][]>();
 
-        internal static string[][] UniEvidenceModel = Array.Empty<string[]>();
+        //[Obsolete("Evidence now in (Uni)Competencies")]
+        //internal static string[][] UniEvidenceModel = Array.Empty<string[]>();
 
         /// <summary>
         /// Options for controlling the validation and verification.
@@ -163,27 +165,30 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Saves the data as default.
         /// </summary>
-        internal static void SaveDataAsDefault(String filename = null)
+        internal static void SaveECD(String filename = null)
         {
-            Logger.Info($"Saving ECD to: '{Utils.MakePathRelative(filename)}'.");
+            Logger.Info($"Saving Statistical Model to: '{Utils.MakePathRelative(filename)}'.");
 
-            //! 1) CompetencyModel.
-            ECD.SaveCompetencyModel(Data.CompetencyModel, filename);
-
-            //! 2) Statistical Submodel.
-            ECD.SaveEvidenceModel(Data.StatisticalSubmodel, filename);
-
-            //! 3) Load Observables.
-            //! NOTE: Observables might be empty (they are extracted from the data file).
-            ECD.SaveObservables(Data.Observables, filename);
-
-            //! 4) Uni CompetencyModel.
-            ECD.SaveUniCompetencyModel(Data.UniCompetencyModel, filename);
-
-            //! 5) Uni Statistical Submodel.
-            ECD.SaveUniEvidenceModel(Data.UniEvidenceModel, filename);
+            if (!String.IsNullOrEmpty(filename))
+            {
+                using (Models models = new Models()
+                {
+                    observables = Data.observables.Names,
+                    competencies = Data.competencies,
+                    unicompetencies = Data.unicompetencies
+                })
+                {
+                    //! 1) Save ECD.
+                    ECD.SaveModelData(models, filename);
+                }
+            }
         }
 
+        /// <summary>
+        /// Saves a model to excel.
+        /// </summary>
+        ///
+        /// <param name="filename"> Filename of the file. </param>
         internal static void SaveModelToExcel(String filename)
         {
             Excel.AddModel(filename);
@@ -194,41 +199,36 @@ namespace StealthAssessmentWizard
         /// </summary>
         ///
         /// <param name="filename"> (Optional) Filename of the file. </param>
-        internal static void LoadDataAsDefault(String filename = null)
+        internal static void LoadECD(String filename = null)
         {
             if (File.Exists(filename))
             {
-                Logger.Info($"Loading ECD from: '{Utils.MakePathRelative(filename)}'.");
+                Logger.Info($"Loading Statistical Model from: '{Utils.MakePathRelative(filename)}'.");
 
-                //! 1) CompetencyModel.
-                Data.CompetencyModel = ECD.LoadCompetencyModel(filename);
-
-                //! 2) Statistical Submodel.
-                Data.StatisticalSubmodel = ECD.LoadEvidenceModel(filename).Item2;
-
-                //! 3) ObservablesModel.
-
-                //! a) Extend Item2 with empty data to the size of obs fails.
-                //! b) However truncating obs to the size of Item2 seems to work OK as
-                //!    this data is loaded later where the sheet matches the size of obs.
-
-                //! Truncate only (remove surplus of observables)...
-                foreach (String observable in ECD.LoadObservables(filename))
+                //! 1) Load ECD.
+                using (Models models = ECD.LoadModelData(filename))
                 {
-                    int index = Data.Observables.FindIndex(p => p.ObservableName.Equals(observable));
-                    if (index == -1)
-                    {
-                        Logger.Info($"Removing observable: '{observable}' as no data is found.");
+                    Data.competencies = models.competencies;
+                    Data.unicompetencies = models.unicompetencies;
 
-                        Data.Observables.RemoveAt(index);
+                    //! 2) Prune Loaded Observables.
+
+                    //! a) Extend Item2 with empty data to the size of obs fails.
+                    //! b) However truncating obs to the size of Item2 seems to work OK as
+                    //!    this data is loaded later where the sheet matches the size of obs.
+
+                    //! 2) Truncate only (remove surplus of observables)...
+                    foreach (String observable in models.observables)
+                    {
+                        int index = Data.observables.ToList().FindIndex(p => p.ObservableName.Equals(observable));
+                        if (index == -1)
+                        {
+                            Logger.Info($"Removing observable: '{observable}' as no data is found.");
+
+                            Data.observables.RemoveAt(index);
+                        }
                     }
                 }
-
-                //! 4) Uni CompetencyModel.
-                Data.UniCompetencyModel = ECD.LoadUniCompetencyModel(filename);
-
-                //! 5) Uni Statistical Submodel.
-                Data.UniEvidenceModel = ECD.LoadUniEvidenceModel(filename);
             }
         }
 

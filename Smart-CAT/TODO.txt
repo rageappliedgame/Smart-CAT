@@ -53,6 +53,7 @@
 43) DONE - Cleared statistical model definition when loading a new file (after Start New).
 44) DONE - Renamed GSAT Tab to Smart-Cat.
 45) DONE - Added Model to Output Spreadsheet for documentation.
+46) DONE - Swapped AllGameData for Observables class.
 
 [TODO]
 - Running GameLogs again showed an error.
@@ -77,6 +78,8 @@ Removed StealthAssessmentWizard\weka.dll
 
 [12-04-2022]
 Meeting with Kostas
+
+https://stackoverflow.com/questions/39092627/json-serialization-with-class-inherited-from-listt
 
 TODO - Move Smart-Cat tab into separate sheet (original file in project folder + timestamp in filename).
 	 - Add an option to load the model from such spreadsheet.

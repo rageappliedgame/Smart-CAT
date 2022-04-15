@@ -1318,13 +1318,13 @@ namespace StealthAssessmentWizard
         /// Check labelling.
         /// </summary>
         ///
-        /// <param name="Observables">     all game logs. </param>
+        /// <param name="observables">     all game logs. </param>
         /// <param name="CompetencyModel"> The competency model. </param>
         ///
         /// <returns>
         /// A Tuple&lt;bool[][],bool[][][]&gt;
         /// </returns>
-        internal static Tuple<bool[][], bool[][][]> CheckLabelling(Observables<String> Observables, Tuple<string[], string[][]> CompetencyModel)
+        internal static Tuple<bool[][], bool[][][]> CheckLabelling(Observables observables, Tuple<string[], string[][]> CompetencyModel)
         {
             //! Stores information whether the data for the given competencies is labeled to decide ML approach.
             bool[][] CheckLabellingCompetencies = new bool[CompetencyModel.Item1.Length][];
@@ -1349,11 +1349,11 @@ namespace StealthAssessmentWizard
             //! Check if labels exists for all declared competencies and facets.
             for (int x = 0; x < CompetencyModel.Item1.Length; x++)
             {
-                CheckLabellingCompetencies[x][0] = Observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item1[x]));
+                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item1[x]));
 
                 for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
                 {
-                    CheckLabellingFacets[x][y][0] = Observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item2[x][y]));
+                    CheckLabellingFacets[x][y][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item2[x][y]));
                 }
             }
 
@@ -2336,12 +2336,12 @@ namespace StealthAssessmentWizard
         /// </summary>
         ///
         /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="Observables">     all game logs. </param>
+        /// <param name="observables">     all game logs. </param>
         ///
         /// <returns>
         /// The labeled data.
         /// </returns>
-        internal static Tuple<int[][], int[][][]> GetLabelledData(Tuple<string[], string[][]> CompetencyModel, Observables<String> Observables)
+        internal static Tuple<int[][], int[][][]> GetLabelledData(Tuple<string[], string[][]> CompetencyModel, Observables observables)
         {
             //! Stores the labeling data for the given competencies.
             int[][] LabelledDataCompetencies = new int[CompetencyModel.Item1.Length][];
@@ -2355,37 +2355,37 @@ namespace StealthAssessmentWizard
             //! Initialisation of arrays.
             for (int x = 0; x < CompetencyModel.Item1.Length; x++)
             {
-                for (int i = 0; i < Observables.Count; i++)
+                for (int i = 0; i < observables.Count; i++)
                 {
                     //! PROBLEM HERE IS THAT Item1 has a length of 18 and Item2 (used for the size of the LabelledDataCompetencies) has a length of 11.
                     //! SEEMS Item2 does not contain the calculated facets & competencies yet.
                     //! Observables (after loading the ini) contains 18 and 11 items in it's two arrays.
-                    if (CompetencyModel.Item1[x] == Observables[i].ObservableName)
+                    if (CompetencyModel.Item1[x] == observables[i].ObservableName)
                     {
-                        LabelledDataCompetencies[x] = new int[Observables[i].Length];
+                        LabelledDataCompetencies[x] = new int[observables[i].Length];
                         break;
                     }
                     else
                     {
-                        LabelledDataCompetencies[x] = new int[Observables[i].Length];
+                        LabelledDataCompetencies[x] = new int[observables[i].Length];
                     }
                 }
                 LabelledDataFacets[x] = new int[CompetencyModel.Item2[x].Length][];
 
                 for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
                 {
-                    for (int i = 0; i < Observables.Count; i++)
+                    for (int i = 0; i < observables.Count; i++)
                     {
-                        if (CompetencyModel.Item2[x][y] == Observables[i].ObservableName)
+                        if (CompetencyModel.Item2[x][y] == observables[i].ObservableName)
                         {
 #warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
-                            LabelledDataFacets[x][y] = new int[Observables[i].Length];
+                            LabelledDataFacets[x][y] = new int[observables[i].Length];
                             break;
                         }
                         else
                         {
 #warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
-                            LabelledDataFacets[x][y] = new int[Observables[i].Length];
+                            LabelledDataFacets[x][y] = new int[observables[i].Length];
                         }
                     }
                 }
@@ -2394,13 +2394,13 @@ namespace StealthAssessmentWizard
             //! Store labelled data.
             for (int x = 0; x < CompetencyModel.Item1.Length; x++)
             {
-                for (int i = 0; i < Observables.Count; i++)
+                for (int i = 0; i < observables.Count; i++)
                 {
-                    if (CompetencyModel.Item1[x] == Observables[i].ObservableName)
+                    if (CompetencyModel.Item1[x] == observables[i].ObservableName)
                     {
-                        for (int k = 0; k < Observables[i].Length; k++)
+                        for (int k = 0; k < observables[i].Length; k++)
                         {
-                            LabelledDataCompetencies[x][k] = Convert.ToInt32(Observables[i][k]);
+                            LabelledDataCompetencies[x][k] = Convert.ToInt32(observables[i][k]);
                         }
                         break;
                     }
@@ -2408,13 +2408,13 @@ namespace StealthAssessmentWizard
 
                 for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
                 {
-                    for (int i = 0; i < Observables.Count; i++)
+                    for (int i = 0; i < observables.Count; i++)
                     {
-                        if (CompetencyModel.Item2[x][y] == Observables[i].ObservableName)
+                        if (CompetencyModel.Item2[x][y] == observables[i].ObservableName)
                         {
-                            for (int k = 0; k < Observables[i].Length; k++)
+                            for (int k = 0; k < observables[i].Length; k++)
                             {
-                                LabelledDataFacets[x][y][k] = Convert.ToInt32(Observables[i][k]);
+                                LabelledDataFacets[x][y][k] = Convert.ToInt32(observables[i][k]);
                             }
                             break;
                         }
@@ -2618,7 +2618,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// all data.
         /// </returns>
-        internal static Observables<String> LoadAllData(string filename)
+        internal static Observables LoadAllData(string filename)
         {
             return Excel.EPPlus(filename);
         }
@@ -2627,14 +2627,14 @@ namespace StealthAssessmentWizard
         /// Loads the instances.
         /// </summary>
         ///
-        /// <param name="Observables">         all game logs. </param>
+        /// <param name="observables">         all game logs. </param>
         /// <param name="CompetencyModel">     The competency model. </param>
         /// <param name="StatisticalSubmodel"> The statistical submodel. </param>
         ///
         /// <returns>
         /// The instances.
         /// </returns>
-        internal static Tuple<double[][][][], double[][][][]> LoadInstances(Observables<String> Observables, Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel)
+        internal static Tuple<double[][][][], double[][][][]> LoadInstances(Observables observables, Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel)
         {
             //! Stores instances per declared observable in the statistical submodels.
             double[][][][] InstancesPerObservable = new double[CompetencyModel.Item1.Length][][][];
@@ -2653,12 +2653,12 @@ namespace StealthAssessmentWizard
                     InstancesPerObservable[x][y] = new double[StatisticalSubmodel[x][y].Length][];
                     for (int i = 0; i < StatisticalSubmodel[x][y].Length; i++)
                     {
-                        for (int k = 0; k < Observables.Count; k++)
+                        for (int k = 0; k < observables.Count; k++)
                         {
-                            if (StatisticalSubmodel[x][y][i] == Observables[k].ObservableName)
+                            if (StatisticalSubmodel[x][y][i] == observables[k].ObservableName)
                             {
-                                InstancesPerObservable[x][y][i] = new double[Observables[k].Length];
-                                Instances[x][y] = new double[Observables[k].Length][];
+                                InstancesPerObservable[x][y][i] = new double[observables[k].Length];
+                                Instances[x][y] = new double[observables[k].Length][];
                                 break;
                             }
                         }
@@ -2673,14 +2673,14 @@ namespace StealthAssessmentWizard
                 {
                     for (int i = 0; i < StatisticalSubmodel[x][y].Length; i++)
                     {
-                        for (int k = 0; k < Observables.Count; k++)
+                        for (int k = 0; k < observables.Count; k++)
                         {
-                            if (StatisticalSubmodel[x][y][i] == Observables[k].ObservableName)
+                            if (StatisticalSubmodel[x][y][i] == observables[k].ObservableName)
                             {
-                                for (int a = 0; a < Observables[k].Length; a++)
+                                for (int a = 0; a < observables[k].Length; a++)
                                 {
-                                    Observables[k][a] = Observables[k][a].Replace(".", ",");
-                                    InstancesPerObservable[x][y][i][a] = Convert.ToDouble(Observables[k][a]);
+                                    observables[k][a] = observables[k][a].Replace(".", ",");
+                                    InstancesPerObservable[x][y][i][a] = Convert.ToDouble(observables[k][a]);
                                 }
                             }
                         }
@@ -3139,7 +3139,7 @@ namespace StealthAssessmentWizard
             return LabelledOutput;
         }
 
-        internal static Tuple<double[][][], double[][][]> LoadInstancesUni(Observables<String> Observables, string[] UniCompetencyModel, string[][] UniEvidenceModel)
+        internal static Tuple<double[][][], double[][][]> LoadInstancesUni(Observables observables, string[] UniCompetencyModel, string[][] UniEvidenceModel)
         {
             //! Stores instances per declared observable in the statistical submodels.
             double[][][] InstancesPerObservable = new double[UniCompetencyModel.Length][][];
@@ -3154,12 +3154,12 @@ namespace StealthAssessmentWizard
                 InstancesPerObservable[x] = new double[UniEvidenceModel[x].Length][];
                 for (int i = 0; i < UniEvidenceModel[x].Length; i++)
                 {
-                    for (int k = 0; k < Observables.Count; k++)
+                    for (int k = 0; k < observables.Count; k++)
                     {
-                        if (UniEvidenceModel[x][i] == Observables[k].ObservableName)
+                        if (UniEvidenceModel[x][i] == observables[k].ObservableName)
                         {
-                            InstancesPerObservable[x][i] = new double[Observables[k].Length];
-                            Instances[x] = new double[Observables[k].Length][];
+                            InstancesPerObservable[x][i] = new double[observables[k].Length];
+                            Instances[x] = new double[observables[k].Length][];
                             break;
                         }
                     }
@@ -3171,14 +3171,14 @@ namespace StealthAssessmentWizard
             {
                 for (int i = 0; i < UniEvidenceModel[x].Length; i++)
                 {
-                    for (int k = 0; k < Observables.Count; k++)
+                    for (int k = 0; k < observables.Count; k++)
                     {
-                        if (UniEvidenceModel[x][i] == Observables[k].ObservableName)
+                        if (UniEvidenceModel[x][i] == observables[k].ObservableName)
                         {
-                            for (int a = 0; a < Observables[k].Length; a++)
+                            for (int a = 0; a < observables[k].Length; a++)
                             {
-                                Observables[k][a] = Observables[k][a].Replace(".", ",");
-                                InstancesPerObservable[x][i][a] = Convert.ToDouble(Observables[k][a]);
+                                observables[k][a] = observables[k][a].Replace(".", ",");
+                                InstancesPerObservable[x][i][a] = Convert.ToDouble(observables[k][a]);
                             }
                         }
                     }
@@ -3269,7 +3269,7 @@ namespace StealthAssessmentWizard
             return InstancesNorm;
         }
 
-        internal static bool[][] CheckLabellingUni(Observables<String> Observables, string[] UniCompetencyModel)
+        internal static bool[][] CheckLabellingUni(Observables observables, string[] UniCompetencyModel)
         {
             //! Stores information whether the data for the given competencies is labeled to decide ML approach.
             bool[][] CheckLabellingCompetencies = new bool[UniCompetencyModel.Length][];
@@ -3283,13 +3283,13 @@ namespace StealthAssessmentWizard
             //! Check if labels exists for all declared competencies and facets.
             for (int x = 0; x < UniCompetencyModel.Length; x++)
             {
-                CheckLabellingCompetencies[x][0] = Observables.Any(p => p.ObservableName.Equals(UniCompetencyModel[x]));
+                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(UniCompetencyModel[x]));
             }
 
             return CheckLabellingCompetencies;
         }
 
-        internal static int[][] GetLabelledDataUni(string[] UniCompetencyModel, Observables<String> Observables)
+        internal static int[][] GetLabelledDataUni(string[] UniCompetencyModel, Observables observables)
         {
             //! Stores the labeling data for the given competencies.
             int[][] LabelledDataCompetencies = new int[UniCompetencyModel.Length][];
@@ -3297,16 +3297,16 @@ namespace StealthAssessmentWizard
             //! Initialisation of arrays.
             for (int x = 0; x < UniCompetencyModel.Length; x++)
             {
-                for (int i = 0; i < Observables.Count; i++)
+                for (int i = 0; i < observables.Count; i++)
                 {
-                    if (UniCompetencyModel[x] == Observables[i].ObservableName)
+                    if (UniCompetencyModel[x] == observables[i].ObservableName)
                     {
-                        LabelledDataCompetencies[x] = new int[Observables[i].Length];
+                        LabelledDataCompetencies[x] = new int[observables[i].Length];
                         break;
                     }
                     else
                     {
-                        LabelledDataCompetencies[x] = new int[Observables[i].Length];
+                        LabelledDataCompetencies[x] = new int[observables[i].Length];
                     }
                 }
             }
@@ -3314,13 +3314,13 @@ namespace StealthAssessmentWizard
             //! Store labelled data.
             for (int x = 0; x < UniCompetencyModel.Length; x++)
             {
-                for (int i = 0; i < Observables.Count; i++)
+                for (int i = 0; i < observables.Count; i++)
                 {
-                    if (UniCompetencyModel[x] == Observables[i].ObservableName)
+                    if (UniCompetencyModel[x] == observables[i].ObservableName)
                     {
-                        for (int k = 0; k < Observables[i].Length; k++)
+                        for (int k = 0; k < observables[i].Length; k++)
                         {
-                            LabelledDataCompetencies[x][k] = Convert.ToInt32(Observables[i][k]);
+                            LabelledDataCompetencies[x][k] = Convert.ToInt32(observables[i][k]);
                         }
                         break;
                     }

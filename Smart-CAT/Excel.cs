@@ -87,10 +87,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;string[],string[][]&gt;
         /// </returns>
-        internal static Observables<String> EPPlus(string filename)
+        internal static Observables EPPlus(string filename)
         {
             //! Variables for storing the data.
-            Observables<String> observables = new Observables<String>();
+            Observables observables = new Observables();
 
             FileInfo fileInfo = new FileInfo(filename);
 
@@ -303,7 +303,7 @@ namespace StealthAssessmentWizard
                         ws.Cells[row, col].Style.Font.Bold = true;
                         ws.Cells[row++, col++].Value = "Observables";
 
-                        foreach (String observable in Data.Observables.Names)
+                        foreach (String observable in Data.observables.Names)
                         {
                             ws.Cells[row, col++].Value = observable;
                             if ((col - 2) % 8 == 0)
@@ -321,20 +321,20 @@ namespace StealthAssessmentWizard
                         col++;
 
                         //! 1) CompetencyModel.
-                        string[] Competencies = Data.CompetencyModel.Item1;
-                        string[][] Facets = Data.CompetencyModel.Item2;
+                        //string[] Competencies = Data.competencies.Names;
+                        //string[][] Facets = Data.competencies.Item2;
 
-                        for (int x = 0; x < Competencies.Length; x++)
+                        for (int x = 0; x < Data.competencies.Count; x++)
                         {
-                            ws.Cells[row++, col++].Value = Competencies[x];
+                            ws.Cells[row++, col++].Value = Data.competencies[x].CompetencyName;
 
-                            for (int y = 0; y < Facets[x].Length; y++)
+                            for (int y = 0; y < Data.competencies[x].Count(); y++)
                             {
-                                ws.Cells[row++, col++].Value = Facets[x][y];
+                                ws.Cells[row++, col++].Value = Data.competencies[x][y].FacetName;
 
-                                for (int z = 0; z < Data.StatisticalSubmodel[x][y].Length; z++)
+                                for (int z = 0; z < Data.competencies[x][y].Length; z++)
                                 {
-                                    ws.Cells[row++, col].Value = Data.StatisticalSubmodel[x][y][z];
+                                    ws.Cells[row++, col].Value = Data.competencies[x][y][z];
                                 }
                                 col = 3;
                             }

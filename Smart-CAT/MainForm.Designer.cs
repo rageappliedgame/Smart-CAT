@@ -825,13 +825,13 @@ namespace StealthAssessmentWizard
             // 
             // openFileDialog2
             // 
-            this.openFileDialog2.FileName = "*.ini";
-            this.openFileDialog2.Filter = "Ini files|*.ini";
+            this.openFileDialog2.FileName = "*.json";
+            this.openFileDialog2.Filter = "JSON files|*.json";
             // 
             // saveFileDialog2
             // 
-            this.saveFileDialog2.FileName = "*.ini";
-            this.saveFileDialog2.Filter = "Ini files|*.ini";
+            this.saveFileDialog2.FileName = "*.json";
+            this.saveFileDialog2.Filter = "JSON files|*.json";
             // 
             // openFileDialog3
             // 

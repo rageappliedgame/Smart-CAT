@@ -38,9 +38,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BayesNet.cs" />
+    <Compile Include="JsonHelper.cs" />
     <Compile Include="GCI.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="Models\Competencies.cs" />
+    <Compile Include="Models\Competency.cs" />
+    <Compile Include="Models\Facet.cs" />
+    <Compile Include="Models\Models.cs" />
     <Compile Include="Models\Observable.cs" />
+    <Compile Include="Models\UniCompetencies.cs" />
+    <Compile Include="Models\UniCompetency.cs" />
     <Compile Include="PerformanceModels.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="ECD.cs" />
@@ -154,6 +161,9 @@
     <Reference Include="EPPlus, Version=5.0.4.0, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.5.0.4\lib\net45\EPPlus.dll</HintPath>
     </Reference>
+    <Reference Include="JsonPrettyPrinterPlus, Version=1.0.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\JsonPrettyPrinter.1.0.1.1\lib\net35\JsonPrettyPrinterPlus.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Win32.Registry, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Win32.Registry.4.7.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
@@ -213,6 +223,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Assemblies\System.Net.Sockets.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Runtime.Serialization.Primitives">
       <HintPath>..\Assemblies\System.Runtime.Serialization.Primitives.dll</HintPath>
     </Reference>

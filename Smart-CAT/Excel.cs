@@ -30,6 +30,7 @@
 namespace StealthAssessmentWizard
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
 
@@ -44,6 +45,7 @@ namespace StealthAssessmentWizard
     {
         internal const string GSATScratchPad = "Smart-CAT";
         internal const string ModelScratchPad = "Model";
+        internal static string Stamp = "_TMP_";
 
         /// <summary>
         /// Returns true if the file exists and is locked for R/W access.
@@ -94,40 +96,74 @@ namespace StealthAssessmentWizard
 
             FileInfo fileInfo = new FileInfo(filename);
 
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Stamp + Path.GetExtension(filename));
+
+            FileInfo fileInfoTS = new FileInfo(filenameTS);
+
             if (fileInfo.Exists)
             {
                 using (ExcelPackage p = new ExcelPackage(fileInfo))
                 {
-                    //! Save the size of the worksheet.
-                    // 
-                    if (!p.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))
+                    using (ExcelWorksheet ws = p.Workbook.Worksheets[0])
                     {
-                        using (ExcelWorksheet ws = p.Workbook.Worksheets[0])
+                        using (ExcelPackage pTS = new ExcelPackage(fileInfoTS))
                         {
-                            Logger.Info($"Spreadsheet Raw Data Size {ws.Dimension.Rows - 1} x {ws.Dimension.Columns}.");
+#warning TODO - CREATE GSATScratchPad and ModelScratchPad in a timestamped excel file and use that for the remaining calculations.
 
-                            using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
+                            //! Save the size of the worksheet.
+                            // 
+                            if (!pTS.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))
                             {
-                                ini.WriteInteger("RawData", "Rows", ws.Dimension.Rows);
-                                ini.WriteInteger("RawData", "Colums", ws.Dimension.Columns);
-                                ini.UpdateFile();
+                                using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets.Add(GSATScratchPad))
+                                {
+                                    Logger.Info($"Spreadsheet Raw Data Size {ws.Dimension.Rows - 1} x {ws.Dimension.Columns}.");
+
+                                    using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
+                                    {
+                                        ini.WriteInteger("RawData", "Rows", ws.Dimension.Rows);
+                                        ini.WriteInteger("RawData", "Colums", ws.Dimension.Columns);
+                                        ini.UpdateFile();
+                                    }
+
+                                    for (Int32 r = 0; r < ws.Dimension.Rows; r++)
+                                    {
+                                        for (Int32 c = 0; c < ws.Dimension.Columns; c++)
+                                        {
+                                            if (Double.TryParse(ws.Cells[r + 1, c + 1].Value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+                                            {
+                                                wsTS.Cells[r + 1, c + 1].Value = result;
+                                            }
+                                            else
+                                            {
+                                                wsTS.Cells[r + 1, c + 1].Value = ws.Cells[r + 1, c + 1].Value;
+                                            }
+                                        }
+                                    }
+                                    //ExcelWorksheet worksheet = p.Workbook.Worksheets.Copy(ws.Name, GSATScratchPad);
+
+                                    pTS.Save();
+                                }
                             }
-
-                            ExcelWorksheet worksheet = p.Workbook.Worksheets.Copy(ws.Name, GSATScratchPad);
-
-                            p.Save();
                         }
                     }
+                }
+            }
 
-                    using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
+            fileInfoTS = new FileInfo(filenameTS);
+
+            if (fileInfoTS.Exists)
+            {
+                using (ExcelPackage pTS = new ExcelPackage(fileInfoTS))
+                {
+                    using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets[GSATScratchPad])
                     {
-                        for (Int32 c = 0; c < ws.Dimension.Columns; c++)
+                        for (Int32 c = 0; c < wsTS.Dimension.Columns; c++)
                         {
-                            observables.Add(new Observable<String>(ws.Dimension.Rows - 1, ws.Cells[1, c + 1].Value.ToString()));
+                            observables.Add(new Observable<String>(wsTS.Dimension.Rows - 1, wsTS.Cells[1, c + 1].Value.ToString()));
 
-                            for (Int32 r = 0; r < ws.Dimension.Rows - 1; r++)
+                            for (Int32 r = 0; r < wsTS.Dimension.Rows - 1; r++)
                             {
-                                observables[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
+                                observables[c][r] = wsTS.Cells[r + 2, c + 1].Value.ToString();
                             }
                         }
                     }
@@ -164,7 +200,7 @@ namespace StealthAssessmentWizard
                                 Int32 i = ws.Dimension.Columns;
                                 Int32 length = LabelledData.Item1[x].Length;
 
-                                Logger.Info($"Adding {length} Competency Labels in Column {i}.");
+                                Logger.Info($"Adding {length} Competency Labels in Column {i}: '{CompetencyModel.Item1[x]}'.");
 
                                 ws.Cells[1, i + 1].Value = CompetencyModel.Item1[x].ToString();
                                 ws.Cells[1, i + 1].Style.Font.Bold = true;
@@ -212,7 +248,7 @@ namespace StealthAssessmentWizard
                                     Int32 i = ws.Dimension.Columns;
                                     Int32 length = LabelledData.Item1[x].Length;
 
-                                    Logger.Info($"Adding {length} Facet Labels in Column {i}.");
+                                    Logger.Info($"Adding {length} Facet Labels in Column {i}: '{CompetencyModel.Item2[x][y]}'.");
 
                                     ws.Cells[1, i + 1].Value = CompetencyModel.Item2[x][y].ToString();
                                     ws.Cells[1, i + 1].Style.Font.Bold = true;
@@ -258,7 +294,7 @@ namespace StealthAssessmentWizard
                                 Int32 i = ws.Dimension.Columns;
                                 Int32 length = UniLabelledData[x].Length;
 
-                                Logger.Info($"Adding {length} Competency Labels in Column {i}.");
+                                Logger.Info($"Adding {length} Competency Labels in Column {i}: '{UniCompetencyModel[x]}'.");
 
                                 ws.Cells[1, i + 1].Value = UniCompetencyModel[x].ToString();
                                 ws.Cells[1, i + 1].Style.Font.Bold = true;

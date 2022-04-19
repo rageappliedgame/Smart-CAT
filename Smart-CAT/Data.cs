@@ -218,14 +218,17 @@ namespace StealthAssessmentWizard
                     //!    this data is loaded later where the sheet matches the size of obs.
 
                     //! 2) Truncate only (remove surplus of observables)...
-                    foreach (String observable in models.observables)
+                    if (Data.observables.Count != 0)
                     {
-                        int index = Data.observables.ToList().FindIndex(p => p.ObservableName.Equals(observable));
-                        if (index == -1)
+                        foreach (String observable in models.observables)
                         {
-                            Logger.Info($"Removing observable: '{observable}' as no data is found.");
-
-                            Data.observables.RemoveAt(index);
+                            int index = Data.observables.ToList().FindIndex(p => p.ObservableName.Equals(observable));
+                            if (index == -1)
+                            {
+                                Logger.Info($"Removing observable: '{observable}' as no data is found.");
+#warning TODO - SUSPICIOUS CODE - TRYING TO REMOVE at -1.
+                                //Data.observables.RemoveAt(index);
+                            }
                         }
                     }
                 }

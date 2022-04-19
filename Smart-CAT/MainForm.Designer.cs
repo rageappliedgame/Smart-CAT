@@ -31,9 +31,9 @@ namespace StealthAssessmentWizard
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea10 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend10 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series10 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.panelManager1 = new Controls.PanelManager();
             this.StartNew_Panel = new Controls.ManagedPanel();
@@ -142,7 +142,7 @@ namespace StealthAssessmentWizard
             this.panelManager1.Name = "panelManager1";
             this.panelManager1.SelectedIndex = 4;
             this.panelManager1.SelectedPanel = this.SupportFunction_Panel;
-            this.panelManager1.Size = new System.Drawing.Size(786, 391);
+            this.panelManager1.Size = new System.Drawing.Size(789, 391);
             this.panelManager1.TabIndex = 6;
             this.panelManager1.SelectedIndexChanged += new System.EventHandler(this.PanelManager1_SelectedIndexChanged);
             // 
@@ -155,7 +155,7 @@ namespace StealthAssessmentWizard
             this.StartNew_Panel.Controls.Add(this.label1);
             this.StartNew_Panel.Location = new System.Drawing.Point(0, 0);
             this.StartNew_Panel.Name = "StartNew_Panel";
-            this.StartNew_Panel.Size = new System.Drawing.Size(786, 391);
+            this.StartNew_Panel.Size = new System.Drawing.Size(789, 391);
             this.StartNew_Panel.Text = "Start New";
             // 
             // label5
@@ -214,7 +214,7 @@ namespace StealthAssessmentWizard
             this.ImportData_Panel.Controls.Add(this.label7);
             this.ImportData_Panel.Location = new System.Drawing.Point(0, 0);
             this.ImportData_Panel.Name = "ImportData_Panel";
-            this.ImportData_Panel.Size = new System.Drawing.Size(786, 391);
+            this.ImportData_Panel.Size = new System.Drawing.Size(789, 391);
             this.ImportData_Panel.Text = "Import Data";
             // 
             // button1
@@ -256,7 +256,7 @@ namespace StealthAssessmentWizard
             this.ConfigureECD_Panel.Controls.Add(this.label10);
             this.ConfigureECD_Panel.Location = new System.Drawing.Point(0, 0);
             this.ConfigureECD_Panel.Name = "ConfigureECD_Panel";
-            this.ConfigureECD_Panel.Size = new System.Drawing.Size(786, 391);
+            this.ConfigureECD_Panel.Size = new System.Drawing.Size(789, 391);
             this.ConfigureECD_Panel.Text = "Configure ECD";
             // 
             // label13
@@ -305,6 +305,7 @@ namespace StealthAssessmentWizard
             this.cancelToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(151, 132);
+            this.contextMenuStrip1.Tag = "Statistical Model";
             this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // competencyToolStripMenuItem
@@ -469,7 +470,7 @@ namespace StealthAssessmentWizard
             this.OptimizeML_Panel.Controls.Add(this.label15);
             this.OptimizeML_Panel.Location = new System.Drawing.Point(0, 0);
             this.OptimizeML_Panel.Name = "OptimizeML_Panel";
-            this.OptimizeML_Panel.Size = new System.Drawing.Size(786, 391);
+            this.OptimizeML_Panel.Size = new System.Drawing.Size(789, 391);
             this.OptimizeML_Panel.Text = "Optimize ML";
             // 
             // label16
@@ -528,7 +529,7 @@ namespace StealthAssessmentWizard
             this.SupportFunction_Panel.Controls.Add(this.label24);
             this.SupportFunction_Panel.Location = new System.Drawing.Point(0, 0);
             this.SupportFunction_Panel.Name = "SupportFunction_Panel";
-            this.SupportFunction_Panel.Size = new System.Drawing.Size(786, 391);
+            this.SupportFunction_Panel.Size = new System.Drawing.Size(789, 391);
             this.SupportFunction_Panel.Text = "Support Function";
             // 
             // LoadVandVExternalData
@@ -548,7 +549,7 @@ namespace StealthAssessmentWizard
             | System.Windows.Forms.AnchorStyles.Right)));
             this.propertyGrid2.Location = new System.Drawing.Point(91, 119);
             this.propertyGrid2.Name = "propertyGrid2";
-            this.propertyGrid2.Size = new System.Drawing.Size(1195, 614);
+            this.propertyGrid2.Size = new System.Drawing.Size(1984, 1005);
             this.propertyGrid2.TabIndex = 19;
             // 
             // label23
@@ -580,7 +581,7 @@ namespace StealthAssessmentWizard
             this.Finish_Panel.Controls.Add(this.label4);
             this.Finish_Panel.Location = new System.Drawing.Point(0, 0);
             this.Finish_Panel.Name = "Finish_Panel";
-            this.Finish_Panel.Size = new System.Drawing.Size(786, 391);
+            this.Finish_Panel.Size = new System.Drawing.Size(789, 391);
             this.Finish_Panel.Text = "Finish";
             // 
             // button3
@@ -595,17 +596,17 @@ namespace StealthAssessmentWizard
             // 
             // chart1
             // 
-            chartArea2.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chart1.Legends.Add(legend2);
+            chartArea10.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea10);
+            legend10.Name = "Legend1";
+            this.chart1.Legends.Add(legend10);
             this.chart1.Location = new System.Drawing.Point(92, 99);
             this.chart1.Name = "chart1";
-            series2.ChartArea = "ChartArea1";
-            series2.LabelToolTip = "#VAL{D0}";
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
-            this.chart1.Series.Add(series2);
+            series10.ChartArea = "ChartArea1";
+            series10.LabelToolTip = "#VAL{D0}";
+            series10.Legend = "Legend1";
+            series10.Name = "Series1";
+            this.chart1.Series.Add(series10);
             this.chart1.Size = new System.Drawing.Size(408, 235);
             this.chart1.TabIndex = 19;
             this.chart1.Text = "chart1";
@@ -815,6 +816,7 @@ namespace StealthAssessmentWizard
             // 
             this.saveFileDialog1.FileName = "*.xlsx";
             this.saveFileDialog1.Filter = "Excel Sheet files|*.xlsx|All files|*.*";
+            this.saveFileDialog1.Tag = "Excel Report";
             // 
             // openFileDialog1
             // 
@@ -822,16 +824,19 @@ namespace StealthAssessmentWizard
             this.openFileDialog1.FileName = "*.xlsx";
             this.openFileDialog1.Filter = "Excel Sheet files|*.xlsx|Comma Separated Values files|*.csv|Log files|*.log|All f" +
     "iles|*.*";
+            this.openFileDialog1.Tag = "Excel Raw Input";
             // 
             // openFileDialog2
             // 
             this.openFileDialog2.FileName = "*.json";
             this.openFileDialog2.Filter = "JSON files|*.json";
+            this.openFileDialog2.InitialDirectory = "JSON Model";
             // 
             // saveFileDialog2
             // 
             this.saveFileDialog2.FileName = "*.json";
             this.saveFileDialog2.Filter = "JSON files|*.json";
+            this.saveFileDialog2.Tag = "JSON Model";
             // 
             // openFileDialog3
             // 
@@ -839,6 +844,7 @@ namespace StealthAssessmentWizard
             this.openFileDialog3.FileName = "*.xlsx";
             this.openFileDialog3.Filter = "Excel Sheet files|*.xlsx|Comma Separated Values files|*.csv|Log files|*.log|All f" +
     "iles|*.*";
+            this.openFileDialog3.Tag = "Validation and Verification";
             // 
             // MainForm
             // 

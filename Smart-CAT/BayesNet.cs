@@ -5,14 +5,14 @@
 * Organization: Open University of the Netherlands (OUNL).
 * Project: The RAGE project
 * Project URL: http://rageproject.eu.
-* Task: T2.1 of the RAGE project; Development of assets for assessment. 
-* 
-* For any questions please contact: 
+* Task: T2.1 of the RAGE project; Development of assets for assessment.
+*
+* For any questions please contact:
 *
 * Konstantinos Georgiadis via konstantinos.georgiadis [AT] ou [DOT] nl
 * and/or
 * Wim van der Vegt via wim.vandervegt [AT] ou [DOT] nl
-* 
+*
 * Licensed under the Apache License, Version 2.0 (the "License");
 * you may not use this file except in compliance with the License.
 * This project has received funding from the European Union’s Horizon
@@ -31,6 +31,7 @@ namespace StealthAssessmentWizard
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
 
     using Accord.IO;
@@ -52,15 +53,135 @@ namespace StealthAssessmentWizard
     using Swiss;
 
 #if false
+
+    using Debug = System.Diagnostics.Debug;
+    using Environment = System.Environment;
     using java.io;
     using weka.core;
-    using Environment = System.Environment;
-    using Debug = System.Diagnostics.Debug;
+
 #endif
 
     public static class BayesNet
     {
         #region Methods
+
+        /// <summary>
+        /// Correlation analysis between outputs and external measurement data on multi-competencies.
+        /// level.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel"> The competency model. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;double[][],double[][][]&gt;
+        /// </returns>
+        public static Tuple<string[], double[][]> CorrelationAnalysisMulti(string[] MultiCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
+        {
+            int[] classifications = Array.Empty<int>();
+            int[] external = Array.Empty<int>();
+            Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[MultiCompetencies.Length], new double[MultiCompetencies.Length][]);
+
+            // Check if same legends exist for the multicompetencies in external data.
+            for (int i = 0; i < MultiCompetencies.Length; i++)
+            {
+                for (int x = 0; x < ExternalData.Item1.Length; x++)
+                {
+                    if (string.Equals(MultiCompetencies[i], ExternalData.Item1[x]) == true)
+                    {
+                        // Initialize arrays.
+#warning check if size of arrays is same.
+
+                        classifications = new int[Output[i].Length];
+                        for (int y = 0; y < Output[i].Length; y++)
+                        {
+                            classifications[y] = Output[i][y];
+                        }
+
+                        external = new int[ExternalData.Item2[x].Length];
+                        for (int k = 0; k < ExternalData.Item2[x].Length; k++)
+                        {
+                            external[k] = Convert.ToInt32(ExternalData.Item2[x][k]);
+                        }
+
+                        //Perform Validation.
+                        IntegerVector classi = Utils.engine.CreateIntegerVector(classifications);
+                        Utils.engine.SetSymbol("classi", classi);
+
+                        IntegerVector ext = Utils.engine.CreateIntegerVector(external);
+                        Utils.engine.SetSymbol("ext", ext);
+
+                        //! RRSE
+                        NumericVector correl = Utils.engine.Evaluate("cor(classi, ext, method='spearman')").AsNumeric();
+
+                        spearmans.Item1[i] = MultiCompetencies[i];
+                        spearmans.Item2[i] = new double[1];
+                        spearmans.Item2[i][0] = Math.Round(correl[0], 4);
+                    }
+#warning deal with non-found validation data.
+                }
+            }
+
+            return spearmans;
+        }
+
+        /// <summary>
+        /// Correlation analysis between outputs and external measurement data on multi-competencies.
+        /// level.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel"> The competency model. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;double[][],double[][][]&gt;
+        /// </returns>
+        public static Tuple<string[], double[][]> CorrelationAnalysisUni(string[] UniCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
+        {
+            int[] classifications = Array.Empty<int>();
+            int[] external = Array.Empty<int>();
+            Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[UniCompetencies.Length], new double[UniCompetencies.Length][]);
+
+            //Check if same legends exist for the multi-competecies in external data.
+            for (int i = 0; i < UniCompetencies.Length; i++)
+            {
+                for (int x = 0; x < ExternalData.Item1.Length; x++)
+                {
+                    if (string.Equals(UniCompetencies[i], ExternalData.Item1[x]) == true)
+                    {
+                        //Initialize arrays.
+#warning check if size of arrays is same.
+
+                        classifications = new int[Output[i].Length];
+                        for (int y = 0; y < Output[i].Length; y++)
+                        {
+                            classifications[y] = Output[i][y];
+                        }
+
+                        external = new int[ExternalData.Item2[x].Length];
+                        for (int k = 0; k < ExternalData.Item2[x].Length; k++)
+                        {
+                            external[k] = Convert.ToInt32(ExternalData.Item2[x][k]);
+                        }
+
+                        //Perform Validation.
+                        IntegerVector classi = Utils.engine.CreateIntegerVector(classifications);
+                        Utils.engine.SetSymbol("classi", classi);
+
+                        IntegerVector ext = Utils.engine.CreateIntegerVector(external);
+                        Utils.engine.SetSymbol("ext", ext);
+
+                        //! RRSE
+                        NumericVector correl = Utils.engine.Evaluate("cor(classi, ext, method='spearman')").AsNumeric();
+
+                        spearmans.Item1[i] = UniCompetencies[i];
+                        spearmans.Item2[i] = new double[1];
+                        spearmans.Item2[i][0] = Math.Round(correl[0], 4);
+                    }
+#warning deal with non-found validation data.
+                }
+            }
+
+            return spearmans;
+        }
 
         /// <summary>
         /// Runs Decision Trees C45 from the Accord library.
@@ -72,7 +193,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] DecisionTreesAccord_C(ArffReader reader, string Competency)
+        public static int[] DecisionTreesAccord_C(String MyProject, ArffReader reader, string Competency)
         {
             int[] predicted = Array.Empty<int>();
 
@@ -164,12 +285,12 @@ namespace StealthAssessmentWizard
                 //! Moreover, we may decide to convert our tree to a set of rules:
                 DecisionSet rules = tree.ToRules();
 
-                using (IniFile ini = new IniFile("./data/" + Competency + "_DecisionTreesAccord.ini"))
+                using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.ini")))
                 {
                     ini.Clear();
 
                     //! Save BayesNet results in .txt file
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "_DecisionTreesAccord.txt"))
+                    using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.txt")))
                     {
                         //! We can get different performance measures to assess how good our model was at
                         //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -263,7 +384,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] DecisionTreesAccord_F(ArffReader reader, string Competency, string Facet)
+        public static int[] DecisionTreesAccord_F(String MyProject, ArffReader reader, string Competency, string Facet)
         {
             ArffHeader header = reader.ReadHeader();
             Object[][] randData = reader.ReadAllInstances();
@@ -348,12 +469,12 @@ namespace StealthAssessmentWizard
             //! Moreover, we may decide to convert our tree to a set of rules:
             DecisionSet rules = tree.ToRules();
 
-            using (IniFile ini = new IniFile("./data/" + Competency + "/" + Facet + "_DecisionTreesAccord.ini"))
+            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_DecisionTreesAccord.ini")))
             {
                 ini.Clear();
 
                 //! Save BayesNet results in .txt file
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "/" + Facet + "_DecisionTreesAccord.txt"))
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_DecisionTreesAccord.txt")))
                 {
                     //! We can get different performance measures to assess how good our model was at
                     //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -435,14 +556,17 @@ namespace StealthAssessmentWizard
         /// Runs Gaussian Mixture Model clustering from the Accord library.
         /// </summary>
         ///
-        /// <param name="insts">      The insts. </param>
+        /// <param name="MyProject">  my project. </param>
+        /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         /// <param name="Facet">      The facet. </param>
         ///
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] GaussianMixtureModel(ArffReader reader, string Competency, string Facet)
+        ///
+        /// ### <param name="insts"> The insts. </param>
+        public static int[] GaussianMixtureModel(String MyProject, ArffReader reader, string Competency, string Facet)
         {
             Accord.Math.Random.Generator.Seed = 1;
 
@@ -553,7 +677,7 @@ namespace StealthAssessmentWizard
             int[] predicted = cl.Decide(GameLogs);
 
             //! Save BayesNet results in .txt file
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "/" + Facet + "_GaussianMixtureModelAccord.txt"))
+            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_GaussianMixtureModelAccord.txt")))
             {
                 int noCl = 0;
 
@@ -597,7 +721,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] KMeans(ArffReader reader, string Competency, string Facet)
+        public static int[] KMeans(String MyProject, ArffReader reader, string Competency, string Facet)
         {
             Accord.Math.Random.Generator.Seed = 1;
 
@@ -691,7 +815,7 @@ namespace StealthAssessmentWizard
             int[] newlabels = new int[randData.Length];
 
             //! Save BayesNet results in .txt file
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "/" + Facet + "_KMeansAccord.txt"))
+            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_KMeansAccord.txt")))
             {
                 int noCl = 0;
                 foreach (var value in clusters)
@@ -776,6 +900,7 @@ namespace StealthAssessmentWizard
         /// Runs Mean Shift clustering from the Accord library.
         /// </summary>
         ///
+        /// <param name="MyProject">  my project. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         /// <param name="Facet">      The facet. </param>
@@ -783,7 +908,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] MeanShift(ArffReader reader, string Competency, string Facet)
+        public static int[] MeanShift(String MyProject, ArffReader reader, string Competency, string Facet)
         {
             ArffHeader header = reader.ReadHeader();
             object[][] randData = reader.ReadAllInstances();
@@ -840,7 +965,7 @@ namespace StealthAssessmentWizard
             int[] labels = clustering.Decide(GameLogs);
 
             //! Save BayesNet results in .txt file
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "/" + Facet + "_MeanShiftAccord.txt"))
+            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_MeanShiftAccord.txt")))
             {
                 for (int x = 0; x < GameLogs.Length; x++)
                 {
@@ -868,7 +993,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] NaiveBayesAccord_C(ArffReader reader, string Competency)
+        public static int[] NaiveBayesAccord_C(String MyProject, ArffReader reader, string Competency)
         {
             var cv = new NaiveBayesLearning<NormalDistribution>();
             cv.Options.InnerOption = new NormalOptions { Regularization = 1e-5 }; // to avoid zero variances
@@ -952,17 +1077,17 @@ namespace StealthAssessmentWizard
                 //! performance of Naive Bayes on the above data set:
                 NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-                nb.Save(@".\NATIVE.TXT", SerializerCompression.None);
+                nb.Save(Path.Combine(MyProject, "NATIVE.TXT"), SerializerCompression.None);
 
                 predicted = nb.Decide(GameLogsTest);
                 double[][] probs = nb.Probabilities(GameLogsTest);
 
-                using (IniFile ini = new IniFile("./data/" + Competency + "_BayesAccord.ini"))
+                using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.ini")))
                 {
                     ini.Clear();
 
                     //! Save BayesNet results in .txt file
-                    using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "_BayesAccord.txt"))
+                    using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.txt")))
                     {
                         //! We can get different performance measures to assess how good our model was at
                         //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -1057,7 +1182,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] NaiveBayesAccord_F(ArffReader reader, string Competency, string Facet)
+        public static int[] NaiveBayesAccord_F(String MyProject, ArffReader reader, string Competency, string Facet)
         {
             var cv = new NaiveBayesLearning<NormalDistribution>();
 
@@ -1149,18 +1274,18 @@ namespace StealthAssessmentWizard
 
             NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-            nb.Save(@".\NATIVE.TXT", SerializerCompression.None);
-            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(@".\NATIVE.TXT");
+            nb.Save(Path.Combine(MyProject, "NATIVE.TXT"), SerializerCompression.None);
+            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyProject, "NATIVE.TXT"));
 
             int[] predicted = nb2.Decide(GameLogsTest);
             double[][] probs = nb2.Probabilities(GameLogsTest);
 
-            using (IniFile ini = new IniFile("./data/" + Competency + "/" + Facet + "_BayesAccord.ini"))
+            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_BayesAccord.ini")))
             {
                 ini.Clear();
 
                 //! Save BayesNet results in .txt file
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "/" + Facet + "_BayesAccord.txt"))
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_BayesAccord.txt")))
                 {
                     //! We can get different performance measures to assess how good our model was at
                     //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -1283,202 +1408,6 @@ namespace StealthAssessmentWizard
             return new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
         }
 
-        /// <summary>
-        /// All labelled.
-        /// </summary>
-        ///
-        /// <param name="CheckLabels"> The check labels. </param>
-        ///
-        /// <returns>
-        /// True if it succeeds, false if it fails.
-        /// </returns>
-        internal static bool AllLabelled(Tuple<bool[][], bool[][][]> CheckLabels)
-        {
-            //! Count missing competency labels.
-            //
-            if (CheckLabels.Item1.Count(p => p[0] == false) != 0)
-            {
-                return false;
-            }
-
-            //! Count missing facet labels.
-            //
-            foreach (bool[][] f in CheckLabels.Item2)
-            {
-                if (f.Count(p => p[0] == false) != 0)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Check labelling.
-        /// </summary>
-        ///
-        /// <param name="observables">     all game logs. </param>
-        /// <param name="CompetencyModel"> The competency model. </param>
-        ///
-        /// <returns>
-        /// A Tuple&lt;bool[][],bool[][][]&gt;
-        /// </returns>
-        internal static Tuple<bool[][], bool[][][]> CheckLabelling(Observables observables, Tuple<string[], string[][]> CompetencyModel)
-        {
-            //! Stores information whether the data for the given competencies is labeled to decide ML approach.
-            bool[][] CheckLabellingCompetencies = new bool[CompetencyModel.Item1.Length][];
-
-            //! Stores information whether the data for the given facets of the declared competencies is labeled to decide ML approach.
-            bool[][][] CheckLabellingFacets = new bool[CompetencyModel.Item1.Length][][];
-
-            //! Stores information whether the data for the given facets and competencies is labeled to decide ML approach.
-            Tuple<bool[][], bool[][][]> CheckLabels = new Tuple<bool[][], bool[][][]>(CheckLabellingCompetencies, CheckLabellingFacets);
-
-            //! Initialisation of arrays.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                CheckLabellingCompetencies[x] = new bool[1];
-                CheckLabellingFacets[x] = new bool[CompetencyModel.Item2[x].Length][];
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-                    CheckLabellingFacets[x][y] = new bool[1];
-                }
-            }
-
-            //! Check if labels exists for all declared competencies and facets.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item1[x]));
-
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-                    CheckLabellingFacets[x][y][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item2[x][y]));
-                }
-            }
-
-            return CheckLabels;
-        }
-
-        /// <summary>
-        /// Correlation analysis between outputs and external measurement data on multi-competencies.
-        /// level.
-        /// </summary>
-        ///
-        /// <param name="CompetencyModel"> The competency model. </param>
-        ///
-        /// <returns>
-        /// A Tuple&lt;double[][],double[][][]&gt;
-        /// </returns>
-        public static Tuple<string[], double[][]> CorrelationAnalysisMulti(string[] MultiCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
-        {
-            int[] classifications = Array.Empty<int>();
-            int[] external = Array.Empty<int>();
-            Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[MultiCompetencies.Length], new double[MultiCompetencies.Length][]);
-
-            // Check if same legends exist for the multicompetencies in external data.
-            for (int i = 0; i < MultiCompetencies.Length; i++)
-            {
-                for (int x = 0; x < ExternalData.Item1.Length; x++)
-                {
-                    if (string.Equals(MultiCompetencies[i], ExternalData.Item1[x]) == true)
-                    {
-                        // Initialize arrays. 
-#warning check if size of arrays is same.
-
-                        classifications = new int[Output[i].Length];
-                        for (int y = 0; y < Output[i].Length; y++)
-                        {
-                            classifications[y] = Output[i][y];
-                        }
-
-                        external = new int[ExternalData.Item2[x].Length];
-                        for (int k = 0; k < ExternalData.Item2[x].Length; k++)
-                        {
-                            external[k] = Convert.ToInt32(ExternalData.Item2[x][k]);
-                        }
-
-                        //Perform Validation.
-                        IntegerVector classi = Utils.engine.CreateIntegerVector(classifications);
-                        Utils.engine.SetSymbol("classi", classi);
-
-                        IntegerVector ext = Utils.engine.CreateIntegerVector(external);
-                        Utils.engine.SetSymbol("ext", ext);
-
-                        //! RRSE
-                        NumericVector correl = Utils.engine.Evaluate("cor(classi, ext, method='spearman')").AsNumeric();
-
-                        spearmans.Item1[i] = MultiCompetencies[i];
-                        spearmans.Item2[i] = new double[1];
-                        spearmans.Item2[i][0] = Math.Round(correl[0], 4);
-                    }
-#warning deal with non-found validation data.
-                }
-            }
-
-            return spearmans;
-        }
-
-        /// <summary>
-        /// Correlation analysis between outputs and external measurement data on multi-competencies.
-        /// level.
-        /// </summary>
-        ///
-        /// <param name="CompetencyModel"> The competency model. </param>
-        ///
-        /// <returns>
-        /// A Tuple&lt;double[][],double[][][]&gt;
-        /// </returns>
-        public static Tuple<string[], double[][]> CorrelationAnalysisUni(string[] UniCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
-        {
-            int[] classifications = Array.Empty<int>();
-            int[] external = Array.Empty<int>();
-            Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[UniCompetencies.Length], new double[UniCompetencies.Length][]);
-
-
-            //Check if same legends exist for the multi-competecies in external data.
-            for (int i = 0; i < UniCompetencies.Length; i++)
-            {
-                for (int x = 0; x < ExternalData.Item1.Length; x++)
-                {
-                    if (string.Equals(UniCompetencies[i], ExternalData.Item1[x]) == true)
-                    {
-                        //Initialize arrays. 
-#warning check if size of arrays is same.
-
-                        classifications = new int[Output[i].Length];
-                        for (int y = 0; y < Output[i].Length; y++)
-                        {
-                            classifications[y] = Output[i][y];
-                        }
-
-                        external = new int[ExternalData.Item2[x].Length];
-                        for (int k = 0; k < ExternalData.Item2[x].Length; k++)
-                        {
-                            external[k] = Convert.ToInt32(ExternalData.Item2[x][k]);
-                        }
-
-                        //Perform Validation.
-                        IntegerVector classi = Utils.engine.CreateIntegerVector(classifications);
-                        Utils.engine.SetSymbol("classi", classi);
-
-                        IntegerVector ext = Utils.engine.CreateIntegerVector(external);
-                        Utils.engine.SetSymbol("ext", ext);
-
-                        //! RRSE
-                        NumericVector correl = Utils.engine.Evaluate("cor(classi, ext, method='spearman')").AsNumeric();
-
-                        spearmans.Item1[i] = UniCompetencies[i];
-                        spearmans.Item2[i] = new double[1];
-                        spearmans.Item2[i][0] = Math.Round(correl[0], 4);
-                    }
-#warning deal with non-found validation data.
-                }
-            }
-
-            return spearmans;
-        }
-
         public static Tuple<string[], double[], string[][], double[][]> ReliabilityAnalysisMulti(Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, double[][][][] Insts)
         {
             double[] CronAlphaComp = new double[CompetencyModel.Item1.Length];
@@ -1528,12 +1457,10 @@ namespace StealthAssessmentWizard
                 IEnumerable<double>[] columnsFacet = new IEnumerable<double>[ObsPerComp[i].Length];
                 //Transpose InstancesUni
 
-
                 for (int x = 0; x < CompetencyModel.Item2[i].Length; x++)
                 {
                     //set column names and columns of data frame per observable.
                     string[] columnNamesObs = new string[StatisticalSubmodel[i][x].Length];
-
 
                     for (int y = 0; y < StatisticalSubmodel[i][x].Length; y++)
                     {
@@ -1545,7 +1472,6 @@ namespace StealthAssessmentWizard
                     {
                         //set columns data per observable.
                         double[] tempData = new double[Insts[i][x][y].Length];
-
 
                         for (int c = 0; c < Insts[i][x][y].Length; c++)
                         {
@@ -1649,18 +1575,470 @@ namespace StealthAssessmentWizard
 
             }
 
-
             return new Tuple<string[], double[]>(CompetencyModel, CronAlphaComp);
+        }
+
+        public static int[] UniDecisionTreesAccord_C(String MyProject, ArffReader reader, string Competency)
+        {
+            ArffHeader header = reader.ReadHeader();
+            Object[][] randData = reader.ReadAllInstances();
+
+            //! Set the sizes of the training and testing datasets according to the 66% split rule.
+            int trainSize = (int)Math.Round((double)randData.Length * (Data.MLOptions as DecisionTreesAlgorithm).PercentSplit / 100);
+            int testSize = randData.Length - trainSize;
+
+            //! Initialize the training and testing datasets.
+            int[] checks = new int[3];
+
+            Int32 cnt = header.Attributes.Count;
+
+            //! Add instances in training and testing data
+            checks[0] = randData.Count(p => p[cnt - 1].Equals(0));
+            checks[1] = randData.Count(p => p[cnt - 1].Equals(1));
+            checks[2] = randData.Count(p => p[cnt - 1].Equals(2));
+
+            if (checks[0] * checks[1] * checks[2] == 0)
+            {
+                Logger.Error("Missing Values in Training and Testing Data.");
+            }
+
+            //! Initialize arrays.
+            double[][] GameLogs = new double[trainSize][];
+            int[] LabelledData = new int[trainSize];
+
+            double[][] GameLogsTest = new double[testSize][];
+            int[] expected = new int[testSize];
+
+            for (int i = 0; i < trainSize; i++)
+            {
+                GameLogs[i] = new double[cnt - 1];
+            }
+
+            for (int i = 0; i < testSize; i++)
+            {
+                GameLogsTest[i] = new double[cnt - 1];
+            }
+
+            //! Load data on arrays.
+            for (int i = 0; i < trainSize; i++)
+            {
+                for (int k = 0; k < cnt; k++)
+                {
+                    if (k != cnt - 1)
+                    {
+                        GameLogs[i][k] = Convert.ToDouble(randData[i + 0][k]);
+                    }
+                    else
+                    {
+                        LabelledData[i] = Convert.ToInt32(randData[i + 0][k]);
+                    }
+
+                }
+            }
+
+            for (int i = 0; i < testSize; i++)
+            {
+                for (int k = 0; k < cnt; k++)
+                {
+                    if (k != cnt - 1)
+                    {
+                        GameLogsTest[i][k] = Convert.ToDouble(randData[i + trainSize][k]);
+                    }
+                    else
+                    {
+                        expected[i] = Convert.ToInt32(randData[i + trainSize][k]);
+                    }
+                }
+            }
+
+            //! And we can use the C4.5 for learning:
+            C45Learning teacher = new C45Learning();
+
+            //! Finally induce the tree from the data:
+            var tree = teacher.Learn(GameLogs, LabelledData);
+
+            //! To get the estimated class labels, we can use
+            int[] predicted = tree.Decide(GameLogsTest);
+
+            //! Moreover, we may decide to convert our tree to a set of rules:
+            DecisionSet rules = tree.ToRules();
+
+            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.ini")))
+            {
+                ini.Clear();
+
+                //! Save BayesNet results in .txt file
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.txt")))
+                {
+                    //! We can get different performance measures to assess how good our model was at
+                    //! predicting the true, expected, ground-truth labels for the decision problem:
+                    var cm = new GeneralConfusionMatrix(classes: 3, expected: expected, predicted: predicted);
+
+                    //! We can obtain the proper confusion matrix using:
+                    int[,] matrix = cm.Matrix;
+
+                    //! And multiple performance measures:
+                    double accuracy = cm.Accuracy;
+                    double error = cm.Error;
+                    double kappa = cm.Kappa;
+
+                    file.WriteLine("{0}", Math.Round(accuracy, 4));
+                    file.WriteLine("{0}", Math.Round(error, 4));
+                    file.WriteLine("{0}", Math.Round(kappa, 4));
+
+                    ini.WriteDouble("Performance", "Accuracy", Math.Round(accuracy, 4));
+                    ini.WriteDouble("Performance", "Error", Math.Round(error, 4));
+                    ini.WriteDouble("Performance", "Kappa", Math.Round(kappa, 4));
+
+                    double MAE = 0;
+                    double RMSE = 0;
+                    double RAE = 0;
+                    double RRSE = 0;
+                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                    Performace = PerformaceStatistics(expected, predicted);
+
+                    file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
+                    file.WriteLine("{0}", Math.Round(Performace.Item2, 4));
+                    file.WriteLine("{0}%", Math.Round(Performace.Item3, 4));
+                    file.WriteLine("{0}%", Math.Round(Performace.Item4, 4));
+                    file.WriteLine();
+
+                    ini.WriteDouble("Performance", "MAE", Math.Round(Performace.Item1, 4));
+                    ini.WriteDouble("Performance", "RMSE", Math.Round(Performace.Item2, 4));
+                    ini.WriteDouble("Performance", "RAE(%)", Math.Round(Performace.Item3, 4), "%");
+                    ini.WriteDouble("Performance", "RRSE(%)", Math.Round(Performace.Item4, 4), "%");
+
+                    Data.Performance = new DecisionTreesPerformanceModel(Competency, "na", accuracy, error, kappa, MAE, RMSE, RAE, RRSE);
+
+                    for (Int32 i = 0; i < 3; i++)
+                    {
+                        ini.WriteInteger("Summary", $"Classified as {i}", predicted.Count(p => p == i));
+                    }
+
+                    for (int x = 0; x < predicted.Length; x++)
+                    {
+                        String section = $"Instance_{x + 1}";
+
+                        ini.WriteList(section, "Tests", GameLogsTest[x].ToList(), ',');
+
+                        file.Write("Instance {0}:", x + 1);
+                        for (int y = 0; y < GameLogsTest[x].Length; y++)
+                        {
+                            file.Write("{0} ", GameLogsTest[x][y]);
+                        }
+
+                        ini.WriteDouble(section, "Classified as", predicted[x]);
+
+                        file.WriteLine("Classified as:{0} ", predicted[x]);
+                    }
+
+                    file.WriteLine();
+                    file.WriteLine("Rules: {0}", rules.ToString());
+
+                    ini.WriteString("Rules", "Rules", rules.ToString());
+
+                    System.Console.WriteLine("Decision Trees results from Accord saved successfully.");
+                }
+
+                ini.UpdateFile();
+            }
+
+            return predicted;
+        }
+
+        /// <summary>
+        /// Uni naive bayes accord c.
+        /// </summary>
+        ///
+        /// <param name="MyProject">  my project. </param>
+        /// <param name="reader">     The reader. </param>
+        /// <param name="Competency"> The competency. </param>
+        ///
+        /// <returns>
+        /// An int[].
+        /// </returns>
+        public static int[] UniNaiveBayesAccord_C(String MyProject, ArffReader reader, string Competency)
+        {
+            var cv = new NaiveBayesLearning<NormalDistribution>();
+
+            //! to avoid zero variances
+            cv.Options.InnerOption = new NormalOptions
+            {
+                Regularization = 1e-5
+            };
+
+            ArffHeader header = reader.ReadHeader();
+            Object[][] randData = reader.ReadAllInstances();
+
+            //! Test Code of added ArffReader Methods.
+            //
+            //insts.Reset();
+            //Int64 len = insts.Count();
+
+            //! set the sizes of the training and testing datasets according to the PercentSplit% split rule.
+            int trainSize = (int)Math.Round((double)randData.Length * (Data.MLOptions as NaiveBayesAlgorithm).PercentSplit / 100);
+            int testSize = randData.Length - trainSize;
+
+            //! Initialize the training and testing datasets.
+            int[] checks = new int[3];
+
+            Int32 cnt = header.Attributes.Count;
+
+            //! Add instances in training and testing data
+            checks[0] = randData.Count(p => p[cnt - 1].Equals(0));
+            checks[1] = randData.Count(p => p[cnt - 1].Equals(1));
+            checks[2] = randData.Count(p => p[cnt - 1].Equals(2));
+
+            if (checks[0] * checks[1] * checks[2] == 0)
+            {
+                Logger.Error("Missing Values in Training and Testing Data $.");
+            }
+
+            //! Initialize arrays.
+            double[][] GameLogs = new double[trainSize][];
+            int[] LabelledData = new int[trainSize];
+
+            double[][] GameLogsTest = new double[testSize][];
+            int[] expected = new int[testSize];
+
+            for (int i = 0; i < trainSize; i++)
+            {
+                GameLogs[i] = new double[cnt - 1];
+            }
+
+            for (int i = 0; i < testSize; i++)
+            {
+                GameLogsTest[i] = new double[cnt - 1];
+            }
+
+            //! Load data on arrays.
+            //
+            for (int i = 0; i < trainSize; i++)
+            {
+                for (int k = 0; k < cnt; k++)
+                {
+                    if (k != cnt - 1)
+                    {
+                        GameLogs[i][k] = Convert.ToDouble(randData[i + 0][k]);
+                    }
+                    else
+                    {
+                        LabelledData[i] = Convert.ToInt32(randData[i + 0][k]);
+                    }
+                }
+            }
+
+            for (int i = 0; i < testSize; i++)
+            {
+                for (int k = 0; k < cnt; k++)
+                {
+                    if (k != cnt - 1)
+                    {
+                        GameLogsTest[i][k] = Convert.ToDouble(randData[i + trainSize][k]);
+                    }
+                    else
+                    {
+                        expected[i] = Convert.ToInt32(randData[i + trainSize][k]);
+                    }
+                }
+            }
+
+            //===R
+            //
+            //! Performance of Naive Bayes on the above data set:
+
+            NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
+
+            nb.Save(Path.Combine(MyProject, "NATIVE.TXT"), SerializerCompression.None);
+            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyProject, "NATIVE.TXT"));
+
+            int[] predicted = nb2.Decide(GameLogsTest);
+            double[][] probs = nb2.Probabilities(GameLogsTest);
+
+            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.ini")))
+            {
+                ini.Clear();
+
+                //! Save BayesNet results in .txt file
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.txt")))
+                {
+                    //! We can get different performance measures to assess how good our model was at
+                    //! predicting the true, expected, ground-truth labels for the decision problem:
+                    var cm = new GeneralConfusionMatrix(classes: 3, expected: expected, predicted: predicted);
+
+                    //! We can obtain the proper confusion matrix using:
+                    int[,] matrix = cm.Matrix;
+
+                    //! And multiple performance measures:
+                    double accuracy = cm.Accuracy;
+                    double error = cm.Error;
+                    double kappa = cm.Kappa;
+
+                    file.WriteLine("{0}", Math.Round(accuracy, 4));
+                    file.WriteLine("{0}", Math.Round(error, 4));
+                    file.WriteLine("{0}", Math.Round(kappa, 4));
+
+                    ini.WriteDouble("Performance", "Accuracy", Math.Round(accuracy, 4));
+                    ini.WriteDouble("Performance", "Error", Math.Round(error, 4));
+                    ini.WriteDouble("Performance", "Kappa", Math.Round(kappa, 4));
+
+                    double MAE = 0;
+                    double RMSE = 0;
+                    double RAE = 0;
+                    double RRSE = 0;
+                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                    Performace = PerformaceStatistics(expected, predicted);
+
+                    file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
+                    file.WriteLine("{0}", Math.Round(Performace.Item2, 4));
+                    file.WriteLine("{0}%", Math.Round(Performace.Item3, 4));
+                    file.WriteLine("{0}%", Math.Round(Performace.Item4, 4));
+                    file.WriteLine();
+
+                    ini.WriteDouble("Performance", "MAE", Math.Round(Performace.Item1, 4));
+                    ini.WriteDouble("Performance", "RMSE", Math.Round(Performace.Item2, 4));
+                    ini.WriteDouble("Performance", "RAE(%)", Math.Round(Performace.Item3, 4), "%");
+                    ini.WriteDouble("Performance", "RRSE(%)", Math.Round(Performace.Item4, 4), "%");
+
+                    Data.Performance = new NaiveBayesPerformanceModel(Competency, "na", accuracy, error, kappa, MAE, RMSE, RAE, RRSE);
+
+                    for (Int32 i = 0; i < 3; i++)
+                    {
+                        ini.WriteInteger("Summary", $"Classified as {i}", predicted.Count(p => p == i));
+                    }
+
+                    for (int x = 0; x < predicted.Length; x++)
+                    {
+                        String section = $"Instance_{x + 1}";
+
+                        ini.WriteList(section, "Tests", GameLogsTest[x].ToList(), ',');
+
+                        file.Write("Instance {0}:", x + 1);
+                        for (int y = 0; y < GameLogsTest[x].Length; y++)
+                        {
+                            file.Write("{0} ", GameLogsTest[x][y]);
+                        }
+
+                        ini.WriteDouble(section, "Classified as", predicted[x]);
+
+                        file.WriteLine("Classified as:{0} ", predicted[x]);
+                    }
+
+                    Logger.Info("Naive Bayes results from Accord saved successfully.");
+                }
+
+                ini.UpdateFile();
+            }
+
+            return predicted;
+        }
+
+        /// <summary>
+        /// All labelled.
+        /// </summary>
+        ///
+        /// <param name="CheckLabels"> The check labels. </param>
+        ///
+        /// <returns>
+        /// True if it succeeds, false if it fails.
+        /// </returns>
+        internal static bool AllLabelled(Tuple<bool[][], bool[][][]> CheckLabels)
+        {
+            //! Count missing competency labels.
+            //
+            if (CheckLabels.Item1.Count(p => p[0] == false) != 0)
+            {
+                return false;
+            }
+
+            //! Count missing facet labels.
+            //
+            foreach (bool[][] f in CheckLabels.Item2)
+            {
+                if (f.Count(p => p[0] == false) != 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check labelling.
+        /// </summary>
+        ///
+        /// <param name="observables">     all game logs. </param>
+        /// <param name="CompetencyModel"> The competency model. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;bool[][],bool[][][]&gt;
+        /// </returns>
+        internal static Tuple<bool[][], bool[][][]> CheckLabelling(Observables observables, Tuple<string[], string[][]> CompetencyModel)
+        {
+            //! Stores information whether the data for the given competencies is labeled to decide ML approach.
+            bool[][] CheckLabellingCompetencies = new bool[CompetencyModel.Item1.Length][];
+
+            //! Stores information whether the data for the given facets of the declared competencies is labeled to decide ML approach.
+            bool[][][] CheckLabellingFacets = new bool[CompetencyModel.Item1.Length][][];
+
+            //! Stores information whether the data for the given facets and competencies is labeled to decide ML approach.
+            Tuple<bool[][], bool[][][]> CheckLabels = new Tuple<bool[][], bool[][][]>(CheckLabellingCompetencies, CheckLabellingFacets);
+
+            //! Initialisation of arrays.
+            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            {
+                CheckLabellingCompetencies[x] = new bool[1];
+                CheckLabellingFacets[x] = new bool[CompetencyModel.Item2[x].Length][];
+                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                {
+                    CheckLabellingFacets[x][y] = new bool[1];
+                }
+            }
+
+            //! Check if labels exists for all declared competencies and facets.
+            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            {
+                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item1[x]));
+
+                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                {
+                    CheckLabellingFacets[x][y][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item2[x][y]));
+                }
+            }
+
+            return CheckLabels;
+        }
+
+        internal static bool[][] CheckLabellingUni(Observables observables, string[] UniCompetencyModel)
+        {
+            //! Stores information whether the data for the given competencies is labeled to decide ML approach.
+            bool[][] CheckLabellingCompetencies = new bool[UniCompetencyModel.Length][];
+
+            //! Initialisation of arrays.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                CheckLabellingCompetencies[x] = new bool[1];
+            }
+
+            //! Check if labels exists for all declared competencies and facets.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(UniCompetencyModel[x]));
+            }
+
+            return CheckLabellingCompetencies;
         }
 
         /// <summary>
         /// Generates .arff files for correlation analysis.
         /// </summary>
         ///
+        /// <param name="MyProject">          my project. </param>
         /// <param name="CompetencyModel">    The competency model. </param>
         /// <param name="RandomLabelledData"> Information describing the random labelled. </param>
         /// <param name="OutputLabels">       The output labels. </param>
-        internal static void GenerateArffFilesForCA(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> RandomLabelledData, Tuple<int[][], int[][][]> OutputLabels)
+        internal static void GenerateArffFilesForCA(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> RandomLabelledData, Tuple<int[][], int[][][]> OutputLabels)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
@@ -1673,9 +2051,9 @@ namespace StealthAssessmentWizard
 
                 if (RandomLabelledData.Item1[x] != null && RandomLabelledData.Item1[x].Length != 0)
                 {
-                    String arff_c = "./data/CA/" + CompetencyModel.Item1[x] + ".arff";
+                    String arff_c = Path.Combine(MyProject, @"data\CA\" + CompetencyModel.Item1[x] + ".arff");
 
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_c));
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
                     using (ArffWriter arffWriter = new ArffWriter(arff_c))
                     {
@@ -1734,9 +2112,9 @@ namespace StealthAssessmentWizard
 
                     if (RandomLabelledData.Item2[x][y] != null && RandomLabelledData.Item2[x][y].Length != 0)
                     {
-                        String arff_f = "./data/CA/" + CompetencyModel.Item1[x] + "/" + CompetencyModel.Item2[x][y] + ".arff";
+                        String arff_f = Path.Combine(MyProject, @"data\CA\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
 
-                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_f));
+                        Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
                         //! 1)
                         using (ArffWriter arffWriter = new ArffWriter(arff_f))
@@ -1793,11 +2171,12 @@ namespace StealthAssessmentWizard
         /// Generates an arff files for competencies.
         /// </summary>
         ///
+        /// <param name="MyProject">           my project. </param>
         /// <param name="CompetencyModel">     The competency model. </param>
         /// <param name="StatisticalSubmodel"> The statistical submodel. </param>
         /// <param name="CheckLabels">         The check labels. </param>
         /// <param name="LabelledData">        Information describing the labeled data. </param>
-        internal static void GenerateArffFilesForCompetencies(Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
+        internal static void GenerateArffFilesForCompetencies(String MyProject, Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
@@ -1810,9 +2189,9 @@ namespace StealthAssessmentWizard
                 {
                     Logger.Info($"Labeled data has been found for {CompetencyModel.Item1[x]}.");
 
-                    String arff_c = "./data/" + CompetencyModel.Item1[x] + ".arff";
+                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
 
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_c));
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
                     //! 1)
                     using (ArffWriter arffWriter = new ArffWriter(arff_c))
@@ -1881,9 +2260,9 @@ namespace StealthAssessmentWizard
                 {
                     Logger.Warn($"No labeled data has been found for '{CompetencyModel.Item1[x]}'.");
 
-                    String arff_c = "./data/" + CompetencyModel.Item1[x] + ".arff";
+                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
 
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_c));
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
                     using (ArffWriter arffWriter = new ArffWriter(arff_c))
                     {
@@ -1933,12 +2312,13 @@ namespace StealthAssessmentWizard
         /// Generates an arff files for facets.
         /// </summary>
         ///
-        /// <param name="competencyModel">     The competency model. </param>
-        /// <param name="statisticalSubmodel"> The statistical submodel. </param>
-        /// <param name="instances">           The instances. </param>
-        /// <param name="checkLabels">         The check labels. </param>
-        /// <param name="labelledData">        Information describing the labeled data. </param>
-        internal static void GenerateArffFilesForFacets(Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, double[][][][] Instances, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
+        /// <param name="MyProject">           The competency model. </param>
+        /// <param name="CompetencyModel">     The statistical submodel. </param>
+        /// <param name="StatisticalSubmodel"> The instances. </param>
+        /// <param name="Instances">           The check labels. </param>
+        /// <param name="CheckLabels">         Information describing the labeled data. </param>
+        /// <param name="LabelledData">        Information describing the labelled. </param>
+        internal static void GenerateArffFilesForFacets(String MyProject, Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, double[][][][] Instances, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
@@ -1954,9 +2334,9 @@ namespace StealthAssessmentWizard
                     for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
                     {
                         //! 0)
-                        String arff_f = "./data/" + CompetencyModel.Item1[x] + "/" + CompetencyModel.Item2[x][y] + ".arff";
+                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
 
-                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_f));
+                        Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
                         if (CheckLabels.Item2[x][y][0] == true)
                         {
@@ -2086,9 +2466,9 @@ namespace StealthAssessmentWizard
                     for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
                     {
                         //! 0)
-                        String arff_f = "./data/" + CompetencyModel.Item1[x] + "/" + CompetencyModel.Item2[x][y] + ".arff";
+                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
 
-                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_f));
+                        Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
                         if (CheckLabels.Item2[x][y][0] == true)
                         {
@@ -2215,9 +2595,14 @@ namespace StealthAssessmentWizard
         /// Generates an arff files for randomization.
         /// </summary>
         ///
-        /// <param name="competencyModel"> The competency model. </param>
-        /// <param name="externalDataCF">  The external data cf. </param>
-        internal static void GenerateArffFilesforRandomization(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> ExternalDataCF)
+        /// <param name="MyProject">       my project. </param>
+        /// <param name="CompetencyModel"> The competency model. </param>
+        /// <param name="ExternalDataCF">  The external data cf. </param>
+        ///
+        /// ### <param name="competencyModel"> The competency model. </param>
+        ///
+        /// ### <param name="externalDataCF"> The external data cf. </param>
+        internal static void GenerateArffFilesforRandomization(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> ExternalDataCF)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
@@ -2227,9 +2612,9 @@ namespace StealthAssessmentWizard
             {
                 if (ExternalDataCF.Item1[x] != null)
                 {
-                    String arff_c = "./data/CA/Randomized/" + CompetencyModel.Item1[x] + ".arff";
+                    String arff_c = Path.Combine(MyProject, @"data\CA\Randomized\" + CompetencyModel.Item1[x] + ".arff");
 
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_c));
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
                     //! 1)
                     using (ArffWriter arffWriter = new ArffWriter(arff_c))
@@ -2281,9 +2666,9 @@ namespace StealthAssessmentWizard
                 {
                     if (ExternalDataCF.Item2[x][y] != null)
                     {
-                        String arff_f = "./data/CA/Randomized/" + CompetencyModel.Item1[x] + "/" + CompetencyModel.Item2[x][y] + ".arff";
+                        String arff_f = Path.Combine(MyProject, @"data\CA\Randomized\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
 
-                        System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_f));
+                        Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
                         //! 1)
                         using (ArffWriter arffWriter = new ArffWriter(arff_f))
@@ -2327,6 +2712,312 @@ namespace StealthAssessmentWizard
                     {
                         Logger.Warn("No external data was found.");
                     };
+                }
+            }
+        }
+
+        /*
+        internal static void GenerateArffFilesForUniCompetencies(String MyProject, string[] UniCompetencyModel, string[][] UniEvidenceModel, bool[][] CheckLabelsUni, int[][] LabelledDataUni)
+        {
+            //! Declaring Variables.
+            double[][] vals = new double[][] { };
+            string[][] valsClass = new string[][] { };
+            string[] Class = new string[3] { "0", "1", "2" };
+
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                if (CheckLabelsUni[x][0] == true)
+                {
+                    Logger.Info($"Labeled data has been found for {UniCompetencyModel[x]}.");
+
+                    String arff_c = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
+
+                    //! 1)
+                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
+                    {
+                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
+
+                        Int32 AttrCount = 0;
+
+                        //! Set up attributes
+                        for (int i = 0; i < UniCompetencyModel[x].Length; i++)
+                        {
+                            //! 2)
+                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniCompetencyModel[i], ArffAttributeType.Numeric));
+
+                            AttrCount++;
+                        }
+
+                        //! 3)
+                        arffWriter.WriteAttribute(new ArffAttribute("Labelled Data", ArffAttributeType.Nominal(Class.ToArray())));
+                        AttrCount++;
+
+                        //! Fill with data
+                        vals = new double[LabelledDataUni[x].Length][];
+                        valsClass = new string[LabelledDataUni[x].Length][];
+                        for (int a = 0; a < vals.Length; a++)
+                        {
+                            vals[a] = new double[AttrCount - 1];
+                            valsClass[a] = new string[1];
+                        }
+
+                        for (int i = 0; i < LabelledDataUni.Length; i++)
+                        {
+                            for (int a = 0; a < LabelledDataUni[x].Length; a++)
+                            {
+                                if (a != AttrCount - 1)
+                                {
+                                    vals[i][a] = LabelledDataUni[x][a];
+                                }
+                            }
+                            valsClass[i][0] = Convert.ToString(LabelledDataUni[x][i]);
+                        }
+
+                        //! Add data
+                        for (int k = 0; k < vals.Length; k++)
+                        {
+                            List<Object> instance = new List<Object>();
+
+                            for (int v = 0; v < AttrCount; v++)
+                            {
+                                instance.Add(
+                                          (v != AttrCount - 1)
+                                          ? (object)vals[k][v]
+                                          : (object)valsClass[k][0]);
+                            }
+
+                            arffWriter.WriteInstance(instance.ToArray());
+                        }
+
+                        // Save data
+                        arffWriter.Flush();
+
+                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
+                    }
+                }
+                else
+                {
+                    Logger.Warn($"No labeled data has been found for '{UniCompetencyModel[x]}'.");
+
+                    String arff_c = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
+
+                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
+                    {
+                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
+
+                        Int32 AttrCount = 0;
+
+                        //! Set up attributes
+                        for (int i = 0; i < UniCompetencyModel[x].Length; i++)
+                        {
+                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniCompetencyModel[x][i], ArffAttributeType.Numeric));
+
+                            AttrCount++;
+                        }
+
+                        //! Fill with data
+                        vals = new double[LabelledDataUni[x].Length][];
+                        for (int a = 0; a < vals.Length; a++)
+                        {
+                            vals[a] = new double[AttrCount];
+                        }
+
+                        for (int i = 0; i < LabelledDataUni[x].Length; i++)
+                        {
+                            for (int a = 0; a < LabelledDataUni[x].Length; a++)
+                            {
+                                vals[i][a] = LabelledDataUni[x][a];
+                            }
+                        }
+
+                        //! Add data
+                        for (int k = 0; k < vals.Length; k++)
+                        {
+                            arffWriter.WriteInstance(vals[k].Select(p => (Object)p).ToArray());
+                        }
+
+                        //! Save data
+                        arffWriter.Flush();
+
+                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
+                    }
+                }
+            }
+        }
+        */
+        /// <summary>
+        /// Generates an arff files for uni competencies.
+        /// </summary>
+        ///
+        /// <param name="MyProject">          my project. </param>
+        /// <param name="UniCompetencyModel"> The uni competency model. </param>
+        /// <param name="UniEvidenceModel">   The uni evidence model. </param>
+        /// <param name="InstancesUni">       The instances uni. </param>
+        /// <param name="CheckLabelsUni">     The check labels uni. </param>
+        /// <param name="LabelledDataUni">    The labeled data uni. </param>
+        internal static void GenerateArffFilesForUniCompetencies(String MyProject, string[] UniCompetencyModel, string[][] UniEvidenceModel, double[][][] InstancesUni, bool[][] CheckLabelsUni, int[][] LabelledDataUni)
+        {
+            //! Declaring Variables.
+            double[][] vals = Array.Empty<double[]>();
+            string[][] valsClass = Array.Empty<string[]>();
+            string[] Class = new string[3] { "0", "1", "2" };
+
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                if (CheckLabelsUni[x][0] == true)
+                {
+                    Logger.Info($"Labeled data has been found for '{UniCompetencyModel[x]}'.");
+
+                    String arff_f = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
+
+                    //! 1)
+                    using (ArffWriter arffWriter = new ArffWriter(arff_f))
+                    {
+                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
+
+                        Int32 AttrCount = 0;
+
+                        //! Set up attributes
+                        for (int i = 0; i < UniEvidenceModel[x].Length; i++)
+                        {
+                            //! 2)
+                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniEvidenceModel[x][i], ArffAttributeType.Numeric));
+
+                            AttrCount++;
+                        }
+
+                        //! 3)
+                        arffWriter.WriteAttribute(new ArffAttribute("Labelled Data", ArffAttributeType.Nominal(Class.ToArray())));
+                        AttrCount++;
+
+                        //! Fill with data
+                        vals = new double[InstancesUni[x].Length][];
+                        valsClass = new string[InstancesUni[x].Length][];
+
+                        for (int a = 0; a < vals.Length; a++)
+                        {
+                            vals[a] = new double[AttrCount - 1];
+                            valsClass[a] = new string[1];
+                        }
+
+                        for (int i = 0; i < InstancesUni[x].Length; i++)
+                        {
+                            for (int a = 0; a < AttrCount; a++)
+                            {
+                                if (a != AttrCount - 1)
+                                {
+                                    vals[i][a] = InstancesUni[x][i][a];
+                                }
+                                else
+                                {
+                                    valsClass[i][0] = Convert.ToString(LabelledDataUni[x][i]);
+                                }
+                            }
+                        }
+
+                        //! Add data
+                        for (int k = 0; k < vals.Length; k++)
+                        {
+                            List<Object> instance = new List<Object>();
+
+                            for (int v = 0; v < AttrCount; v++)
+                            {
+                                instance.Add(
+                                    (v != AttrCount - 1)
+                                    ? (Object)vals[k][v]
+                                    : (Object)valsClass[k][0]);
+                            }
+
+                            arffWriter.WriteInstance(instance.ToArray());
+                        }
+
+                        //! Save data
+                        arffWriter.Flush();
+
+                        Logger.Info($"'{Utils.MakePathRelative(arff_f)}' file successfully.");
+                    }
+
+                }
+                else
+                {
+
+                    //! 0)
+                    String arff_f = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
+
+                    //! 1)
+                    using (ArffWriter arffWriter = new ArffWriter(arff_f))
+                    {
+                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
+
+                        //! #Attributes will be StatisticalSubmodel[x][y].Length (Items) +1 (Labels).
+                        Int32 AttrCount = 0;
+
+                        //! Set up attributes
+                        for (int i = 0; i < UniEvidenceModel[x].Length; i++)
+                        {
+                            //! 2)
+                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniEvidenceModel[x][i], ArffAttributeType.Numeric));
+
+                            AttrCount++;
+                        }
+
+                        arffWriter.WriteAttribute(new ArffAttribute("Labelled Data", ArffAttributeType.Nominal(Class.ToArray())));
+                        AttrCount++;
+
+                        //! Fill with data
+                        vals = new double[InstancesUni[x].Length][];
+                        valsClass = new string[InstancesUni[x].Length][];
+                        for (int a = 0; a < vals.Length; a++)
+                        {
+                            vals[a] = new double[AttrCount - 1];
+                            valsClass[a] = new string[1];
+                        }
+
+                        for (int i = 0; i < InstancesUni[x].Length; i++)
+                        {
+                            for (int a = 0; a < AttrCount; a++)
+                            {
+                                if (a != AttrCount - 1)
+                                {
+                                    vals[i][a] = InstancesUni[x][i][a];
+                                }
+                                else
+                                {
+                                    valsClass[i][0] = Convert.ToString(LabelledDataUni[x][i]);
+                                }
+                            }
+                        }
+
+                        //! Add data
+                        for (int k = 0; k < vals.Length; k++)
+                        {
+                            List<Object> instance = new List<Object>();
+
+                            for (int v = 0; v < AttrCount; v++)
+                            {
+                                instance.Add(
+                                            (v != AttrCount - 1)
+                                            ? (Object)vals[k][v]
+                                            : (Object)valsClass[k][0]);
+                            }
+
+                            arffWriter.WriteInstance(instance.ToArray());
+                        }
+
+                        //! Save data
+                        arffWriter.Flush();
+
+                        Logger.Info($"'{Utils.MakePathRelative(arff_f)}' file successfully.");
+                    }
+
                 }
             }
         }
@@ -2425,6 +3116,47 @@ namespace StealthAssessmentWizard
             return LabelledData;
         }
 
+        internal static int[][] GetLabelledDataUni(string[] UniCompetencyModel, Observables observables)
+        {
+            //! Stores the labeling data for the given competencies.
+            int[][] LabelledDataCompetencies = new int[UniCompetencyModel.Length][];
+
+            //! Initialisation of arrays.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                for (int i = 0; i < observables.Count; i++)
+                {
+                    if (UniCompetencyModel[x] == observables[i].ObservableName)
+                    {
+                        LabelledDataCompetencies[x] = new int[observables[i].Length];
+                        break;
+                    }
+                    else
+                    {
+                        LabelledDataCompetencies[x] = new int[observables[i].Length];
+                    }
+                }
+            }
+
+            //! Store labelled data.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                for (int i = 0; i < observables.Count; i++)
+                {
+                    if (UniCompetencyModel[x] == observables[i].ObservableName)
+                    {
+                        for (int k = 0; k < observables[i].Length; k++)
+                        {
+                            LabelledDataCompetencies[x][k] = Convert.ToInt32(observables[i][k]);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return LabelledDataCompetencies;
+        }
+
         /// <summary>
         /// Runs K-Means clustering from the Accord library.
         /// </summary>
@@ -2435,7 +3167,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        internal static int[] KMeans(ArffReader reader, string Competency)
+        internal static int[] KMeans(String MyProject, ArffReader reader, string Competency)
         {
             Accord.Math.Random.Generator.Seed = 1;
 
@@ -2529,7 +3261,7 @@ namespace StealthAssessmentWizard
             int[] newlabels = new int[randData.Length];
 
             //! Save BayesNet results in .txt file
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "_KMeansAccord.txt"))
+            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_KMeansAccord.txt")))
             {
                 int noCl = 0;
                 foreach (var value in clusters)
@@ -2815,6 +3547,76 @@ namespace StealthAssessmentWizard
             return ExternalDataCF;
         }
 
+        internal static Tuple<double[][][], double[][][]> LoadInstancesUni(Observables observables, string[] UniCompetencyModel, string[][] UniEvidenceModel)
+        {
+            //! Stores instances per declared observable in the statistical submodels.
+            double[][][] InstancesPerObservable = new double[UniCompetencyModel.Length][][];
+
+            //! Stores instances per declared facet in the competency model.
+            double[][][] Instances = new double[UniCompetencyModel.Length][][];
+            Tuple<double[][][], double[][][]> Inst = new Tuple<double[][][], double[][][]>(Instances, InstancesPerObservable);
+
+            //! Initialisation of arrays.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                InstancesPerObservable[x] = new double[UniEvidenceModel[x].Length][];
+                for (int i = 0; i < UniEvidenceModel[x].Length; i++)
+                {
+                    for (int k = 0; k < observables.Count; k++)
+                    {
+                        if (UniEvidenceModel[x][i] == observables[k].ObservableName)
+                        {
+                            InstancesPerObservable[x][i] = new double[observables[k].Length];
+                            Instances[x] = new double[observables[k].Length][];
+                            break;
+                        }
+                    }
+                }
+            }
+
+            //! Store Instances per declared observable in the statistical submodels.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                for (int i = 0; i < UniEvidenceModel[x].Length; i++)
+                {
+                    for (int k = 0; k < observables.Count; k++)
+                    {
+                        if (UniEvidenceModel[x][i] == observables[k].ObservableName)
+                        {
+                            for (int a = 0; a < observables[k].Length; a++)
+                            {
+                                observables[k][a] = observables[k][a].Replace(".", ",");
+                                InstancesPerObservable[x][i][a] = Convert.ToDouble(observables[k][a]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //! Initialisation of array Instances.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                for (int i = 0; i < Instances[x].Length; i++)
+                {
+                    Instances[x][i] = new double[UniEvidenceModel[x].Length];
+                }
+            }
+
+            //! Stores instances per declared facet in the competency model.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                for (int i = 0; i < Instances[x].Length; i++)
+                {
+                    for (int k = 0; k < Instances[x][i].Length; k++)
+                    {
+                        Instances[x][i][k] = InstancesPerObservable[x][k][i];
+                    }
+                }
+            }
+
+            return Inst;
+        }
+
         /// <summary>
         /// Normalisations the given item 1.
         /// </summary>
@@ -2894,321 +3696,6 @@ namespace StealthAssessmentWizard
             return InstancesNorm;
         }
 
-        /// <summary>
-        /// Select labelsfor competencies.
-        /// </summary>
-        ///
-        /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="LabelledData">    Information describing the labeled data. </param>
-        ///
-        /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][]&gt;
-        /// </returns>
-        internal static Tuple<int[][], int[][][], int[][]> SelectLabelsforCompetencies(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
-        {
-            int[][] output = new int[CompetencyModel.Item1.Length][];
-            Tuple<int[][], int[][][], int[][]> LabelledOutput = new Tuple<int[][], int[][][], int[][]>(LabelledData.Item1, LabelledData.Item2, output);
-
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                Logger.Warn($"No labeled data has been found for '{CompetencyModel.Item1[x]}'.");
-
-                //! Select a clustering algorithm (KMEANS only).
-
-                String arff_c = "./data/" + CompetencyModel.Item1[x] + ".arff";
-
-                //! Get data from the .arff file.
-
-                //! Checks user input for an ML algorithm.
-                switch (Data.MLOptions.Clustering)
-                {
-                    //! (1) K-Means [Centroid-based]
-                    case MLClustering.KMeans:
-                        using (ArffReader arffReader = new ArffReader(arff_c))
-                        {
-                            int[] labels = KMeans(arffReader, CompetencyModel.Item1[x]);
-
-                            LabelledData.Item1[x] = new int[labels.Length];
-                            output[x] = new int[labels.Length];
-
-                            for (int i = 0; i < labels.Length; i++)
-                            {
-                                LabelledData.Item1[x][i] = labels[i];
-                                output[x][i] = labels[i];
-                            }
-                        }
-                        break;
-                }
-            }
-
-            return LabelledOutput;
-        }
-
-        /// <summary>
-        /// Select Labels for facets.
-        /// </summary>
-        ///
-        /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="CheckLabels">     The check labels. </param>
-        /// <param name="LabelledData">    Information describing the labeled data. </param>
-        ///
-        /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
-        /// </returns>
-        internal static Tuple<int[][], int[][][], int[][][]> SelectLabelsforFacets(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
-        {
-            int[][][] output = new int[CompetencyModel.Item1.Length][][];
-
-            Tuple<int[][], int[][][], int[][][]> LabelledOutput = new Tuple<int[][], int[][][], int[][][]>(LabelledData.Item1, LabelledData.Item2, output);
-
-            //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                output[x] = new int[CompetencyModel.Item2[x].Length][];
-
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-                    //===R
-
-                    //Debug.WriteLine($"No labeled data has been found for {CompetencyModel.Item2[x][y]}.");
-
-                    String arff_f = "./data/" + CompetencyModel.Item1[x] + "/" + CompetencyModel.Item2[x][y] + ".arff";
-
-                    //! Get data from the .arff file.
-
-                    //! Checks user input for an ML algorithm.
-                    //
-                    switch (Data.MLOptions.Clustering)
-                    {
-                        //! (1) K-Means [Centroid-based]
-                        case MLClustering.KMeans:
-                            using (ArffReader arffReader = new ArffReader(arff_f))
-                            {
-                                int[] labels = KMeans(arffReader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]); ;
-
-                                LabelledData.Item2[x][y] = new int[labels.Length];
-                                output[x][y] = new int[labels.Length];
-
-                                for (int i = 0; i < labels.Length; i++)
-                                {
-                                    LabelledData.Item2[x][y][i] = labels[i];
-                                    output[x][y][i] = labels[i];
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
-
-            return LabelledOutput;
-        }
-
-        /// <summary>
-        /// Select ML for competencies.
-        /// </summary>
-        ///
-        /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="CheckLabels">     The check labels. </param>
-        /// <param name="LabelledData">    Information describing the labeled data. </param>
-        ///
-        /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][]&gt;
-        /// </returns>
-        ///
-        /// ### <param name="competencyModel"> The competency model. </param>
-        ///
-        /// ### <param name="checkLabels">  The check labels. </param>
-        /// ### <param name="labelledData"> Information describing the labeled data. </param>
-        internal static Tuple<int[][], int[][][], int[][]> SelectMLforCompetencies(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
-        {
-            //! This variable allows access to functions of the Exceptions class.
-            int[][] output = new int[CompetencyModel.Item1.Length][];
-            int[] outputLabels;
-            Tuple<int[][], int[][][], int[][]> LabelledOutput = new Tuple<int[][], int[][][], int[][]>(LabelledData.Item1, LabelledData.Item2, output);
-
-            //! Browse for labelled data for each declared facet and decide which ML algorithm to apply accordingly.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                Logger.Info($"Labeled data has been found for '{CompetencyModel.Item1[x]}'.");
-
-                String arff_c = "./data/" + CompetencyModel.Item1[x] + ".arff";
-
-                //! Get data from the .arff file.
-                using (ArffReader reader = new ArffReader(arff_c))
-                {
-                    //! Checks user input for an ML algorithm.
-                    switch (Data.MLOptions.Algorithm)
-                    {
-                        case MLAlgorithms.NaiveBayes:
-                            {
-                                outputLabels = NaiveBayesAccord_C(reader, CompetencyModel.Item1[x]);
-
-                                output[x] = new int[outputLabels.Length];
-                                for (int i = 0; i < outputLabels.Length; i++)
-                                {
-                                    output[x][i] = outputLabels[i];
-                                }
-                            }
-                            break;
-
-                        case MLAlgorithms.DecisionTrees:
-                            {
-                                outputLabels = DecisionTreesAccord_C(reader, CompetencyModel.Item1[x]);
-                                output[x] = new int[outputLabels.Length];
-                                for (int i = 0; i < outputLabels.Length; i++)
-                                {
-                                    output[x][i] = outputLabels[i];
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
-
-            return LabelledOutput;
-        }
-
-        /// <summary>
-        /// Select ml for facets.
-        /// </summary>
-        ///
-        /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="LabelledData">    Information describing the labeled data. </param>
-        ///
-        /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
-        /// </returns>
-        internal static Tuple<int[][], int[][][], int[][][]> SelectMLforFacets(Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
-        {
-            //! This variable allows access to functions of the Exceptions class.
-            var Exceptions = new Exceptions();
-            int[][][] output = new int[CompetencyModel.Item1.Length][][];
-            int[] outputLabels;
-            Tuple<int[][], int[][][], int[][][]> LabelledOutput = new Tuple<int[][], int[][][], int[][][]>(LabelledData.Item1, LabelledData.Item2, output);
-
-            //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                output[x] = new int[CompetencyModel.Item2[x].Length][];
-
-                // Debug.WriteLine($"Labeled data has been found for {CompetencyModel.Item1[x]}." );
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-                    //===R
-
-                    Logger.Info($"Labeled data has been found for '{CompetencyModel.Item2[x][y]}'.");
-
-                    //! Select a ML algorithm.
-                    String arff_f = "./data/" + CompetencyModel.Item1[x] + "/" + CompetencyModel.Item2[x][y] + ".arff";
-
-                    //! Get data from the .arff file.
-                    using (ArffReader reader = new ArffReader(arff_f))
-                    {
-                        //! Checks user input for an ML algorithm.
-                        switch (Data.MLOptions.Algorithm)
-                        {
-                            //! (1) Naive Bayes
-                            case MLAlgorithms.NaiveBayes:
-                                {
-                                    outputLabels = NaiveBayesAccord_F(reader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]);
-
-                                    output[x][y] = new int[outputLabels.Length];
-                                    for (int i = 0; i < outputLabels.Length; i++)
-                                    {
-                                        output[x][y][i] = outputLabels[i];
-                                    }
-                                }
-                                break;
-
-                            //! (2) Decision Trees
-                            case MLAlgorithms.DecisionTrees:
-                                {
-                                    outputLabels = DecisionTreesAccord_F(reader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]);
-                                    output[x][y] = new int[outputLabels.Length];
-                                    for (int i = 0; i < outputLabels.Length; i++)
-                                    {
-                                        output[x][y][i] = outputLabels[i];
-                                    }
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-
-            return LabelledOutput;
-        }
-
-        internal static Tuple<double[][][], double[][][]> LoadInstancesUni(Observables observables, string[] UniCompetencyModel, string[][] UniEvidenceModel)
-        {
-            //! Stores instances per declared observable in the statistical submodels.
-            double[][][] InstancesPerObservable = new double[UniCompetencyModel.Length][][];
-
-            //! Stores instances per declared facet in the competency model.
-            double[][][] Instances = new double[UniCompetencyModel.Length][][];
-            Tuple<double[][][], double[][][]> Inst = new Tuple<double[][][], double[][][]>(Instances, InstancesPerObservable);
-
-            //! Initialisation of arrays.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                InstancesPerObservable[x] = new double[UniEvidenceModel[x].Length][];
-                for (int i = 0; i < UniEvidenceModel[x].Length; i++)
-                {
-                    for (int k = 0; k < observables.Count; k++)
-                    {
-                        if (UniEvidenceModel[x][i] == observables[k].ObservableName)
-                        {
-                            InstancesPerObservable[x][i] = new double[observables[k].Length];
-                            Instances[x] = new double[observables[k].Length][];
-                            break;
-                        }
-                    }
-                }
-            }
-
-            //! Store Instances per declared observable in the statistical submodels.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                for (int i = 0; i < UniEvidenceModel[x].Length; i++)
-                {
-                    for (int k = 0; k < observables.Count; k++)
-                    {
-                        if (UniEvidenceModel[x][i] == observables[k].ObservableName)
-                        {
-                            for (int a = 0; a < observables[k].Length; a++)
-                            {
-                                observables[k][a] = observables[k][a].Replace(".", ",");
-                                InstancesPerObservable[x][i][a] = Convert.ToDouble(observables[k][a]);
-                            }
-                        }
-                    }
-                }
-            }
-
-            //! Initialisation of array Instances.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                for (int i = 0; i < Instances[x].Length; i++)
-                {
-                    Instances[x][i] = new double[UniEvidenceModel[x].Length];
-                }
-            }
-
-            //! Stores instances per declared facet in the competency model.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                for (int i = 0; i < Instances[x].Length; i++)
-                {
-                    for (int k = 0; k < Instances[x][i].Length; k++)
-                    {
-                        Instances[x][i][k] = InstancesPerObservable[x][k][i];
-                    }
-                }
-            }
-
-            return Inst;
-        }
-
         internal static double[][][] NormalisationUni(double[][][] InstancesUni)
         {
             double[][][] InstancesNorm = new double[InstancesUni.Length][][];
@@ -3269,406 +3756,105 @@ namespace StealthAssessmentWizard
             return InstancesNorm;
         }
 
-        internal static bool[][] CheckLabellingUni(Observables observables, string[] UniCompetencyModel)
+        /// <summary>
+        /// Select labelsfor competencies.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel"> The competency model. </param>
+        /// <param name="LabelledData">    Information describing the labeled data. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;int[][],int[][][],int[][]&gt;
+        /// </returns>
+        internal static Tuple<int[][], int[][][], int[][]> SelectLabelsforCompetencies(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
         {
-            //! Stores information whether the data for the given competencies is labeled to decide ML approach.
-            bool[][] CheckLabellingCompetencies = new bool[UniCompetencyModel.Length][];
+            int[][] output = new int[CompetencyModel.Item1.Length][];
+            Tuple<int[][], int[][][], int[][]> LabelledOutput = new Tuple<int[][], int[][][], int[][]>(LabelledData.Item1, LabelledData.Item2, output);
 
-            //! Initialisation of arrays.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
             {
-                CheckLabellingCompetencies[x] = new bool[1];
-            }
+                Logger.Warn($"No labeled data has been found for '{CompetencyModel.Item1[x]}'.");
 
-            //! Check if labels exists for all declared competencies and facets.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(UniCompetencyModel[x]));
-            }
+                //! Select a clustering algorithm (KMEANS only).
 
-            return CheckLabellingCompetencies;
-        }
-
-        internal static int[][] GetLabelledDataUni(string[] UniCompetencyModel, Observables observables)
-        {
-            //! Stores the labeling data for the given competencies.
-            int[][] LabelledDataCompetencies = new int[UniCompetencyModel.Length][];
-
-            //! Initialisation of arrays.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                for (int i = 0; i < observables.Count; i++)
-                {
-                    if (UniCompetencyModel[x] == observables[i].ObservableName)
-                    {
-                        LabelledDataCompetencies[x] = new int[observables[i].Length];
-                        break;
-                    }
-                    else
-                    {
-                        LabelledDataCompetencies[x] = new int[observables[i].Length];
-                    }
-                }
-            }
-
-            //! Store labelled data.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                for (int i = 0; i < observables.Count; i++)
-                {
-                    if (UniCompetencyModel[x] == observables[i].ObservableName)
-                    {
-                        for (int k = 0; k < observables[i].Length; k++)
-                        {
-                            LabelledDataCompetencies[x][k] = Convert.ToInt32(observables[i][k]);
-                        }
-                        break;
-                    }
-                }
-            }
-
-            return LabelledDataCompetencies;
-        }
-
-        /*
-        internal static void GenerateArffFilesForUniCompetencies(string[] UniCompetencyModel, string[][] UniEvidenceModel, bool[][] CheckLabelsUni, int[][] LabelledDataUni)
-        {
-            //! Declaring Variables.
-            double[][] vals = new double[][] { };
-            string[][] valsClass = new string[][] { };
-            string[] Class = new string[3] { "0", "1", "2" };
-
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                if (CheckLabelsUni[x][0] == true)
-                {
-                    Logger.Info($"Labeled data has been found for {UniCompetencyModel[x]}.");
-
-                    String arff_c = "./data/" + UniCompetencyModel[x] + ".arff";
-
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_c));
-
-                    //! 1)
-                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
-                    {
-                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
-
-                        Int32 AttrCount = 0;
-
-                        //! Set up attributes
-                        for (int i = 0; i < UniCompetencyModel[x].Length; i++)
-                        {
-                            //! 2)
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniCompetencyModel[i], ArffAttributeType.Numeric));
-
-                            AttrCount++;
-                        }
-
-                        //! 3)
-                        arffWriter.WriteAttribute(new ArffAttribute("Labelled Data", ArffAttributeType.Nominal(Class.ToArray())));
-                        AttrCount++;
-
-                        //! Fill with data
-                        vals = new double[LabelledDataUni[x].Length][];
-                        valsClass = new string[LabelledDataUni[x].Length][];
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount - 1];
-                            valsClass[a] = new string[1];
-                        }
-
-                        for (int i = 0; i < LabelledDataUni.Length; i++)
-                        {
-                            for (int a = 0; a < LabelledDataUni[x].Length; a++)
-                            {
-                                if (a != AttrCount - 1)
-                                {
-                                    vals[i][a] = LabelledDataUni[x][a];
-                                }
-                            }
-                            valsClass[i][0] = Convert.ToString(LabelledDataUni[x][i]);
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            List<Object> instance = new List<Object>();
-
-                            for (int v = 0; v < AttrCount; v++)
-                            {
-                                instance.Add(
-                                          (v != AttrCount - 1)
-                                          ? (object)vals[k][v]
-                                          : (object)valsClass[k][0]);
-                            }
-
-                            arffWriter.WriteInstance(instance.ToArray());
-                        }
-
-                        // Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
-                    }
-                }
-                else
-                {
-                    Logger.Warn($"No labeled data has been found for '{UniCompetencyModel[x]}'.");
-
-                    String arff_c = "./data/" + UniCompetencyModel[x] + ".arff";
-
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_c));
-
-                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
-                    {
-                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
-
-                        Int32 AttrCount = 0;
-
-                        //! Set up attributes
-                        for (int i = 0; i < UniCompetencyModel[x].Length; i++)
-                        {
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniCompetencyModel[x][i], ArffAttributeType.Numeric));
-
-                            AttrCount++;
-                        }
-
-                        //! Fill with data
-                        vals = new double[LabelledDataUni[x].Length][];
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount];
-                        }
-
-                        for (int i = 0; i < LabelledDataUni[x].Length; i++)
-                        {
-                            for (int a = 0; a < LabelledDataUni[x].Length; a++)
-                            {
-                                vals[i][a] = LabelledDataUni[x][a];
-                            }
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            arffWriter.WriteInstance(vals[k].Select(p => (Object)p).ToArray());
-                        }
-
-                        //! Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
-                    }
-                }
-            }
-        }
-        */
-        internal static void GenerateArffFilesForUniCompetencies(string[] UniCompetencyModel, string[][] UniEvidenceModel, double[][][] InstancesUni, bool[][] CheckLabelsUni, int[][] LabelledDataUni)
-        {
-            //! Declaring Variables.
-            double[][] vals = Array.Empty<double[]>();
-            string[][] valsClass = Array.Empty<string[]>();
-            string[] Class = new string[3] { "0", "1", "2" };
-
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                if (CheckLabelsUni[x][0] == true)
-                {
-                    Logger.Info($"Labeled data has been found for '{UniCompetencyModel[x]}'.");
-
-
-                    String arff_f = "./data/" + UniCompetencyModel[x] + ".arff";
-
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_f));
-
-
-                    //! 1)
-                    using (ArffWriter arffWriter = new ArffWriter(arff_f))
-                    {
-                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
-
-                        Int32 AttrCount = 0;
-
-                        //! Set up attributes
-                        for (int i = 0; i < UniEvidenceModel[x].Length; i++)
-                        {
-                            //! 2)
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniEvidenceModel[x][i], ArffAttributeType.Numeric));
-
-                            AttrCount++;
-                        }
-
-                        //! 3)
-                        arffWriter.WriteAttribute(new ArffAttribute("Labelled Data", ArffAttributeType.Nominal(Class.ToArray())));
-                        AttrCount++;
-
-                        //! Fill with data
-                        vals = new double[InstancesUni[x].Length][];
-                        valsClass = new string[InstancesUni[x].Length][];
-
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount - 1];
-                            valsClass[a] = new string[1];
-                        }
-
-                        for (int i = 0; i < InstancesUni[x].Length; i++)
-                        {
-                            for (int a = 0; a < AttrCount; a++)
-                            {
-                                if (a != AttrCount - 1)
-                                {
-                                    vals[i][a] = InstancesUni[x][i][a];
-                                }
-                                else
-                                {
-                                    valsClass[i][0] = Convert.ToString(LabelledDataUni[x][i]);
-                                }
-                            }
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            List<Object> instance = new List<Object>();
-
-                            for (int v = 0; v < AttrCount; v++)
-                            {
-                                instance.Add(
-                                    (v != AttrCount - 1)
-                                    ? (Object)vals[k][v]
-                                    : (Object)valsClass[k][0]);
-                            }
-
-                            arffWriter.WriteInstance(instance.ToArray());
-                        }
-
-                        //! Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_f)}' file successfully.");
-                    }
-
-
-                }
-                else
-                {
-
-                    //! 0)
-                    String arff_f = "./data/" + UniCompetencyModel[x] + ".arff";
-
-                    System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(arff_f));
-
-
-                    //! 1)
-                    using (ArffWriter arffWriter = new ArffWriter(arff_f))
-                    {
-                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
-
-                        //! #Attributes will be StatisticalSubmodel[x][y].Length (Items) +1 (Labels).
-                        Int32 AttrCount = 0;
-
-                        //! Set up attributes
-                        for (int i = 0; i < UniEvidenceModel[x].Length; i++)
-                        {
-                            //! 2)
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniEvidenceModel[x][i], ArffAttributeType.Numeric));
-
-                            AttrCount++;
-                        }
-
-                        arffWriter.WriteAttribute(new ArffAttribute("Labelled Data", ArffAttributeType.Nominal(Class.ToArray())));
-                        AttrCount++;
-
-                        //! Fill with data
-                        vals = new double[InstancesUni[x].Length][];
-                        valsClass = new string[InstancesUni[x].Length][];
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount - 1];
-                            valsClass[a] = new string[1];
-                        }
-
-                        for (int i = 0; i < InstancesUni[x].Length; i++)
-                        {
-                            for (int a = 0; a < AttrCount; a++)
-                            {
-                                if (a != AttrCount - 1)
-                                {
-                                    vals[i][a] = InstancesUni[x][i][a];
-                                }
-                                else
-                                {
-                                    valsClass[i][0] = Convert.ToString(LabelledDataUni[x][i]);
-                                }
-                            }
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            List<Object> instance = new List<Object>();
-
-                            for (int v = 0; v < AttrCount; v++)
-                            {
-                                instance.Add(
-                                            (v != AttrCount - 1)
-                                            ? (Object)vals[k][v]
-                                            : (Object)valsClass[k][0]);
-                            }
-
-                            arffWriter.WriteInstance(instance.ToArray());
-                        }
-
-                        //! Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_f)}' file successfully.");
-                    }
-
-                }
-            }
-        }
-
-        internal static Tuple<int[][], int[][], int[][]> SelectMLforUniCompetencies(string[] UniCompetencyModel, int[][] LabelledDataUni)
-        {
-            //! This variable allows access to functions of the Exceptions class.
-            int[][] output = new int[UniCompetencyModel.Length][];
-            int[] outputLabels;
-            Tuple<int[][], int[][], int[][]> LabelledOutput = new Tuple<int[][], int[][], int[][]>(LabelledDataUni, LabelledDataUni, output);
-
-            //! Browse for labelled data for each declared facet and decide which ML algorithm to apply accordingly.
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                Logger.Info($"Labeled data has been found for '{UniCompetencyModel[x]}'.");
-
-                String arff_c = "./data/" + UniCompetencyModel[x] + ".arff";
+                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
 
                 //! Get data from the .arff file.
-                using (ArffReader reader = new ArffReader(arff_c))
+
+                //! Checks user input for an ML algorithm.
+                switch (Data.MLOptions.Clustering)
                 {
-                    //! Checks user input for an ML algorithm.
-                    switch (Data.MLOptions.Algorithm)
-                    {
-                        case MLAlgorithms.NaiveBayes:
-                            {
-                                outputLabels = UniNaiveBayesAccord_C(reader, UniCompetencyModel[x]);
+                    //! (1) K-Means [Centroid-based]
+                    case MLClustering.KMeans:
+                        using (ArffReader arffReader = new ArffReader(arff_c))
+                        {
+                            int[] labels = KMeans(MyProject, arffReader, CompetencyModel.Item1[x]);
 
-                                output[x] = new int[outputLabels.Length];
-                                for (int i = 0; i < outputLabels.Length; i++)
-                                {
-                                    output[x][i] = outputLabels[i];
-                                }
+                            LabelledData.Item1[x] = new int[labels.Length];
+                            output[x] = new int[labels.Length];
+
+                            for (int i = 0; i < labels.Length; i++)
+                            {
+                                LabelledData.Item1[x][i] = labels[i];
+                                output[x][i] = labels[i];
                             }
-                            break;
+                        }
+                        break;
+                }
+            }
 
-                        case MLAlgorithms.DecisionTrees:
+            return LabelledOutput;
+        }
+
+        /// <summary>
+        /// Select Labels for facets.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel"> The competency model. </param>
+        /// <param name="CheckLabels">     The check labels. </param>
+        /// <param name="LabelledData">    Information describing the labeled data. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
+        /// </returns>
+        internal static Tuple<int[][], int[][][], int[][][]> SelectLabelsforFacets(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
+        {
+            int[][][] output = new int[CompetencyModel.Item1.Length][][];
+
+            Tuple<int[][], int[][][], int[][][]> LabelledOutput = new Tuple<int[][], int[][][], int[][][]>(LabelledData.Item1, LabelledData.Item2, output);
+
+            //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
+            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            {
+                output[x] = new int[CompetencyModel.Item2[x].Length][];
+
+                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                {
+                    //===R
+
+                    //Debug.WriteLine($"No labeled data has been found for {CompetencyModel.Item2[x][y]}.");
+
+                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
+
+                    //! Get data from the .arff file.
+
+                    //! Checks user input for an ML algorithm.
+                    //
+                    switch (Data.MLOptions.Clustering)
+                    {
+                        //! (1) K-Means [Centroid-based]
+                        case MLClustering.KMeans:
+                            using (ArffReader arffReader = new ArffReader(arff_f))
                             {
-                                outputLabels = UniDecisionTreesAccord_C(reader, UniCompetencyModel[x]);
-                                output[x] = new int[outputLabels.Length];
-                                for (int i = 0; i < outputLabels.Length; i++)
+                                int[] labels = KMeans(MyProject, arffReader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]); ;
+
+                                LabelledData.Item2[x][y] = new int[labels.Length];
+                                output[x][y] = new int[labels.Length];
+
+                                for (int i = 0; i < labels.Length; i++)
                                 {
-                                    output[x][i] = outputLabels[i];
+                                    LabelledData.Item2[x][y][i] = labels[i];
+                                    output[x][y][i] = labels[i];
                                 }
                             }
                             break;
@@ -3679,351 +3865,18 @@ namespace StealthAssessmentWizard
             return LabelledOutput;
         }
 
-        public static int[] UniNaiveBayesAccord_C(ArffReader reader, string Competency)
-        {
-            var cv = new NaiveBayesLearning<NormalDistribution>();
-
-            //! to avoid zero variances
-            cv.Options.InnerOption = new NormalOptions
-            {
-                Regularization = 1e-5
-            };
-
-            ArffHeader header = reader.ReadHeader();
-            Object[][] randData = reader.ReadAllInstances();
-
-            //! Test Code of added ArffReader Methods.
-            //
-            //insts.Reset();
-            //Int64 len = insts.Count();
-
-            //! set the sizes of the training and testing datasets according to the PercentSplit% split rule.
-            int trainSize = (int)Math.Round((double)randData.Length * (Data.MLOptions as NaiveBayesAlgorithm).PercentSplit / 100);
-            int testSize = randData.Length - trainSize;
-
-            //! Initialize the training and testing datasets.
-            int[] checks = new int[3];
-
-            Int32 cnt = header.Attributes.Count;
-
-            //! Add instances in training and testing data
-            checks[0] = randData.Count(p => p[cnt - 1].Equals(0));
-            checks[1] = randData.Count(p => p[cnt - 1].Equals(1));
-            checks[2] = randData.Count(p => p[cnt - 1].Equals(2));
-
-            if (checks[0] * checks[1] * checks[2] == 0)
-            {
-                Logger.Error("Missing Values in Training and Testing Data $.");
-            }
-
-            //! Initialize arrays.
-            double[][] GameLogs = new double[trainSize][];
-            int[] LabelledData = new int[trainSize];
-
-            double[][] GameLogsTest = new double[testSize][];
-            int[] expected = new int[testSize];
-
-            for (int i = 0; i < trainSize; i++)
-            {
-                GameLogs[i] = new double[cnt - 1];
-            }
-
-            for (int i = 0; i < testSize; i++)
-            {
-                GameLogsTest[i] = new double[cnt - 1];
-            }
-
-            //! Load data on arrays.
-            //
-            for (int i = 0; i < trainSize; i++)
-            {
-                for (int k = 0; k < cnt; k++)
-                {
-                    if (k != cnt - 1)
-                    {
-                        GameLogs[i][k] = Convert.ToDouble(randData[i + 0][k]);
-                    }
-                    else
-                    {
-                        LabelledData[i] = Convert.ToInt32(randData[i + 0][k]);
-                    }
-                }
-            }
-
-            for (int i = 0; i < testSize; i++)
-            {
-                for (int k = 0; k < cnt; k++)
-                {
-                    if (k != cnt - 1)
-                    {
-                        GameLogsTest[i][k] = Convert.ToDouble(randData[i + trainSize][k]);
-                    }
-                    else
-                    {
-                        expected[i] = Convert.ToInt32(randData[i + trainSize][k]);
-                    }
-                }
-            }
-
-            //===R
-            //
-            //! Performance of Naive Bayes on the above data set:
-
-            NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
-
-            nb.Save(@".\NATIVE.TXT", SerializerCompression.None);
-            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(@".\NATIVE.TXT");
-
-            int[] predicted = nb2.Decide(GameLogsTest);
-            double[][] probs = nb2.Probabilities(GameLogsTest);
-
-            using (IniFile ini = new IniFile("./data/" + Competency + "_BayesAccord.ini"))
-            {
-                ini.Clear();
-
-                //! Save BayesNet results in .txt file
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "_BayesAccord.txt"))
-                {
-                    //! We can get different performance measures to assess how good our model was at
-                    //! predicting the true, expected, ground-truth labels for the decision problem:
-                    var cm = new GeneralConfusionMatrix(classes: 3, expected: expected, predicted: predicted);
-
-                    //! We can obtain the proper confusion matrix using:
-                    int[,] matrix = cm.Matrix;
-
-                    //! And multiple performance measures:
-                    double accuracy = cm.Accuracy;
-                    double error = cm.Error;
-                    double kappa = cm.Kappa;
-
-                    file.WriteLine("{0}", Math.Round(accuracy, 4));
-                    file.WriteLine("{0}", Math.Round(error, 4));
-                    file.WriteLine("{0}", Math.Round(kappa, 4));
-
-                    ini.WriteDouble("Performance", "Accuracy", Math.Round(accuracy, 4));
-                    ini.WriteDouble("Performance", "Error", Math.Round(error, 4));
-                    ini.WriteDouble("Performance", "Kappa", Math.Round(kappa, 4));
-
-                    double MAE = 0;
-                    double RMSE = 0;
-                    double RAE = 0;
-                    double RRSE = 0;
-                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
-                    Performace = PerformaceStatistics(expected, predicted);
-
-                    file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
-                    file.WriteLine("{0}", Math.Round(Performace.Item2, 4));
-                    file.WriteLine("{0}%", Math.Round(Performace.Item3, 4));
-                    file.WriteLine("{0}%", Math.Round(Performace.Item4, 4));
-                    file.WriteLine();
-
-                    ini.WriteDouble("Performance", "MAE", Math.Round(Performace.Item1, 4));
-                    ini.WriteDouble("Performance", "RMSE", Math.Round(Performace.Item2, 4));
-                    ini.WriteDouble("Performance", "RAE(%)", Math.Round(Performace.Item3, 4), "%");
-                    ini.WriteDouble("Performance", "RRSE(%)", Math.Round(Performace.Item4, 4), "%");
-
-                    Data.Performance = new NaiveBayesPerformanceModel(Competency, "na", accuracy, error, kappa, MAE, RMSE, RAE, RRSE);
-
-                    for (Int32 i = 0; i < 3; i++)
-                    {
-                        ini.WriteInteger("Summary", $"Classified as {i}", predicted.Count(p => p == i));
-                    }
-
-                    for (int x = 0; x < predicted.Length; x++)
-                    {
-                        String section = $"Instance_{x + 1}";
-
-                        ini.WriteList(section, "Tests", GameLogsTest[x].ToList(), ',');
-
-                        file.Write("Instance {0}:", x + 1);
-                        for (int y = 0; y < GameLogsTest[x].Length; y++)
-                        {
-                            file.Write("{0} ", GameLogsTest[x][y]);
-                        }
-
-                        ini.WriteDouble(section, "Classified as", predicted[x]);
-
-                        file.WriteLine("Classified as:{0} ", predicted[x]);
-                    }
-
-                    Logger.Info("Naive Bayes results from Accord saved successfully.");
-                }
-
-                ini.UpdateFile();
-            }
-
-            return predicted;
-        }
-
-        public static int[] UniDecisionTreesAccord_C(ArffReader reader, string Competency)
-        {
-            ArffHeader header = reader.ReadHeader();
-            Object[][] randData = reader.ReadAllInstances();
-
-            //! Set the sizes of the training and testing datasets according to the 66% split rule.
-            int trainSize = (int)Math.Round((double)randData.Length * (Data.MLOptions as DecisionTreesAlgorithm).PercentSplit / 100);
-            int testSize = randData.Length - trainSize;
-
-            //! Initialize the training and testing datasets.
-            int[] checks = new int[3];
-
-            Int32 cnt = header.Attributes.Count;
-
-            //! Add instances in training and testing data
-            checks[0] = randData.Count(p => p[cnt - 1].Equals(0));
-            checks[1] = randData.Count(p => p[cnt - 1].Equals(1));
-            checks[2] = randData.Count(p => p[cnt - 1].Equals(2));
-
-            if (checks[0] * checks[1] * checks[2] == 0)
-            {
-                Logger.Error("Missing Values in Training and Testing Data.");
-            }
-
-            //! Initialize arrays.
-            double[][] GameLogs = new double[trainSize][];
-            int[] LabelledData = new int[trainSize];
-
-            double[][] GameLogsTest = new double[testSize][];
-            int[] expected = new int[testSize];
-
-            for (int i = 0; i < trainSize; i++)
-            {
-                GameLogs[i] = new double[cnt - 1];
-            }
-
-            for (int i = 0; i < testSize; i++)
-            {
-                GameLogsTest[i] = new double[cnt - 1];
-            }
-
-            //! Load data on arrays.
-            for (int i = 0; i < trainSize; i++)
-            {
-                for (int k = 0; k < cnt; k++)
-                {
-                    if (k != cnt - 1)
-                    {
-                        GameLogs[i][k] = Convert.ToDouble(randData[i + 0][k]);
-                    }
-                    else
-                    {
-                        LabelledData[i] = Convert.ToInt32(randData[i + 0][k]);
-                    }
-
-                }
-            }
-
-            for (int i = 0; i < testSize; i++)
-            {
-                for (int k = 0; k < cnt; k++)
-                {
-                    if (k != cnt - 1)
-                    {
-                        GameLogsTest[i][k] = Convert.ToDouble(randData[i + trainSize][k]);
-                    }
-                    else
-                    {
-                        expected[i] = Convert.ToInt32(randData[i + trainSize][k]);
-                    }
-                }
-            }
-
-            //! And we can use the C4.5 for learning:
-            C45Learning teacher = new C45Learning();
-
-            //! Finally induce the tree from the data:
-            var tree = teacher.Learn(GameLogs, LabelledData);
-
-            //! To get the estimated class labels, we can use
-            int[] predicted = tree.Decide(GameLogsTest);
-
-            //! Moreover, we may decide to convert our tree to a set of rules:
-            DecisionSet rules = tree.ToRules();
-
-            using (IniFile ini = new IniFile("./data/" + Competency + "_DecisionTreesAccord.ini"))
-            {
-                ini.Clear();
-
-                //! Save BayesNet results in .txt file
-                using (System.IO.StreamWriter file = new System.IO.StreamWriter("./data/" + Competency + "_DecisionTreesAccord.txt"))
-                {
-                    //! We can get different performance measures to assess how good our model was at
-                    //! predicting the true, expected, ground-truth labels for the decision problem:
-                    var cm = new GeneralConfusionMatrix(classes: 3, expected: expected, predicted: predicted);
-
-                    //! We can obtain the proper confusion matrix using:
-                    int[,] matrix = cm.Matrix;
-
-                    //! And multiple performance measures:
-                    double accuracy = cm.Accuracy;
-                    double error = cm.Error;
-                    double kappa = cm.Kappa;
-
-                    file.WriteLine("{0}", Math.Round(accuracy, 4));
-                    file.WriteLine("{0}", Math.Round(error, 4));
-                    file.WriteLine("{0}", Math.Round(kappa, 4));
-
-                    ini.WriteDouble("Performance", "Accuracy", Math.Round(accuracy, 4));
-                    ini.WriteDouble("Performance", "Error", Math.Round(error, 4));
-                    ini.WriteDouble("Performance", "Kappa", Math.Round(kappa, 4));
-
-                    double MAE = 0;
-                    double RMSE = 0;
-                    double RAE = 0;
-                    double RRSE = 0;
-                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
-                    Performace = PerformaceStatistics(expected, predicted);
-
-                    file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
-                    file.WriteLine("{0}", Math.Round(Performace.Item2, 4));
-                    file.WriteLine("{0}%", Math.Round(Performace.Item3, 4));
-                    file.WriteLine("{0}%", Math.Round(Performace.Item4, 4));
-                    file.WriteLine();
-
-                    ini.WriteDouble("Performance", "MAE", Math.Round(Performace.Item1, 4));
-                    ini.WriteDouble("Performance", "RMSE", Math.Round(Performace.Item2, 4));
-                    ini.WriteDouble("Performance", "RAE(%)", Math.Round(Performace.Item3, 4), "%");
-                    ini.WriteDouble("Performance", "RRSE(%)", Math.Round(Performace.Item4, 4), "%");
-
-                    Data.Performance = new DecisionTreesPerformanceModel(Competency, "na", accuracy, error, kappa, MAE, RMSE, RAE, RRSE);
-
-                    for (Int32 i = 0; i < 3; i++)
-                    {
-                        ini.WriteInteger("Summary", $"Classified as {i}", predicted.Count(p => p == i));
-                    }
-
-                    for (int x = 0; x < predicted.Length; x++)
-                    {
-                        String section = $"Instance_{x + 1}";
-
-                        ini.WriteList(section, "Tests", GameLogsTest[x].ToList(), ',');
-
-                        file.Write("Instance {0}:", x + 1);
-                        for (int y = 0; y < GameLogsTest[x].Length; y++)
-                        {
-                            file.Write("{0} ", GameLogsTest[x][y]);
-                        }
-
-                        ini.WriteDouble(section, "Classified as", predicted[x]);
-
-                        file.WriteLine("Classified as:{0} ", predicted[x]);
-                    }
-
-                    file.WriteLine();
-                    file.WriteLine("Rules: {0}", rules.ToString());
-
-                    ini.WriteString("Rules", "Rules", rules.ToString());
-
-                    System.Console.WriteLine("Decision Trees results from Accord saved successfully.");
-                }
-
-                ini.UpdateFile();
-            }
-
-            return predicted;
-        }
-
-        internal static Tuple<int[][], int[][], int[][]> SelectLabelsforUniCompetencies(string[] UniCompetencyModel, int[][] UniLabelledData)
+        /// <summary>
+        /// Select labelsfor uni competencies.
+        /// </summary>
+        ///
+        /// <param name="MyProject">          my project. </param>
+        /// <param name="UniCompetencyModel"> The uni competency model. </param>
+        /// <param name="UniLabelledData">    Information describing the uni labelled. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;int[][],int[][],int[][]&gt;
+        /// </returns>
+        internal static Tuple<int[][], int[][], int[][]> SelectLabelsforUniCompetencies(String MyProject, string[] UniCompetencyModel, int[][] UniLabelledData)
         {
             //! This variable allows access to functions of the Exceptions class.
             //var Exceptions = new Exceptions();
@@ -4040,7 +3893,7 @@ namespace StealthAssessmentWizard
 
                 //Debug.WriteLine($"No labeled data has been found for {CompetencyModel.Item2[x][y]}.");
 
-                String arff_f = "./data/" + UniCompetencyModel[x] + ".arff";
+                String arff_f = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
 
                 //! Get data from the .arff file.
 
@@ -4052,7 +3905,7 @@ namespace StealthAssessmentWizard
                     case MLClustering.KMeans:
                         using (ArffReader arffReader = new ArffReader(arff_f))
                         {
-                            int[] labels = KMeans(arffReader, UniCompetencyModel[x]); ;
+                            int[] labels = KMeans(MyProject, arffReader, UniCompetencyModel[x]); ;
 
                             UniLabelledData[x] = new int[labels.Length];
                             output[x] = new int[labels.Length];
@@ -4066,6 +3919,201 @@ namespace StealthAssessmentWizard
                         break;
                 }
 
+            }
+
+            return LabelledOutput;
+        }
+
+        /// <summary>
+        /// Select ML for competencies.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel"> The competency model. </param>
+        /// <param name="CheckLabels">     The check labels. </param>
+        /// <param name="LabelledData">    Information describing the labeled data. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;int[][],int[][][],int[][]&gt;
+        /// </returns>
+        ///
+        /// ### <param name="competencyModel"> The competency model. </param>
+        ///
+        /// ### <param name="checkLabels">  The check labels. </param>
+        /// ### <param name="labelledData"> Information describing the labeled data. </param>
+        internal static Tuple<int[][], int[][][], int[][]> SelectMLforCompetencies(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
+        {
+            //! This variable allows access to functions of the Exceptions class.
+            int[][] output = new int[CompetencyModel.Item1.Length][];
+            int[] outputLabels;
+            Tuple<int[][], int[][][], int[][]> LabelledOutput = new Tuple<int[][], int[][][], int[][]>(LabelledData.Item1, LabelledData.Item2, output);
+
+            //! Browse for labelled data for each declared facet and decide which ML algorithm to apply accordingly.
+            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            {
+                Logger.Info($"Labeled data has been found for '{CompetencyModel.Item1[x]}'.");
+
+                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
+
+                //! Get data from the .arff file.
+                using (ArffReader reader = new ArffReader(arff_c))
+                {
+                    //! Checks user input for an ML algorithm.
+                    switch (Data.MLOptions.Algorithm)
+                    {
+                        case MLAlgorithms.NaiveBayes:
+                            {
+                                outputLabels = NaiveBayesAccord_C(MyProject, reader, CompetencyModel.Item1[x]);
+
+                                output[x] = new int[outputLabels.Length];
+                                for (int i = 0; i < outputLabels.Length; i++)
+                                {
+                                    output[x][i] = outputLabels[i];
+                                }
+                            }
+                            break;
+
+                        case MLAlgorithms.DecisionTrees:
+                            {
+                                outputLabels = DecisionTreesAccord_C(MyProject, reader, CompetencyModel.Item1[x]);
+                                output[x] = new int[outputLabels.Length];
+                                for (int i = 0; i < outputLabels.Length; i++)
+                                {
+                                    output[x][i] = outputLabels[i];
+                                }
+                            }
+                            break;
+                    }
+                }
+            }
+
+            return LabelledOutput;
+        }
+
+        /// <summary>
+        /// Select ml for facets.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel"> The competency model. </param>
+        /// <param name="LabelledData">    Information describing the labeled data. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
+        /// </returns>
+        internal static Tuple<int[][], int[][][], int[][][]> SelectMLforFacets(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
+        {
+            //! This variable allows access to functions of the Exceptions class.
+            var Exceptions = new Exceptions();
+            int[][][] output = new int[CompetencyModel.Item1.Length][][];
+            int[] outputLabels;
+            Tuple<int[][], int[][][], int[][][]> LabelledOutput = new Tuple<int[][], int[][][], int[][][]>(LabelledData.Item1, LabelledData.Item2, output);
+
+            //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
+            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            {
+                output[x] = new int[CompetencyModel.Item2[x].Length][];
+
+                // Debug.WriteLine($"Labeled data has been found for {CompetencyModel.Item1[x]}." );
+                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                {
+                    //===R
+
+                    Logger.Info($"Labeled data has been found for '{CompetencyModel.Item2[x][y]}'.");
+
+                    //! Select a ML algorithm.
+                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
+
+                    //! Get data from the .arff file.
+                    using (ArffReader reader = new ArffReader(arff_f))
+                    {
+                        //! Checks user input for an ML algorithm.
+                        switch (Data.MLOptions.Algorithm)
+                        {
+                            //! (1) Naive Bayes
+                            case MLAlgorithms.NaiveBayes:
+                                {
+                                    outputLabels = NaiveBayesAccord_F(MyProject, reader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]);
+
+                                    output[x][y] = new int[outputLabels.Length];
+                                    for (int i = 0; i < outputLabels.Length; i++)
+                                    {
+                                        output[x][y][i] = outputLabels[i];
+                                    }
+                                }
+                                break;
+
+                            //! (2) Decision Trees
+                            case MLAlgorithms.DecisionTrees:
+                                {
+                                    outputLabels = DecisionTreesAccord_F(MyProject, reader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]);
+                                    output[x][y] = new int[outputLabels.Length];
+                                    for (int i = 0; i < outputLabels.Length; i++)
+                                    {
+                                        output[x][y][i] = outputLabels[i];
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            return LabelledOutput;
+        }
+
+        /// <summary>
+        /// Select m lfor uni competencies.
+        /// </summary>
+        ///
+        /// <param name="UniCompetencyModel"> The uni competency model. </param>
+        /// <param name="LabelledDataUni">    The labelled data uni. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;int[][],int[][],int[][]&gt;
+        /// </returns>
+        internal static Tuple<int[][], int[][], int[][]> SelectMLforUniCompetencies(String MyProject, string[] UniCompetencyModel, int[][] LabelledDataUni)
+        {
+            //! This variable allows access to functions of the Exceptions class.
+            int[][] output = new int[UniCompetencyModel.Length][];
+            int[] outputLabels;
+            Tuple<int[][], int[][], int[][]> LabelledOutput = new Tuple<int[][], int[][], int[][]>(LabelledDataUni, LabelledDataUni, output);
+
+            //! Browse for labelled data for each declared facet and decide which ML algorithm to apply accordingly.
+            for (int x = 0; x < UniCompetencyModel.Length; x++)
+            {
+                Logger.Info($"Labeled data has been found for '{UniCompetencyModel[x]}'.");
+
+                String arff_c = Path.Combine(MyProject, "./data/" + UniCompetencyModel[x] + ".arff");
+
+                //! Get data from the .arff file.
+                using (ArffReader reader = new ArffReader(arff_c))
+                {
+                    //! Checks user input for an ML algorithm.
+                    switch (Data.MLOptions.Algorithm)
+                    {
+                        case MLAlgorithms.NaiveBayes:
+                            {
+                                outputLabels = UniNaiveBayesAccord_C(MyProject, reader, UniCompetencyModel[x]);
+
+                                output[x] = new int[outputLabels.Length];
+                                for (int i = 0; i < outputLabels.Length; i++)
+                                {
+                                    output[x][i] = outputLabels[i];
+                                }
+                            }
+                            break;
+
+                        case MLAlgorithms.DecisionTrees:
+                            {
+                                outputLabels = UniDecisionTreesAccord_C(MyProject, reader, UniCompetencyModel[x]);
+                                output[x] = new int[outputLabels.Length];
+                                for (int i = 0; i < outputLabels.Length; i++)
+                                {
+                                    output[x][i] = outputLabels[i];
+                                }
+                            }
+                            break;
+                    }
+                }
             }
 
             return LabelledOutput;

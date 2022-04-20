@@ -485,7 +485,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 5].Value = "RAE(%)";
                                     worksheet.Cells[rofs + 0, cofs + 6].Value = "RRSE(%)";
 
-                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, "/data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + $"{suffix}.ini")))
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -604,7 +604,7 @@ namespace StealthAssessmentWizard
 
                                     rofs++;
 
-                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + $"{suffix}.ini")))
                                     {
                                         for (Int32 r = 0; r < testSize; r++)
                                         {
@@ -739,7 +739,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 5].Value = "RAE(%)";
                                     worksheet.Cells[rofs + 0, cofs + 6].Value = "RRSE(%)";
 
-                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + $"{suffix}.ini")))
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -835,7 +835,7 @@ namespace StealthAssessmentWizard
 
                                     rofs++;
 
-                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data" + Competency + $"{suffix}.ini")))
                                     {
                                         for (Int32 r = 0; r < testSize; r++)
                                         {
@@ -1223,7 +1223,7 @@ namespace StealthAssessmentWizard
                     {
                         //! Note: The GCI.Facet member contains the Competency Name.
                         // 
-                        using (IniFile ini = new IniFile(Path.Combine(MyProject, "/data/" + Facet + $"{suffix}.ini")))
+                        using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Facet + $"{suffix}.ini")))
                         {
                             for (Int32 i = 0; i < 3; i++)
                             {
@@ -1335,6 +1335,8 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
+                    Excel.Stamp = $"_{DateTime.Now.ToString("yyyyMMdd-HHmm")}";
+
                     StateMachine.Flags[StateMachine.IMPORT_DATA] = true;
 
                     MyProject = Path.Combine(MyProjects, Path.GetFileNameWithoutExtension(openFileDialog1.FileName));
@@ -1959,7 +1961,10 @@ namespace StealthAssessmentWizard
             Data.DumpStatisticalSubModels();
 
             Data.SaveModelToExcel(filenameTS);
-            Data.SaveECD(Path.ChangeExtension(filenameTS, ".ini"));
+
+#warning Competenses & Facets from model are not saved.
+
+            Data.SaveECD(Path.ChangeExtension(filenameTS, ".json"));
 
             //! Needs to move to after the ML Options.
             //

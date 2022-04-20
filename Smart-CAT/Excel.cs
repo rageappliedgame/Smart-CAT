@@ -96,7 +96,7 @@ namespace StealthAssessmentWizard
 
             FileInfo fileInfo = new FileInfo(filename);
 
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Stamp + Path.GetExtension(filename));
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             FileInfo fileInfoTS = new FileInfo(filenameTS);
 

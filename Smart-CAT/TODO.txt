@@ -48,48 +48,42 @@
 39) DONE - Fixed an issue with the index of the first worksheet (changed in v5) being 1 instead of 0.
 40) DONE - Color Facets Red if they do not have items selected yet.
 41) DONE - Disable Add/Edit/Remove Facet Menuitems when no item is selected (so we do not know the group/competency).
-
 42) DONE - Fixed installation issue on BV5/6 (use escaped backward slashes and test for homedrive existence)
 43) DONE - Cleared statistical model definition when loading a new file (after Start New).
 44) DONE - Renamed GSAT Tab to Smart-Cat.
 45) DONE - Added Model to Output Spreadsheet for documentation.
 46) DONE - Swapped AllGameData for Observables class.
+47) DONE - Introduced Project (Folders).
+48) DONE - Moved data files into Project folder.
+49) DONE - Model is now based on classes/json instead of tuple/ini files.
+50) DONE - Move Smart-Cat tab into separate sheet (original file in project folder + timestamp in filename).
+51) DONE - Write numeric values in copy work sheet as double.
+52) DONE - Removed excel files from csproj.
+53) DONE - Get rid of (some) Tuples (replace by classes).
 
-[TODO]
-- Running GameLogs again showed an error.
-- Smart-CAT tab shows a lot of numbers added as text.
-
-[TODO]
-
-a) * Compute Uni-Dimensional competencies.
-
-b) Clean Data Directory?
-c) HtmlHelp (one topic/panel). Pdf as backup.
-
-d) Show output as a table (Instance 1:0 Classified as:0 is output) part.
-e) Split methods for labels/not.
-f) More checks (rectangular/numeric data)
-g) Why do we save the extra columns. Is it not faster to recalculate them every run?
+a) HtmlHelp (one topic/panel). Pdf as backup.
+b) Show output as a table (Instance 1:0 Classified as:0 is output) part.
+c) Split methods for labels/not.
+d) More checks (rectangular/numeric data)
+e) Why do we save the extra columns. Is it not faster to recalculate them every run?
 
 Integrate AppCenter: https://appcenter.ms/orgs/OUNL/apps/GSAT/ (but it brings quite some dependencies).
 
 Removed IVKM v7.2.4630.5 packages.
 Removed StealthAssessmentWizard\weka.dll
 
-[12-04-2022]
-Meeting with Kostas
+[12-04-2022] Meeting with Kostas
 
-https://stackoverflow.com/questions/39092627/json-serialization-with-class-inherited-from-listt
+[TODO]
+01) TODO - Add Timestamp to spreadsheet copy.
+02) TODO - X Add an option to load the model from such spreadsheet.
+03) TODO - Write UniModel (if present) to SpreadSheet's model sheet.
+04) TODO - Ask load existing project or start a new one (and create a folder for it if new).
+05) TODO - Check if a matching model is loaded.
+06) TODO - Check with 2 competencies (see GameLogsFM.ini with an extra Competency/Facet). Might be related to a wrong sized Smart-Cat sheet.
+07) TODO - Add better checks match between data and loaded model.
 
-TODO - Move Smart-Cat tab into separate sheet (original file in project folder + timestamp in filename).
-	 - Add an option to load the model from such spreadsheet.
-	 - Write UniModel (if present) to SpreadSheet's model sheet.
-	 - Ask load existing project or start a new one (and create a folder for it if new).
-	 - Remove excel files from csproj.
-	 - Check if a matching model is loaded.
-	 - Get rid of Tuples (replace by classes).
-	
-	 - Check with 2 competencies (see GameLogsFM.ini with an extra Competency/Facet). Might be related to a wrong sized Smart-Cat sheet.
+--------------
 
 Data.AllGameLogs.Item1 = Observables
 Data.AllGameLogs.Item2 = Columns of Data for each Observable
@@ -98,6 +92,8 @@ Data.AllGameLogs.Item2 = Columns of Data for each Observable
 	o1		[12,23...]
 	o2		[22,33,44...]
 
+--------------
+
 Data.CompetencyModel.Item1 = Competency
 Data.CompetencyModel.Item2 = Array with Facet Names (per competency)
 
@@ -105,8 +101,11 @@ Data.CompetencyModel.Item2 = Array with Facet Names (per competency)
 	c1		[f1,f2]
 	c2		[fa,fb,fc]
 
+--------------
+
 Data.StatisticalSubmodel = string[][][] = Ragged 2D array with lists of observables per competenct/facet pair [competency][facet]->[observables]
+
+--------------
 
 Data.UniCompetencyModel (String[])
 Data.UniEvidenceModel	(String[][])	= ragged 2D array
-

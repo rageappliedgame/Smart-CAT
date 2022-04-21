@@ -4082,7 +4082,7 @@ namespace StealthAssessmentWizard
             {
                 Logger.Info($"Labeled data has been found for '{UniCompetencyModel[x]}'.");
 
-                String arff_c = Path.Combine(MyProject, "./data/" + UniCompetencyModel[x] + ".arff");
+                String arff_c = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
 
                 //! Get data from the .arff file.
                 using (ArffReader reader = new ArffReader(arff_c))

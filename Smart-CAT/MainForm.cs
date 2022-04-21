@@ -52,6 +52,9 @@ namespace StealthAssessmentWizard
 
         private EnumItemCollection AlgorithmItems = new EnumItemCollection(typeof(MLAlgorithms));
         private Font SelectedFont = null;
+        private String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
+        private String MyProject = String.Empty;
+        private String MyInput = String.Empty;
 
         //private ConsoleListener consoleListener = new ConsoleListener();
 
@@ -128,6 +131,10 @@ namespace StealthAssessmentWizard
             });
 
             SetHelpStrings();
+
+            Directory.CreateDirectory(MyProjects);
+
+            openFileDialog1.InitialDirectory = MyProjects;
         }
 
         #endregion Constructors
@@ -135,7 +142,7 @@ namespace StealthAssessmentWizard
         #region Methods
 
         /// <summary>
-        /// Loads the ecd.
+        /// Loads the ECD.
         /// </summary>
         private static void LoadDefaultECD()
         {
@@ -339,9 +346,11 @@ namespace StealthAssessmentWizard
                             break;
                     }
 
-                    //! Input Spreadsheet.
+                    String filenameTS = Path.Combine(Path.GetDirectoryName(MyInput), Path.GetFileNameWithoutExtension(MyInput) + Excel.Stamp + Path.GetExtension(MyInput));
+
+                    //! Load Scratch Spreadsheet.
                     // 
-                    using (ExcelPackage ep = new ExcelPackage(new FileInfo(openFileDialog1.FileName)))
+                    using (ExcelPackage ep = new ExcelPackage(new FileInfo(filenameTS)))
                     {
                         Debug.WriteLine($"WorkSheets: {ep.Workbook.Worksheets.Count}");
 
@@ -475,8 +484,8 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 4].Value = "RMSE";
                                     worksheet.Cells[rofs + 0, cofs + 5].Value = "RAE(%)";
                                     worksheet.Cells[rofs + 0, cofs + 6].Value = "RRSE(%)";
-#warning this output needs to move to a project folder!
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + $"{suffix}.ini")))
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -493,7 +502,7 @@ namespace StealthAssessmentWizard
                                     {
                                         String Facet = Data.competencies[i][f].FacetName;
 
-                                        using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + "/" + Facet + $"{suffix}.ini")))
+                                        using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + $"{suffix}.ini")))
                                         {
                                             worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                             worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -595,7 +604,7 @@ namespace StealthAssessmentWizard
 
                                     rofs++;
 
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + $"{suffix}.ini")))
                                     {
                                         for (Int32 r = 0; r < testSize; r++)
                                         {
@@ -730,7 +739,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 5].Value = "RAE(%)";
                                     worksheet.Cells[rofs + 0, cofs + 6].Value = "RRSE(%)";
 
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + $"{suffix}.ini")))
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -826,7 +835,7 @@ namespace StealthAssessmentWizard
 
                                     rofs++;
 
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data" + Competency + $"{suffix}.ini")))
                                     {
                                         for (Int32 r = 0; r < testSize; r++)
                                         {
@@ -1214,7 +1223,7 @@ namespace StealthAssessmentWizard
                     {
                         //! Note: The GCI.Facet member contains the Competency Name.
                         // 
-                        using (IniFile ini = new IniFile("./data/" + Facet + $"{suffix}.ini"))
+                        using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Facet + $"{suffix}.ini")))
                         {
                             for (Int32 i = 0; i < 3; i++)
                             {
@@ -1224,7 +1233,7 @@ namespace StealthAssessmentWizard
                     }
                     else
                     {
-                        using (IniFile ini = new IniFile("./data/" + Competency + "/" + Facet + $"{suffix}.ini"))
+                        using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + $"{suffix}.ini")))
                         {
                             for (Int32 i = 0; i < 3; i++)
                             {
@@ -1326,13 +1335,42 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
+                    Excel.Stamp = $"_{DateTime.Now.ToString("yyyyMMdd-HHmm")}";
+
                     StateMachine.Flags[StateMachine.IMPORT_DATA] = true;
 
-                    Text = $"{Application.ProductName} - {Path.GetFileName(openFileDialog1.FileName)}";
+                    MyProject = Path.Combine(MyProjects, Path.GetFileNameWithoutExtension(openFileDialog1.FileName));
+                    if (!Directory.Exists(MyProject))
+                    {
+                        Directory.CreateDirectory(MyProject);
+                        Logger.Info($"Created Project Folder <My Document>{MyProject.Replace(MyProjects, String.Empty)}.");
+                    }
+                    MyInput = Path.Combine(MyProject, Path.GetFileName(openFileDialog1.FileName));
 
-                    StateMachine.exitWorkers[StateMachine.States.ImportData].argument = openFileDialog1.FileName;
-                    StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = openFileDialog1.FileName;
-                    StateMachine.exitWorkers[StateMachine.States.OptimizeML].argument = openFileDialog1.FileName;
+                    if (!File.Exists(MyInput))
+                    {
+                        Logger.Info("Copying Input File to Project Folder.");
+
+                        File.Copy(openFileDialog1.FileName, MyInput);
+                    }
+                    else
+                    {
+#warning TODO - OVERWRITE QUESTION?
+                        Logger.Warn("Input File already in the Project Folder, using Project one.");
+                    }
+
+                    //! Set Initial Directories to match the current project.
+                    // 
+                    saveFileDialog1.InitialDirectory = MyProject;
+                    saveFileDialog2.InitialDirectory = MyProject;
+                    openFileDialog2.InitialDirectory = MyProject;
+                    openFileDialog3.InitialDirectory = MyProject;
+
+                    Text = $"{Application.ProductName} - {Path.GetFileName(MyInput)}";
+
+                    StateMachine.exitWorkers[StateMachine.States.ImportData].argument = MyInput;
+                    StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = MyInput;
+                    StateMachine.exitWorkers[StateMachine.States.OptimizeML].argument = MyInput;
 
                     //! Clear Model after loading a new input file.
                     // 
@@ -1434,8 +1472,8 @@ namespace StealthAssessmentWizard
 
             MLAlgoritmSelector.DataSource = AlgorithmItems;
 
-            openFileDialog1.InitialDirectory = Path.Combine(IniFile.AppDir, "ConfigFiles");
-            openFileDialog1.FileName = "GameLogs.xlsx";
+            //openFileDialog1.InitialDirectory = Path.Combine(IniFile.AppDir, "ConfigFiles");
+            //openFileDialog1.FileName = "GameLogs.xlsx";
 
             Logger.Info($"Loading default ECD from '{Utils.MakePathRelative(Path.Combine(IniFile.AppData, IniFile.AppIni))}'.");
         }
@@ -1762,9 +1800,13 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Do work event information. </param>
         private void Step2_DoWork(object sender, DoWorkEventArgs e)
         {
+            Logger.Info("Step2");
+
             StateMachine.Flags[StateMachine.STEP2_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
+
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             //ConsoleDialog.HighVideo();
             //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
@@ -1896,9 +1938,13 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Do work event information. </param>
         private void Step3_DoWork(object sender, DoWorkEventArgs e)
         {
+            Logger.Info("Step3");
+
             StateMachine.Flags[StateMachine.STEP3_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
+
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             //ConsoleDialog.HighVideo();
             //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
@@ -1914,8 +1960,11 @@ namespace StealthAssessmentWizard
 
             Data.DumpStatisticalSubModels();
 
-            Data.SaveModelToExcel(filename);
-            Data.SaveECD(Path.ChangeExtension(filename, ".ini"));
+            Data.SaveModelToExcel(filenameTS);
+
+#warning Competenses & Facets from model are not saved.
+
+            Data.SaveECD(Path.ChangeExtension(filenameTS, ".json"));
 
             //! Needs to move to after the ML Options.
             //
@@ -1950,27 +1999,27 @@ namespace StealthAssessmentWizard
 
                     //! Generate .arff files for facets.
                     Debug.WriteLine("Generating .arff files for the declared facets...");
-                    BayesNet.GenerateArffFilesForFacets(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
+                    BayesNet.GenerateArffFilesForFacets(MyProject, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
                     Debug.WriteLine("Generation of .arff files completed.\r\n");
 
                     //! Select ML algorithms for the declared facets.
                     //
                     Debug.WriteLine("Select ML algoritms for te declared facets....");
-                    Data.LabelledOutputF = BayesNet.SelectLabelsforFacets(Data.competencies.ToTuple(), Data.LabelledData);
+                    Data.LabelledOutputF = BayesNet.SelectLabelsforFacets(MyProject, Data.competencies.ToTuple(), Data.LabelledData);
                     Debug.WriteLine("Selection completed.\r\n");
 
                     //! Generate .arff files for competencies.
                     Debug.WriteLine("Generating .arff files for the declared competencies...");
-                    BayesNet.GenerateArffFilesForCompetencies(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
-                    BayesNet.GenerateArffFilesForUniCompetencies(Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+                    BayesNet.GenerateArffFilesForCompetencies(MyProject, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
+                    BayesNet.GenerateArffFilesForUniCompetencies(MyProject, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
                     Debug.WriteLine("Generation of .arff files completed.\r\n");
 
 
                     //! Select ML algorithms for the declared competencies.
                     //
                     Debug.WriteLine("Select ML algoritms for te declared competencies....");
-                    Data.LabelledOutputC = BayesNet.SelectLabelsforCompetencies(Data.competencies.ToTuple(), Data.LabelledData);
-                    Data.UniLabelledOutputC = BayesNet.SelectLabelsforUniCompetencies(Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
+                    Data.LabelledOutputC = BayesNet.SelectLabelsforCompetencies(MyProject, Data.competencies.ToTuple(), Data.LabelledData);
+                    Data.UniLabelledOutputC = BayesNet.SelectLabelsforUniCompetencies(MyProject, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
                     Debug.WriteLine("Selection completed.\r\n");
                 }
 
@@ -1983,11 +2032,11 @@ namespace StealthAssessmentWizard
                 //! Write Labels on Excel file.
                 {
                     Debug.WriteLine("Adding labels for the declared facets to Excel file...");
-                    Excel.AddLabelsforFacets(Data.competencies.ToTuple(), Data.CheckLabels, Data.OutputLabels, filename);
+                    Excel.AddLabelsforFacets(Data.competencies.ToTuple(), Data.CheckLabels, Data.OutputLabels, filenameTS);
                     Debug.WriteLine("Adding labels for the declared competencies to Excel file...");
-                    Excel.AddLabelsforCompetencies(Data.competencies.ToTuple(), Data.CheckLabels, Data.OutputLabels, filename);
+                    Excel.AddLabelsforCompetencies(Data.competencies.ToTuple(), Data.CheckLabels, Data.OutputLabels, filenameTS);
                     Debug.WriteLine("Adding labels for the declared uni-competencies to Excel file...");
-                    Excel.AddLabelsforUniCompetencies(Data.unicompetencies.ToTuple(), Data.CheckLabelsUni, Data.UniLabelledOutputC.Item3, filename);
+                    Excel.AddLabelsforUniCompetencies(Data.unicompetencies.ToTuple(), Data.CheckLabelsUni, Data.UniLabelledOutputC.Item3, filenameTS);
                     Debug.WriteLine("Adding labels completed.\r\n");
 
                     Data.observables = BayesNet.LoadAllData(filename);
@@ -2071,9 +2120,13 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Do work event information. </param>
         private void Step4_DoWork(object sender, DoWorkEventArgs e)
         {
+            Logger.Info("Step4");
+
             StateMachine.Flags[StateMachine.STEP4_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
+
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
@@ -2100,22 +2153,22 @@ namespace StealthAssessmentWizard
 
             //! Generate .arff files for facets.
             Debug.WriteLine("Generating .arff files for the declared facets...");
-            BayesNet.GenerateArffFilesForFacets(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
+            BayesNet.GenerateArffFilesForFacets(MyProject, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
             Debug.WriteLine("Generation of .arff files completed.\r\n");
 
             //! Select ML algorithms for the declared facets.
             Debug.WriteLine("Select ML algoritms for te declared facets....");
-            Data.LabelledOutputF = BayesNet.SelectMLforFacets(Data.competencies.ToTuple(), Data.LabelledData);
+            Data.LabelledOutputF = BayesNet.SelectMLforFacets(MyProject, Data.competencies.ToTuple(), Data.LabelledData);
             Debug.WriteLine("Selection completed.\r\n");
 
             //! Generate .arff files for competencies.
             Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForCompetencies(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
+            BayesNet.GenerateArffFilesForCompetencies(MyProject, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
             Debug.WriteLine("Generation of .arff files completed.\r\n");
 
             //! Select ML algorithms for the declared competencies.
             Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(Data.competencies.ToTuple(), Data.LabelledData);
+            Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(MyProject, Data.competencies.ToTuple(), Data.LabelledData);
             Debug.WriteLine("Selection completed.\r\n");
 
             Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
@@ -2145,12 +2198,12 @@ namespace StealthAssessmentWizard
 
             //! Generate .arff files for competencies.
             Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForUniCompetencies(Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+            BayesNet.GenerateArffFilesForUniCompetencies(MyProject, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
             Debug.WriteLine("Generation of .arff files completed.\r\n");
 
             //! Select ML algorithms for the declared competencies.
             Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
+            Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(MyProject, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
             Debug.WriteLine("Selection completed.\r\n");
 
             Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
@@ -2334,7 +2387,6 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
-
                     String filename = openFileDialog3.FileName;
 
                     //! Load all the available external data.

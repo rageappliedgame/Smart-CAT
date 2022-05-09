@@ -31,9 +31,9 @@ namespace StealthAssessmentWizard
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea10 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend10 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series10 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.panelManager1 = new Controls.PanelManager();
             this.StartNew_Panel = new Controls.ManagedPanel();
@@ -142,7 +142,7 @@ namespace StealthAssessmentWizard
             this.panelManager1.Name = "panelManager1";
             this.panelManager1.SelectedIndex = 4;
             this.panelManager1.SelectedPanel = this.SupportFunction_Panel;
-            this.panelManager1.Size = new System.Drawing.Size(789, 391);
+            this.panelManager1.Size = new System.Drawing.Size(772, 391);
             this.panelManager1.TabIndex = 6;
             this.panelManager1.SelectedIndexChanged += new System.EventHandler(this.PanelManager1_SelectedIndexChanged);
             // 
@@ -155,7 +155,7 @@ namespace StealthAssessmentWizard
             this.StartNew_Panel.Controls.Add(this.label1);
             this.StartNew_Panel.Location = new System.Drawing.Point(0, 0);
             this.StartNew_Panel.Name = "StartNew_Panel";
-            this.StartNew_Panel.Size = new System.Drawing.Size(789, 391);
+            this.StartNew_Panel.Size = new System.Drawing.Size(792, 391);
             this.StartNew_Panel.Text = "Start New";
             // 
             // label5
@@ -214,7 +214,7 @@ namespace StealthAssessmentWizard
             this.ImportData_Panel.Controls.Add(this.label7);
             this.ImportData_Panel.Location = new System.Drawing.Point(0, 0);
             this.ImportData_Panel.Name = "ImportData_Panel";
-            this.ImportData_Panel.Size = new System.Drawing.Size(789, 391);
+            this.ImportData_Panel.Size = new System.Drawing.Size(792, 391);
             this.ImportData_Panel.Text = "Import Data";
             // 
             // button1
@@ -256,7 +256,7 @@ namespace StealthAssessmentWizard
             this.ConfigureECD_Panel.Controls.Add(this.label10);
             this.ConfigureECD_Panel.Location = new System.Drawing.Point(0, 0);
             this.ConfigureECD_Panel.Name = "ConfigureECD_Panel";
-            this.ConfigureECD_Panel.Size = new System.Drawing.Size(789, 391);
+            this.ConfigureECD_Panel.Size = new System.Drawing.Size(792, 391);
             this.ConfigureECD_Panel.Text = "Configure ECD";
             // 
             // label13
@@ -470,7 +470,7 @@ namespace StealthAssessmentWizard
             this.OptimizeML_Panel.Controls.Add(this.label15);
             this.OptimizeML_Panel.Location = new System.Drawing.Point(0, 0);
             this.OptimizeML_Panel.Name = "OptimizeML_Panel";
-            this.OptimizeML_Panel.Size = new System.Drawing.Size(789, 391);
+            this.OptimizeML_Panel.Size = new System.Drawing.Size(792, 391);
             this.OptimizeML_Panel.Text = "Optimize ML";
             // 
             // label16
@@ -529,7 +529,7 @@ namespace StealthAssessmentWizard
             this.SupportFunction_Panel.Controls.Add(this.label24);
             this.SupportFunction_Panel.Location = new System.Drawing.Point(0, 0);
             this.SupportFunction_Panel.Name = "SupportFunction_Panel";
-            this.SupportFunction_Panel.Size = new System.Drawing.Size(789, 391);
+            this.SupportFunction_Panel.Size = new System.Drawing.Size(772, 391);
             this.SupportFunction_Panel.Text = "Support Function";
             // 
             // LoadVandVExternalData
@@ -549,7 +549,7 @@ namespace StealthAssessmentWizard
             | System.Windows.Forms.AnchorStyles.Right)));
             this.propertyGrid2.Location = new System.Drawing.Point(91, 119);
             this.propertyGrid2.Name = "propertyGrid2";
-            this.propertyGrid2.Size = new System.Drawing.Size(1984, 1005);
+            this.propertyGrid2.Size = new System.Drawing.Size(2756, 1396);
             this.propertyGrid2.TabIndex = 19;
             // 
             // label23
@@ -581,7 +581,7 @@ namespace StealthAssessmentWizard
             this.Finish_Panel.Controls.Add(this.label4);
             this.Finish_Panel.Location = new System.Drawing.Point(0, 0);
             this.Finish_Panel.Name = "Finish_Panel";
-            this.Finish_Panel.Size = new System.Drawing.Size(789, 391);
+            this.Finish_Panel.Size = new System.Drawing.Size(792, 391);
             this.Finish_Panel.Text = "Finish";
             // 
             // button3
@@ -596,17 +596,17 @@ namespace StealthAssessmentWizard
             // 
             // chart1
             // 
-            chartArea10.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea10);
-            legend10.Name = "Legend1";
-            this.chart1.Legends.Add(legend10);
+            chartArea2.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chart1.Legends.Add(legend2);
             this.chart1.Location = new System.Drawing.Point(92, 99);
             this.chart1.Name = "chart1";
-            series10.ChartArea = "ChartArea1";
-            series10.LabelToolTip = "#VAL{D0}";
-            series10.Legend = "Legend1";
-            series10.Name = "Series1";
-            this.chart1.Series.Add(series10);
+            series2.ChartArea = "ChartArea1";
+            series2.LabelToolTip = "#VAL{D0}";
+            series2.Legend = "Legend1";
+            series2.Name = "Series1";
+            this.chart1.Series.Add(series2);
             this.chart1.Size = new System.Drawing.Size(408, 235);
             this.chart1.TabIndex = 19;
             this.chart1.Text = "chart1";
@@ -663,7 +663,7 @@ namespace StealthAssessmentWizard
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 498);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(1008, 63);
+            this.panel1.Size = new System.Drawing.Size(988, 63);
             this.panel1.TabIndex = 7;
             // 
             // progressLbl
@@ -691,7 +691,7 @@ namespace StealthAssessmentWizard
             this.nextBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.nextBtn.Enabled = false;
             this.helpProvider1.SetHelpString(this.nextBtn, "Next Button");
-            this.nextBtn.Location = new System.Drawing.Point(840, 28);
+            this.nextBtn.Location = new System.Drawing.Point(832, 28);
             this.nextBtn.Name = "nextBtn";
             this.helpProvider1.SetShowHelp(this.nextBtn, true);
             this.nextBtn.Size = new System.Drawing.Size(75, 23);
@@ -705,7 +705,7 @@ namespace StealthAssessmentWizard
             this.prevBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.prevBtn.Enabled = false;
             this.helpProvider1.SetHelpString(this.prevBtn, "Back button");
-            this.prevBtn.Location = new System.Drawing.Point(759, 28);
+            this.prevBtn.Location = new System.Drawing.Point(751, 28);
             this.prevBtn.Name = "prevBtn";
             this.helpProvider1.SetShowHelp(this.prevBtn, true);
             this.prevBtn.Size = new System.Drawing.Size(75, 23);
@@ -717,7 +717,7 @@ namespace StealthAssessmentWizard
             // cancelBtn
             // 
             this.cancelBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.cancelBtn.Location = new System.Drawing.Point(921, 28);
+            this.cancelBtn.Location = new System.Drawing.Point(913, 28);
             this.cancelBtn.Name = "cancelBtn";
             this.cancelBtn.Size = new System.Drawing.Size(75, 23);
             this.cancelBtn.TabIndex = 1;
@@ -758,7 +758,7 @@ namespace StealthAssessmentWizard
             this.splitContainer1.Panel2.Controls.Add(this.errorBox);
             this.splitContainer1.Panel2.Controls.Add(this.panelManager1);
             this.splitContainer1.Panel2.Padding = new System.Windows.Forms.Padding(5);
-            this.splitContainer1.Size = new System.Drawing.Size(1008, 498);
+            this.splitContainer1.Size = new System.Drawing.Size(988, 498);
             this.splitContainer1.SplitterDistance = 240;
             this.splitContainer1.SplitterWidth = 1;
             this.splitContainer1.TabIndex = 8;
@@ -788,7 +788,7 @@ namespace StealthAssessmentWizard
             this.errorBox.HideSelection = false;
             this.errorBox.Location = new System.Drawing.Point(5, 405);
             this.errorBox.Name = "errorBox";
-            this.errorBox.Size = new System.Drawing.Size(757, 88);
+            this.errorBox.Size = new System.Drawing.Size(737, 88);
             this.errorBox.SmallImageList = this.imageList1;
             this.errorBox.TabIndex = 7;
             this.errorBox.UseCompatibleStateImageBehavior = false;
@@ -857,6 +857,7 @@ namespace StealthAssessmentWizard
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "MainForm";
+            this.Padding = new System.Windows.Forms.Padding(0, 0, 20, 0);
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);

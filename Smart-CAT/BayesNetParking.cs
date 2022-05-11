@@ -27,9 +27,9 @@ namespace StealthAssessmentWizard
         [Obsolete]
         internal static void GenerateArffFilesForCA(
                     String MyProject,
-                    Tuple<string[], string[][]> CompetencyModel,
-                    Tuple<int[][], int[][][]> RandomLabelledData,
-                    Tuple<int[][], int[][][]> OutputLabels)
+                    (string[], string[][]) CompetencyModel,
+                    (int[][], int[][][]) RandomLabelledData,
+                    (int[][], int[][][]) OutputLabels)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
@@ -427,8 +427,8 @@ namespace StealthAssessmentWizard
         [Obsolete]
         internal static void GenerateArffFilesforRandomization(
             String MyProject,
-            Tuple<string[], string[][]> CompetencyModel,
-            Tuple<int[][], int[][][]> ExternalDataCF)
+            (string[], string[][]) CompetencyModel,
+            (int[][], int[][][]) ExternalDataCF)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
@@ -691,9 +691,9 @@ namespace StealthAssessmentWizard
         /// The instances external facets competencies.
         /// </returns>
         [Obsolete]
-        internal static Tuple<int[][], int[][][]> LoadInstancesExternalFacetsCompetencies(
-            Tuple<string[], string[][]> AllExternalMeasurementData,
-            Tuple<string[], string[][]> CompetencyModel)
+        internal static (int[][], int[][][]) LoadInstancesExternalFacetsCompetencies(
+            (string[], string[][]) AllExternalMeasurementData,
+            (string[], string[][]) CompetencyModel)
         {
             //! Stores the external data for the given competencies.
             int[][] ExternalDataCompetencies = new int[CompetencyModel.Item1.Length][];
@@ -702,7 +702,7 @@ namespace StealthAssessmentWizard
             int[][][] ExternalDataFacets = new int[CompetencyModel.Item1.Length][][];
 
             //! Stores the external data for the given facets and competencies.
-            Tuple<int[][], int[][][]> ExternalDataCF = new Tuple<int[][], int[][][]>(ExternalDataCompetencies, ExternalDataFacets);
+            (int[][], int[][][]) ExternalDataCF = (ExternalDataCompetencies, ExternalDataFacets);
 
             //! Initialization of arrays.
 

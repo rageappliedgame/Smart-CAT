@@ -306,7 +306,7 @@ namespace StealthAssessmentWizard
         /// </summary>
         ///
         /// <returns>
-        /// This object as a Tuple&lt;string[],string[][]&gt;
+        /// This object as a (string[],string[][])
         /// </returns>
         public (string[] competencies, string[][] facets) ToTuple()
         {

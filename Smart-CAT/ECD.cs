@@ -42,10 +42,10 @@ namespace StealthAssessmentWizard
     {
         #region Fields
 
-        internal static readonly Char ListSeparator_Colon = ':';
-        internal static readonly Char ListSeparator_Comma = ',';
-        internal static readonly Char ListSeparator_Tilde = '~';
-        internal static readonly Char ListSeparator_VerticalBar = '|';
+        internal const Char ListSeparator_Colon = ':';
+        internal const Char ListSeparator_Comma = ',';
+        internal const Char ListSeparator_Tilde = '~';
+        internal const Char ListSeparator_VerticalBar = '|';
 
         #endregion Fields
 
@@ -70,7 +70,7 @@ namespace StealthAssessmentWizard
         /// <param name="filename"> (Optional) Filename of the file. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;string[],string[][]&gt;
+        /// A (string[],string[][])
         /// </returns>
         internal static Models LoadModelData(String filename = null)
         {

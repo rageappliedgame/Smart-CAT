@@ -83,13 +83,13 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Use Epplus to read a xlsx file int a Tuple.
+        /// Use Epplus to read an xlsx file into a Tuple.
         /// </summary>
         ///
         /// <param name="filename"> Filename of the file. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;string[],string[][]&gt;
+        /// A (string[],string[][])
         /// </returns>
         internal static Observables EPPlus(string filename)
         {

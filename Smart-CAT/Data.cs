@@ -72,7 +72,6 @@ namespace StealthAssessmentWizard
         /// Note: Could be 1 dimension flatter.
         /// </summary>
         internal static (bool[][] competencies, bool[][][] facets) CheckLabels = (competencies: Array.Empty<bool[]>(), facets: Array.Empty<bool[][]>());
-        //x internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(Array.Empty<bool[]>(), Array.Empty<bool[][]>());
 
 #if NAMED_TUPLE_SYNTAX
 
@@ -92,10 +91,9 @@ namespace StealthAssessmentWizard
         /// The instance.
         /// </summary>
         internal static (double[][][][] facets, double[][][][] observables) Inst = (facets: Array.Empty<double[][][]>(), observables: Array.Empty<double[][][]>());
-        //x internal static Tuple<double[][][][], double[][][][]> Inst_ = new Tuple<double[][][][], double[][][][]>(Array.Empty<double[][][]>(), Array.Empty<double[][][]>());
 
         /// <summary>
-        /// Stores instances per statistical submodel.
+        /// Stores instances per statistical sub model.
         /// </summary>
         internal static double[][][][] Instances = Array.Empty<double[][][]>();
 
@@ -103,19 +101,16 @@ namespace StealthAssessmentWizard
         /// Stores the labelling data for the given facets and competencies.
         /// </summary>
         internal static (int[][] competencies, int[][][] facets) LabelledData = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>());
-        //x internal static Tuple<int[][], int[][][]> LabelledData = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
 
         /// <summary>
         /// The labeled output competencies.
         /// </summary>
         internal static (int[][] competencies, int[][][] facets, int[][] output) LabelledOutputC = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>(), output: Array.Empty<int[]>());
-        //x internal static Tuple<int[][], int[][][], int[][]> LabelledOutputC = Tuple.Create<int[][], int[][][], int[][]>(Array.Empty<int[]>(), Array.Empty<int[][]>(), Array.Empty<int[]>());
 
         /// <summary>
         /// The labeled output facets.
         /// </summary>
         internal static (int[][] competencies, int[][][] facets, int[][][] output) LabelledOutputF = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>(), output: Array.Empty<int[][]>());
-        //x internal static Tuple<int[][], int[][][], int[][][]> LabelledOutputF = Tuple.Create<int[][], int[][][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>(), Array.Empty<int[][]>());
 
         /// <summary>
         /// Options for controlling the miles.
@@ -126,14 +121,13 @@ namespace StealthAssessmentWizard
         /// The output labels.
         /// </summary>
         internal static (int[][] competencies, int[][][] facets) OutputLabels = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>());
-        //x internal static Tuple<int[][], int[][][]> OutputLabels = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
 
         /// <summary>
         /// The performance.
         /// </summary>
         internal static IPerformance Performance;
 
-        internal static Tuple<double[][][], double[][][]> InstUni = new Tuple<double[][][], double[][][]>(Array.Empty<double[][]>(), Array.Empty<double[][]>());
+        internal static (double[][][], double[][][]) InstUni = (Array.Empty<double[][]>(), Array.Empty<double[][]>());
 
         internal static double[][][] InstancesUni = Array.Empty<double[][]>();
 
@@ -141,19 +135,17 @@ namespace StealthAssessmentWizard
 
         internal static int[][] LabelledDataUni = Array.Empty<int[]>();
 
-        internal static Tuple<int[][], int[][], int[][]> UniLabelledOutputC = Tuple.Create<int[][], int[][], int[][]>(Array.Empty<int[]>(), Array.Empty<int[]>(), Array.Empty<int[]>());
+        internal static (int[][], int[][], int[][]) UniLabelledOutputC = (Array.Empty<int[]>(), Array.Empty<int[]>(), Array.Empty<int[]>());
 
-        internal static Tuple<string[], double[][]> spearmansMulti = new Tuple<string[], double[][]>(Array.Empty<string>(), Array.Empty<double[]>());
+        internal static (string[], double[][]) spearmansMulti = (Array.Empty<string>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[][]> spearmansUni = new Tuple<string[], double[][]>(Array.Empty<string>(), Array.Empty<double[]>());
+        internal static (string[], double[][]) spearmansUni = (Array.Empty<string>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[], string[][], double[][]> cronbachAlphaMulti = new Tuple<string[], double[], string[][], double[][]>(Array.Empty<string>(), Array.Empty<double>(), Array.Empty<string[]>(), Array.Empty<double[]>()) { };
+        internal static (string[], double[], string[][], double[][]) cronbachAlphaMulti = (Array.Empty<string>(), Array.Empty<double>(), Array.Empty<string[]>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[]> cronbachAlphaUni = new Tuple<string[], double[]>(Array.Empty<string>(), Array.Empty<double>()) { };
+        internal static (string[], double[]) cronbachAlphaUni = (Array.Empty<string>(), Array.Empty<double>());
 
-        //x internal static double pSignificance = new double();
-
-        internal static Tuple<string[], string[][]> ExternalData = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
+        internal static (string[], string[][]) ExternalData = (Array.Empty<string>(), Array.Empty<string[]>());
 
         #endregion Fields
 

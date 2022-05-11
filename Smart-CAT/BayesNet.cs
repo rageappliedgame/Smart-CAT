@@ -73,14 +73,14 @@ namespace StealthAssessmentWizard
         /// <param name="CompetencyModel"> The competency model. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;double[][],double[][][]&gt;
+        /// A (double[][],double[][][])
         /// </returns>
-        public static Tuple<string[], double[][]> CorrelationAnalysisMulti(
+        public static (string[], double[][]) CorrelationAnalysisMulti(
             string[] MultiCompetencies,
             int[][] Output,
-            Tuple<string[], string[][]> ExternalData)
+            (string[], string[][]) ExternalData)
         {
-            Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[MultiCompetencies.Length], new double[MultiCompetencies.Length][]);
+            (string[], double[][]) spearmans = (new string[MultiCompetencies.Length], new double[MultiCompetencies.Length][]);
 
             // Check if same legends exist for the multicompetencies in external data.
             for (int i = 0; i < MultiCompetencies.Length; i++)
@@ -135,17 +135,17 @@ namespace StealthAssessmentWizard
         /// <param name="CompetencyModel"> The competency model. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;double[][],double[][][]&gt;
+        /// A (double[][],double[][][])
         /// </returns>
-        public static Tuple<string[], double[][]> CorrelationAnalysisUni(
+        public static (string[], double[][]) CorrelationAnalysisUni(
             string[] UniCompetencies,
             int[][] Output,
-            Tuple<string[], string[][]> ExternalData)
+            (string[], string[][]) ExternalData)
         {
             //int[] classifications = Array.Empty<int>();
             //int[] external = Array.Empty<int>();
 
-            Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[UniCompetencies.Length], new double[UniCompetencies.Length][]);
+            (string[], double[][]) spearmans = (new string[UniCompetencies.Length], new double[UniCompetencies.Length][]);
 
             //Check if same legends exist for the multi-competecies in external data.
             for (int i = 0; i < UniCompetencies.Length; i++)
@@ -326,7 +326,7 @@ namespace StealthAssessmentWizard
                         double RMSE = 0;
                         double RAE = 0;
                         double RRSE = 0;
-                        Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                        (double, double, double, double) Performace = (MAE, RMSE, RAE, RRSE);
                         Performace = PerformaceStatistics(expected, predicted);
 
                         file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
@@ -520,7 +520,7 @@ namespace StealthAssessmentWizard
                     double RMSE = 0;
                     double RAE = 0;
                     double RRSE = 0;
-                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                    (double, double, double, double) Performace = (MAE, RMSE, RAE, RRSE);
                     Performace = PerformaceStatistics(expected, predicted);
 
                     file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
@@ -895,7 +895,7 @@ namespace StealthAssessmentWizard
                         double RMSE = 0;
                         double RAE = 0;
                         double RRSE = 0;
-                        Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                        (double, double, double, double) Performace = (MAE, RMSE, RAE, RRSE);
                         Performace = PerformaceStatistics(expected, predicted);
 
                         file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
@@ -1103,7 +1103,7 @@ namespace StealthAssessmentWizard
                     double RMSE = 0;
                     double RAE = 0;
                     double RRSE = 0;
-                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                    (double, double, double, double) Performace = (MAE, RMSE, RAE, RRSE);
                     Performace = PerformaceStatistics(expected, predicted);
 
                     file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
@@ -1158,9 +1158,9 @@ namespace StealthAssessmentWizard
         /// <param name="predicted"> The predicted. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;double,double,double,double&gt;
+        /// A (double,double,double,double)
         /// </returns>
-        public static Tuple<double, double, double, double> PerformaceStatistics(
+        public static (double, double, double, double) PerformaceStatistics(
             int[] expected,
             int[] predicted)
         {
@@ -1199,7 +1199,7 @@ namespace StealthAssessmentWizard
             GenericVector rrse = Utils.engine.Evaluate("rrse(expected, predicted)").AsList();
             double RRSE = rrse.AsNumeric().First() * 100;
 
-            return new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+            return (MAE, RMSE, RAE, RRSE);
         }
 
         /// <summary>
@@ -1211,9 +1211,9 @@ namespace StealthAssessmentWizard
         /// <param name="Insts">               The insts. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;string[],double[],string[][],double[][]&gt;
+        /// A (string[],double[],string[][],double[][])
         /// </returns>
-        public static Tuple<string[], double[], string[][], double[][]> ReliabilityAnalysisMulti(
+        public static (string[], double[], string[][], double[][]) ReliabilityAnalysisMulti(
             (string[] competencies, string[][] facets) CompetencyModel,
             string[][][] StatisticalSubmodel,
             double[][][][] Insts)
@@ -1341,10 +1341,10 @@ namespace StealthAssessmentWizard
                 }
             }
 
-            return new Tuple<string[], double[], string[][], double[][]>(CompetencyModel.competencies, CronAlphaComp, CompetencyModel.facets, CronAlphaFacet);
+            return (CompetencyModel.competencies, CronAlphaComp, CompetencyModel.facets, CronAlphaFacet);
         }
 
-        public static Tuple<string[], double[]> ReliabilityAnalysisUni(
+        public static (string[], double[]) ReliabilityAnalysisUni(
             string[] CompetencyModel,
             double[][][] InstUni,
             string[][] UniEvidenceModel)
@@ -1386,7 +1386,7 @@ namespace StealthAssessmentWizard
 
             }
 
-            return new Tuple<string[], double[]>(CompetencyModel, CronAlphaComp);
+            return (CompetencyModel, CronAlphaComp);
         }
 
         public static int[] UniDecisionTreesAccord_C(
@@ -1508,7 +1508,7 @@ namespace StealthAssessmentWizard
                     double RMSE = 0;
                     double RAE = 0;
                     double RRSE = 0;
-                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                    (double, double, double, double) Performace = (MAE, RMSE, RAE, RRSE);
                     Performace = PerformaceStatistics(expected, predicted);
 
                     file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
@@ -1703,7 +1703,7 @@ namespace StealthAssessmentWizard
                     double RMSE = 0;
                     double RAE = 0;
                     double RRSE = 0;
-                    Tuple<double, double, double, double> Performace = new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
+                    (double, double, double, double) Performace = (MAE, RMSE, RAE, RRSE);
                     Performace = PerformaceStatistics(expected, predicted);
 
                     file.WriteLine("{0}", Math.Round(Performace.Item1, 4));
@@ -1790,7 +1790,7 @@ namespace StealthAssessmentWizard
         /// <param name="CompetencyModel"> The competency model. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;bool[][],bool[][][]&gt;
+        /// A (bool[][],bool[][][])
         /// </returns>
         internal static (bool[][] competencies, bool[][][] facets) CheckLabelling(
             Observables observables,
@@ -2905,7 +2905,7 @@ namespace StealthAssessmentWizard
         }
 
 
-        internal static Tuple<double[][][], double[][][]> LoadInstancesUni(
+        internal static (double[][][], double[][][]) LoadInstancesUni(
             Observables observables, string[] UniCompetencyModel,
             String[][] UniEvidenceModel)
         {
@@ -2914,7 +2914,7 @@ namespace StealthAssessmentWizard
 
             //! Stores instances per declared facet in the competency model.
             double[][][] Instances = new double[UniCompetencyModel.Length][][];
-            Tuple<double[][][], double[][][]> Inst = new Tuple<double[][][], double[][][]>(Instances, InstancesPerObservable);
+            (double[][][], double[][][]) Inst = (Instances, InstancesPerObservable);
 
             //! Initialisation of arrays.
             for (int x = 0; x < UniCompetencyModel.Length; x++)
@@ -3126,7 +3126,7 @@ namespace StealthAssessmentWizard
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][]&gt;
+        /// A (int[][],int[][][],int[][])
         /// </returns>
         internal static (int[][] competencies, int[][][] facets, int[][] output) SelectLabelsforCompetencies(
             String MyProject,
@@ -3181,7 +3181,7 @@ namespace StealthAssessmentWizard
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
+        /// A (int[][],int[][][],int[][][])
         /// </returns>
         internal static (int[][] competencies, int[][][] facets, int[][][] output) SelectLabelsforFacets(
             String MyProject,
@@ -3243,9 +3243,9 @@ namespace StealthAssessmentWizard
         /// <param name="UniLabelledData">    Information describing the uni labelled. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;int[][],int[][],int[][]&gt;
+        /// A (int[][],int[][],int[][])
         /// </returns>
-        internal static Tuple<int[][], int[][], int[][]> SelectLabelsforUniCompetencies(
+        internal static (int[][], int[][], int[][]) SelectLabelsforUniCompetencies(
             String MyProject,
             String[] UniCompetencyModel,
             int[][] UniLabelledData)
@@ -3255,7 +3255,7 @@ namespace StealthAssessmentWizard
 
             int[][] output = new int[UniCompetencyModel.Length][];
 
-            Tuple<int[][], int[][], int[][]> LabelledOutput = new Tuple<int[][], int[][], int[][]>(UniLabelledData, UniLabelledData, output);
+            (int[][], int[][], int[][]) LabelledOutput = (UniLabelledData, UniLabelledData, output);
 
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             for (int x = 0; x < UniCompetencyModel.Length; x++)
@@ -3305,7 +3305,7 @@ namespace StealthAssessmentWizard
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][]&gt;
+        /// A (int[][],int[][][],int[][])
         /// </returns>
         ///
         /// ### <param name="competencyModel"> The competency model. </param>
@@ -3373,7 +3373,7 @@ namespace StealthAssessmentWizard
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
+        /// A (int[][],int[][][],int[][][])
         /// </returns>
         internal static (int[][] competencies, int[][][] facets, int[][][] output) SelectMLforFacets(
             String MyProject,
@@ -3449,9 +3449,9 @@ namespace StealthAssessmentWizard
         /// <param name="LabelledDataUni">    The labelled data uni. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;int[][],int[][],int[][]&gt;
+        /// A (int[][],int[][],int[][])
         /// </returns>
-        internal static Tuple<int[][], int[][], int[][]> SelectMLforUniCompetencies(
+        internal static (int[][], int[][], int[][]) SelectMLforUniCompetencies(
             String MyProject,
             String[] UniCompetencyModel,
             int[][] LabelledDataUni)
@@ -3459,7 +3459,8 @@ namespace StealthAssessmentWizard
             //! This variable allows access to functions of the Exceptions class.
             int[][] output = new int[UniCompetencyModel.Length][];
             int[] outputLabels;
-            Tuple<int[][], int[][], int[][]> LabelledOutput = new Tuple<int[][], int[][], int[][]>(LabelledDataUni, LabelledDataUni, output);
+
+            (int[][], int[][], int[][]) LabelledOutput = (LabelledDataUni, LabelledDataUni, output);
 
             //! Browse for labelled data for each declared facet and decide which ML algorithm to apply accordingly.
             for (int x = 0; x < UniCompetencyModel.Length; x++)

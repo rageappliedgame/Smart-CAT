@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright 2020 Open University of the Netherlands (OUNL)
+* Copyright 2022 Open University of the Netherlands (OUNL)
 *
 * Authors: Konstantinos Georgiadis, Wim van der Vegt.
 * Organization: Open University of the Netherlands (OUNL).

@@ -72,12 +72,14 @@ namespace StealthAssessmentWizard
                     return false;
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
             {
                 Logger.Error(e.Message);
 
                 return true;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         /// <summary>
@@ -181,7 +183,11 @@ namespace StealthAssessmentWizard
         /// <param name="CheckLabels">     The check labels. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         /// <param name="filename">        Filename of the file. </param>
-        internal static void AddLabelsforCompetencies(Tuple<string[], string[][]> CompetencyModel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData, string filename)
+        internal static void AddLabelsforCompetencies(
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (bool[][] competencies, bool[][][] facets) CheckLabels,
+            (int[][] competencies, int[][][] facets) LabelledData,
+            string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             // 
@@ -193,21 +199,21 @@ namespace StealthAssessmentWizard
                 {
                     using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
                     {
-                        for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+                        for (int x = 0; x < CompetencyModel.competencies.Length; x++)
                         {
-                            if (!CheckLabels.Item1[x][0])
+                            if (!CheckLabels.competencies[x][0])
                             {
                                 Int32 i = ws.Dimension.Columns;
-                                Int32 length = LabelledData.Item1[x].Length;
+                                Int32 length = LabelledData.competencies[x].Length;
 
-                                Logger.Info($"Adding {length} Competency Labels in Column {i}: '{CompetencyModel.Item1[x]}'.");
+                                Logger.Info($"Adding {length} Competency Labels in Column {i}: '{CompetencyModel.competencies[x]}'.");
 
-                                ws.Cells[1, i + 1].Value = CompetencyModel.Item1[x].ToString();
+                                ws.Cells[1, i + 1].Value = CompetencyModel.competencies[x].ToString();
                                 ws.Cells[1, i + 1].Style.Font.Bold = true;
 
                                 for (int y = 0; y < length; y++)
                                 {
-                                    ws.Cells[2 + y, i + 1].Value = LabelledData.Item1[x][y];
+                                    ws.Cells[2 + y, i + 1].Value = LabelledData.competencies[x][y];
                                 }
                             }
                         }
@@ -226,7 +232,11 @@ namespace StealthAssessmentWizard
         /// <param name="CheckLabels">     The check labels. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         /// <param name="filename">        Filename of the file. </param>
-        internal static void AddLabelsforFacets(Tuple<string[], string[][]> CompetencyModel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData, string filename)
+        internal static void AddLabelsforFacets(
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (bool[][] competencies, bool[][][] facets) CheckLabels,
+            (int[][] competencies, int[][][] facets) LabelledData,
+            string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             // 
@@ -239,23 +249,23 @@ namespace StealthAssessmentWizard
                     using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
                     {
 
-                        for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+                        for (int x = 0; x < CompetencyModel.competencies.Length; x++)
                         {
-                            for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                            for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                             {
-                                if (!CheckLabels.Item2[x][y][0])
+                                if (!CheckLabels.facets[x][y][0])
                                 {
                                     Int32 i = ws.Dimension.Columns;
-                                    Int32 length = LabelledData.Item1[x].Length;
+                                    Int32 length = LabelledData.competencies[x].Length;
 
-                                    Logger.Info($"Adding {length} Facet Labels in Column {i}: '{CompetencyModel.Item2[x][y]}'.");
+                                    Logger.Info($"Adding {length} Facet Labels in Column {i}: '{CompetencyModel.facets[x][y]}'.");
 
-                                    ws.Cells[1, i + 1].Value = CompetencyModel.Item2[x][y].ToString();
+                                    ws.Cells[1, i + 1].Value = CompetencyModel.facets[x][y].ToString();
                                     ws.Cells[1, i + 1].Style.Font.Bold = true;
 
                                     for (int w = 0; w < length; w++)
                                     {
-                                        ws.Cells[2 + w, i + 1].Value = LabelledData.Item2[x][y][w];
+                                        ws.Cells[2 + w, i + 1].Value = LabelledData.facets[x][y][w];
                                     }
                                 }
                             }
@@ -275,7 +285,11 @@ namespace StealthAssessmentWizard
         /// <param name="UniCheckLabels">     The uni check labels. </param>
         /// <param name="UniLabelledData">    Information describing the uni labelled. </param>
         /// <param name="filename">           Filename of the file. </param>
-        internal static void AddLabelsforUniCompetencies(string[] UniCompetencyModel, bool[][] UniCheckLabels, int[][] UniLabelledData, string filename)
+        internal static void AddLabelsforUniCompetencies(
+            string[] UniCompetencyModel,
+            bool[][] UniCheckLabels,
+            int[][] UniLabelledData,
+            string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             // 

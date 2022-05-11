@@ -308,15 +308,15 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// This object as a Tuple&lt;string[],string[][]&gt;
         /// </returns>
-        public Tuple<string[], string[][]> ToTuple()
+        public (string[] competencies, string[][] facets) ToTuple()
         {
-            Tuple<string[], string[][]> tuple = new Tuple<string[], string[][]>(
-                Names.ToArray(),
-                new String[Names.Count()][]
-                );
+            (string[] competencies, string[][] facets) tuple = (
+                competencies: Names.ToArray(),
+                facets: new String[Names.Count()][]);
+
             for (Int32 i = 0; i < Names.Count(); i++)
             {
-                tuple.Item2[i] = this[i].Select(p => p.FacetName).ToArray();
+                tuple.facets[i] = this[i].Select(p => p.FacetName).ToArray();
             }
 
             return tuple;

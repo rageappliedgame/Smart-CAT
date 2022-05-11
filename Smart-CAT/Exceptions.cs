@@ -29,6 +29,9 @@
 */
 namespace StealthAssessmentWizard
 {
+    using System;
+
+    [Obsolete]
     public class Exceptions
     {
     }

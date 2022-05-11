@@ -38,6 +38,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BayesNet.cs" />
+    <Compile Include="BayesNetParking.cs" />
     <Compile Include="JsonHelper.cs" />
     <Compile Include="GCI.cs" />
     <Compile Include="Logger.cs" />

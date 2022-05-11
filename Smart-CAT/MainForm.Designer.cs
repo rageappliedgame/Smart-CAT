@@ -306,7 +306,7 @@ namespace StealthAssessmentWizard
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(151, 132);
             this.contextMenuStrip1.Tag = "Statistical Model";
-            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
+            this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStrip1_Opening);
             // 
             // competencyToolStripMenuItem
             // 
@@ -621,7 +621,7 @@ namespace StealthAssessmentWizard
             this.groupedComboBox1.Name = "groupedComboBox1";
             this.groupedComboBox1.Size = new System.Drawing.Size(218, 21);
             this.groupedComboBox1.TabIndex = 18;
-            this.groupedComboBox1.SelectedIndexChanged += new System.EventHandler(this.groupedComboBox1_SelectedIndexChanged);
+            this.groupedComboBox1.SelectedIndexChanged += new System.EventHandler(this.GroupedComboBox1_SelectedIndexChanged);
             // 
             // button2
             // 
@@ -736,7 +736,7 @@ namespace StealthAssessmentWizard
             this.helpBtn.TabIndex = 0;
             this.helpBtn.Text = "&Help";
             this.helpBtn.UseVisualStyleBackColor = true;
-            this.helpBtn.Click += new System.EventHandler(this.helpBtn_Click);
+            this.helpBtn.Click += new System.EventHandler(this.HelpBtn_Click);
             // 
             // splitContainer1
             // 

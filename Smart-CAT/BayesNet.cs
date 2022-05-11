@@ -61,7 +61,7 @@ namespace StealthAssessmentWizard
 
 #endif
 
-    public static class BayesNet
+    public static partial class BayesNet
     {
         #region Methods
 
@@ -75,10 +75,11 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;double[][],double[][][]&gt;
         /// </returns>
-        public static Tuple<string[], double[][]> CorrelationAnalysisMulti(string[] MultiCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
+        public static Tuple<string[], double[][]> CorrelationAnalysisMulti(
+            string[] MultiCompetencies,
+            int[][] Output,
+            Tuple<string[], string[][]> ExternalData)
         {
-            int[] classifications = Array.Empty<int>();
-            int[] external = Array.Empty<int>();
             Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[MultiCompetencies.Length], new double[MultiCompetencies.Length][]);
 
             // Check if same legends exist for the multicompetencies in external data.
@@ -91,13 +92,15 @@ namespace StealthAssessmentWizard
                         // Initialize arrays.
 #warning check if size of arrays is same.
 
-                        classifications = new int[Output[i].Length];
+                        int[] classifications = new int[Output[i].Length];
+
                         for (int y = 0; y < Output[i].Length; y++)
                         {
                             classifications[y] = Output[i][y];
                         }
 
-                        external = new int[ExternalData.Item2[x].Length];
+                        int[] external = new int[ExternalData.Item2[x].Length];
+
                         for (int k = 0; k < ExternalData.Item2[x].Length; k++)
                         {
                             external[k] = Convert.ToInt32(ExternalData.Item2[x][k]);
@@ -134,10 +137,14 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;double[][],double[][][]&gt;
         /// </returns>
-        public static Tuple<string[], double[][]> CorrelationAnalysisUni(string[] UniCompetencies, int[][] Output, Tuple<string[], string[][]> ExternalData)
+        public static Tuple<string[], double[][]> CorrelationAnalysisUni(
+            string[] UniCompetencies,
+            int[][] Output,
+            Tuple<string[], string[][]> ExternalData)
         {
-            int[] classifications = Array.Empty<int>();
-            int[] external = Array.Empty<int>();
+            //int[] classifications = Array.Empty<int>();
+            //int[] external = Array.Empty<int>();
+
             Tuple<string[], double[][]> spearmans = new Tuple<string[], double[][]>(new string[UniCompetencies.Length], new double[UniCompetencies.Length][]);
 
             //Check if same legends exist for the multi-competecies in external data.
@@ -150,13 +157,13 @@ namespace StealthAssessmentWizard
                         //Initialize arrays.
 #warning check if size of arrays is same.
 
-                        classifications = new int[Output[i].Length];
+                        int[] classifications = new int[Output[i].Length];
                         for (int y = 0; y < Output[i].Length; y++)
                         {
                             classifications[y] = Output[i][y];
                         }
 
-                        external = new int[ExternalData.Item2[x].Length];
+                        int[] external = new int[ExternalData.Item2[x].Length];
                         for (int k = 0; k < ExternalData.Item2[x].Length; k++)
                         {
                             external[k] = Convert.ToInt32(ExternalData.Item2[x][k]);
@@ -193,7 +200,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] DecisionTreesAccord_C(String MyProject, ArffReader reader, string Competency)
+        public static int[] DecisionTreesAccord_C(
+            String MyProject,
+            ArffReader reader,
+            String Competency)
         {
             int[] predicted = Array.Empty<int>();
 
@@ -365,10 +375,16 @@ namespace StealthAssessmentWizard
                     ini.UpdateFile();
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (ArgumentException)
             {
                 Logger.Error("Attribute is constant. Changing seed.");
             }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
 
             return predicted;
         }
@@ -384,7 +400,11 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] DecisionTreesAccord_F(String MyProject, ArffReader reader, string Competency, string Facet)
+        public static int[] DecisionTreesAccord_F(
+            String MyProject,
+            ArffReader reader,
+            String Competency,
+            String Facet)
         {
             ArffHeader header = reader.ReadHeader();
             Object[][] randData = reader.ReadAllInstances();
@@ -553,164 +573,6 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Runs Gaussian Mixture Model clustering from the Accord library.
-        /// </summary>
-        ///
-        /// <param name="MyProject">  my project. </param>
-        /// <param name="reader">     The reader. </param>
-        /// <param name="Competency"> The competency. </param>
-        /// <param name="Facet">      The facet. </param>
-        ///
-        /// <returns>
-        /// An int[].
-        /// </returns>
-        ///
-        /// ### <param name="insts"> The insts. </param>
-        public static int[] GaussianMixtureModel(String MyProject, ArffReader reader, string Competency, string Facet)
-        {
-            Accord.Math.Random.Generator.Seed = 1;
-
-            //Instances randData = new Instances(insts);
-
-            ArffHeader header = reader.ReadHeader();
-            object[][] randData = reader.ReadAllInstances();
-
-            //! Initialize arrays.
-            double[][] GameLogs = new double[randData.Length][];
-
-            for (int i = 0; i < randData.Length; i++)
-            {
-                GameLogs[i] = new double[header.Attributes.Count];
-            }
-
-            //! Load data on arrays.
-            for (int i = 0; i < randData.Length; i++)
-            {
-                for (int k = 0; k < header.Attributes.Count; k++)
-                {
-                    GameLogs[i][k] = Convert.ToDouble(randData[i][k]);
-                }
-            }
-
-            //! Create a new K-Means algorithm
-            Double tolerance = 0.05;
-            if (Data.MLOptions != null)
-            {
-                switch (Data.MLOptions.Algorithm)
-                {
-                    case MLAlgorithms.NaiveBayes:
-                        tolerance = (Data.MLOptions as NaiveBayesAlgorithm).Tolerance;
-                        break;
-                    case MLAlgorithms.DecisionTrees:
-                        tolerance = (Data.MLOptions as DecisionTreesAlgorithm).Tolerance;
-                        break;
-                }
-            }
-
-            KMeans kmeans = new KMeans(k: 3)
-            {
-                Distance = new SquareEuclidean(),
-
-                //! We will compute the K-Means algorithm until cluster centroids
-                //! change less than 0.5 between two iterations of the algorithm
-                Tolerance = tolerance
-
-            };
-
-            //! Compute and retrieve the data centroids
-            var clusters = kmeans.Learn(GameLogs);
-
-            //! Ordering the clusters
-            int count = 0;
-            double[] sumVar = new double[clusters.NumberOfClasses];
-
-            foreach (var cluster in clusters)
-            {
-                count++;
-                double[] tempVar = cluster.Centroid;
-                double sum = 0;
-
-                for (int x = 0; x < tempVar.Length; x++)
-                {
-                    sum += tempVar[x];
-                }
-
-                sumVar[count - 1] = sum / tempVar.Length;
-            }
-
-            double Max = sumVar.Max();
-            double Min = sumVar.Min();
-            string[] clOrder = new string[clusters.NumberOfClasses];
-
-            for (int v = 0; v < sumVar.Length; v++)
-            {
-                if (sumVar[v] == Max)
-                {
-                    clOrder[v] = "High";
-                }
-                else if (sumVar[v] == Min)
-                {
-                    clOrder[v] = "Low";
-                }
-                else
-                {
-                    clOrder[v] = "Medium";
-                }
-            }
-
-            //! Create a new Gaussian Mixture Model
-            GaussianMixtureModel gmm = new GaussianMixtureModel(kmeans: kmeans);
-
-            //! Create a multivariate Gaussian for N dimensions (depending on no. of observables)
-            var normal = new MultivariateNormalDistribution(header.Attributes.Count);
-
-            //! Specify a regularization constant in the fitting options
-            gmm.Options = new NormalOptions() { Regularization = 1e-10 };
-
-            //! Fit the distribution to the data
-            normal.Fit(GameLogs, gmm.Options);
-
-            //! Estimate the Gaussian Mixture
-            var cl = gmm.Learn(GameLogs);
-
-            //! Predict cluster labels for each sample
-            int[] predicted = cl.Decide(GameLogs);
-
-            //! Save BayesNet results in .txt file
-            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_GaussianMixtureModelAccord.txt")))
-            {
-                int noCl = 0;
-
-                foreach (var value in clusters)
-                {
-                    file.WriteLine("Label {0} is: {1}", noCl, clOrder[noCl]);
-                    noCl++;
-                    double[] tempVar = value.Centroid;
-                    for (int x = 0; x < tempVar.Length; x++)
-                    {
-                        file.WriteLine("Centroid of label {0} for variable {1}: {2}", noCl - 1, x + 1, tempVar[x].ToString());
-                    }
-                }
-
-                file.WriteLine();
-
-                for (int x = 0; x < GameLogs.Length; x++)
-                {
-                    file.Write("Instance {0}: ", x);
-                    for (int y = 0; y < GameLogs[x].Length; y++)
-                    {
-                        file.Write("{0} ", GameLogs[x][y]);
-                    }
-                    file.WriteLine("Label: {0}", predicted[x]);
-                }
-
-                Logger.Info("Gaussian Mixture Model results from Accord saved successfully.");
-            }
-
-            return predicted;
-        }
-
-        /// <summary>
         /// Runs K-Means clustering from the Accord library.
         /// </summary>
         ///
@@ -721,7 +583,11 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] KMeans(String MyProject, ArffReader reader, string Competency, string Facet)
+        public static int[] KMeans(
+            String MyProject,
+            ArffReader reader,
+            String Competency,
+            String Facet)
         {
             Accord.Math.Random.Generator.Seed = 1;
 
@@ -897,93 +763,6 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Runs Mean Shift clustering from the Accord library.
-        /// </summary>
-        ///
-        /// <param name="MyProject">  my project. </param>
-        /// <param name="reader">     The reader. </param>
-        /// <param name="Competency"> The competency. </param>
-        /// <param name="Facet">      The facet. </param>
-        ///
-        /// <returns>
-        /// An int[].
-        /// </returns>
-        public static int[] MeanShift(String MyProject, ArffReader reader, string Competency, string Facet)
-        {
-            ArffHeader header = reader.ReadHeader();
-            object[][] randData = reader.ReadAllInstances();
-
-            //! Initialize arrays.
-            double[][] GameLogs = new double[randData.Length][];
-
-            for (int i = 0; i < randData.Length; i++)
-            {
-                GameLogs[i] = new double[header.Attributes.Count];
-            }
-
-            //! Load data on arrays.
-            for (int i = 0; i < randData.Length; i++)
-            {
-                for (int k = 0; k < header.Attributes.Count; k++)
-                {
-                    GameLogs[i][k] = Convert.ToDouble(randData[i][k]);
-                }
-            }
-
-            //! Create a new Mean-Shift algorithm for 3 dimensional samples
-            Double tolerance = 0.05;
-            if (Data.MLOptions != null)
-            {
-                switch (Data.MLOptions.Algorithm)
-                {
-                    case MLAlgorithms.NaiveBayes:
-                        tolerance = (Data.MLOptions as NaiveBayesAlgorithm).Tolerance;
-                        break;
-                    case MLAlgorithms.DecisionTrees:
-                        tolerance = (Data.MLOptions as DecisionTreesAlgorithm).Tolerance;
-                        break;
-                }
-            }
-
-            MeanShift meanShift = new MeanShift()
-            {
-                //! Use a uniform kernel density
-                Kernel = new GaussianKernel(dimension: 3),
-                Bandwidth = 3,
-
-                //! We will compute the mean-shift algorithm until the means
-                //! change less than 0.05 between two iterations of the algorithm
-                Tolerance = tolerance,
-
-                MaxIterations = 10
-            };
-
-            //! Learn a data partitioning using the Mean Shift algorithm
-            MeanShiftClusterCollection clustering = meanShift.Learn(GameLogs);
-
-            //! Predict group labels for each point
-            int[] labels = clustering.Decide(GameLogs);
-
-            //! Save BayesNet results in .txt file
-            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_MeanShiftAccord.txt")))
-            {
-                for (int x = 0; x < GameLogs.Length; x++)
-                {
-                    file.Write("Instance {0}: ", x);
-                    for (int y = 0; y < GameLogs[x].Length; y++)
-                    {
-                        file.Write("{0} ", GameLogs[x][y]);
-                    }
-                    file.WriteLine("Label: {0}", labels[x]);
-                }
-
-                Logger.Info("Mean Shift results from Accord saved successfully.");
-            }
-
-            return labels;
-        }
-
-        /// <summary>
         /// Naive Bayes accord for competencies.
         /// </summary>
         ///
@@ -993,7 +772,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] NaiveBayesAccord_C(String MyProject, ArffReader reader, string Competency)
+        public static int[] NaiveBayesAccord_C(
+            String MyProject,
+            ArffReader reader,
+            String Competency)
         {
             var cv = new NaiveBayesLearning<NormalDistribution>();
             cv.Options.InnerOption = new NormalOptions { Regularization = 1e-5 }; // to avoid zero variances
@@ -1163,10 +945,16 @@ namespace StealthAssessmentWizard
                     ini.UpdateFile();
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (ArgumentException)
             {
                 Logger.Warn("Attribute is constant. Changing seed.");
             }
+            catch (Exception e)
+            {
+                Logger.Error(e.Message);
+            }
+#pragma warning restore CA1031 // Do not catch general exception types
 
             return predicted;
         }
@@ -1182,7 +970,11 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] NaiveBayesAccord_F(String MyProject, ArffReader reader, string Competency, string Facet)
+        public static int[] NaiveBayesAccord_F(
+            String MyProject,
+            ArffReader reader,
+            String Competency,
+            String Facet)
         {
             var cv = new NaiveBayesLearning<NormalDistribution>();
 
@@ -1368,7 +1160,9 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;double,double,double,double&gt;
         /// </returns>
-        public static Tuple<double, double, double, double> PerformaceStatistics(int[] expected, int[] predicted)
+        public static Tuple<double, double, double, double> PerformaceStatistics(
+            int[] expected,
+            int[] predicted)
         {
             //! .NET Framework array to R vector.
             //
@@ -1408,19 +1202,33 @@ namespace StealthAssessmentWizard
             return new Tuple<double, double, double, double>(MAE, RMSE, RAE, RRSE);
         }
 
-        public static Tuple<string[], double[], string[][], double[][]> ReliabilityAnalysisMulti(Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, double[][][][] Insts)
+        /// <summary>
+        /// Reliability analysis multi.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel">     The competency model. </param>
+        /// <param name="StatisticalSubmodel"> The statistical submodel. </param>
+        /// <param name="Insts">               The insts. </param>
+        ///
+        /// <returns>
+        /// A Tuple&lt;string[],double[],string[][],double[][]&gt;
+        /// </returns>
+        public static Tuple<string[], double[], string[][], double[][]> ReliabilityAnalysisMulti(
+            (string[] competencies, string[][] facets) CompetencyModel,
+            string[][][] StatisticalSubmodel,
+            double[][][][] Insts)
         {
-            double[] CronAlphaComp = new double[CompetencyModel.Item1.Length];
-            double[][] CronAlphaFacet = new double[CompetencyModel.Item1.Length][];
+            double[] CronAlphaComp = new double[CompetencyModel.competencies.Length];
+            double[][] CronAlphaFacet = new double[CompetencyModel.competencies.Length][];
 
-            string[][] ObsPerComp = new string[CompetencyModel.Item1.Length][];
-            double[][][] InstObsPerComp = new double[CompetencyModel.Item1.Length][][];
+            string[][] ObsPerComp = new string[CompetencyModel.competencies.Length][];
+            double[][][] InstObsPerComp = new double[CompetencyModel.competencies.Length][][];
             int noCount = 0;
 
             //! Initialize ObsPerComp.
-            for (int i = 0; i < CompetencyModel.Item1.Length; i++)
+            for (int i = 0; i < CompetencyModel.competencies.Length; i++)
             {
-                for (int x = 0; x < CompetencyModel.Item2[i].Length; x++)
+                for (int x = 0; x < CompetencyModel.facets[i].Length; x++)
                 {
                     for (int y = 0; y < StatisticalSubmodel[i][x].Length; y++)
                     {
@@ -1431,7 +1239,7 @@ namespace StealthAssessmentWizard
                 InstObsPerComp[i] = new double[noCount][];
                 noCount = 0;
 
-                for (int x = 0; x < CompetencyModel.Item2[i].Length; x++)
+                for (int x = 0; x < CompetencyModel.facets[i].Length; x++)
                 {
                     for (int y = 0; y < StatisticalSubmodel[i][x].Length; y++)
                     {
@@ -1448,16 +1256,16 @@ namespace StealthAssessmentWizard
             }
 
             //! Initialize data frame per competency.
-            for (int i = 0; i < CompetencyModel.Item1.Length; i++)
+            for (int i = 0; i < CompetencyModel.competencies.Length; i++)
             {
-                //Initilize data frame per facet.
+                //Initialize data frame per facet.
                 //set column names of data frame per facet.
                 string[] columnNamesFacets = new string[ObsPerComp[i].Length];
-                CronAlphaFacet[i] = new double[CompetencyModel.Item2[i].Length];
+                CronAlphaFacet[i] = new double[CompetencyModel.facets[i].Length];
                 IEnumerable<double>[] columnsFacet = new IEnumerable<double>[ObsPerComp[i].Length];
                 //Transpose InstancesUni
 
-                for (int x = 0; x < CompetencyModel.Item2[i].Length; x++)
+                for (int x = 0; x < CompetencyModel.facets[i].Length; x++)
                 {
                     //set column names and columns of data frame per observable.
                     string[] columnNamesObs = new string[StatisticalSubmodel[i][x].Length];
@@ -1518,7 +1326,7 @@ namespace StealthAssessmentWizard
                 Utils.engine.SetSymbol("dfComp", dfComp);
 
                 //Run reliability analysis per competency if more than one facets found.
-                if (CompetencyModel.Item1[i].Length > 1)
+                if (CompetencyModel.competencies[i].Length > 1)
                 {
                     GenericVector alphaComp = Utils.engine.Evaluate("alpha(dfComp, keys=NULL,cumulative=FALSE, title=NULL, max=10,na.rm = TRUE, check.keys = FALSE, n.iter = 1, delete = TRUE, use = 'pairwise', warnings = TRUE, n.obs = NULL)").AsList();
 
@@ -1533,10 +1341,13 @@ namespace StealthAssessmentWizard
                 }
             }
 
-            return new Tuple<string[], double[], string[][], double[][]>(CompetencyModel.Item1, CronAlphaComp, CompetencyModel.Item2, CronAlphaFacet);
+            return new Tuple<string[], double[], string[][], double[][]>(CompetencyModel.competencies, CronAlphaComp, CompetencyModel.facets, CronAlphaFacet);
         }
 
-        public static Tuple<string[], double[]> ReliabilityAnalysisUni(string[] CompetencyModel, double[][][] InstUni, string[][] UniEvidenceModel)
+        public static Tuple<string[], double[]> ReliabilityAnalysisUni(
+            string[] CompetencyModel,
+            double[][][] InstUni,
+            string[][] UniEvidenceModel)
         {
             double[] CronAlphaComp = new double[CompetencyModel.Length];
 
@@ -1578,7 +1389,10 @@ namespace StealthAssessmentWizard
             return new Tuple<string[], double[]>(CompetencyModel, CronAlphaComp);
         }
 
-        public static int[] UniDecisionTreesAccord_C(String MyProject, ArffReader reader, string Competency)
+        public static int[] UniDecisionTreesAccord_C(
+            String MyProject,
+            ArffReader reader,
+            String Competency)
         {
             ArffHeader header = reader.ReadHeader();
             Object[][] randData = reader.ReadAllInstances();
@@ -1757,7 +1571,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        public static int[] UniNaiveBayesAccord_C(String MyProject, ArffReader reader, string Competency)
+        public static int[] UniNaiveBayesAccord_C(
+            String MyProject,
+            ArffReader reader,
+            String Competency)
         {
             var cv = new NaiveBayesLearning<NormalDistribution>();
 
@@ -1934,7 +1751,7 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// All labelled.
+        /// All labeled.
         /// </summary>
         ///
         /// <param name="CheckLabels"> The check labels. </param>
@@ -1942,18 +1759,19 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// True if it succeeds, false if it fails.
         /// </returns>
-        internal static bool AllLabelled(Tuple<bool[][], bool[][][]> CheckLabels)
+        internal static bool AllLabelled(
+            (bool[][] competencies, bool[][][] facets) CheckLabels)
         {
             //! Count missing competency labels.
             //
-            if (CheckLabels.Item1.Count(p => p[0] == false) != 0)
+            if (CheckLabels.competencies.Count(p => p[0] == false) != 0)
             {
                 return false;
             }
 
             //! Count missing facet labels.
             //
-            foreach (bool[][] f in CheckLabels.Item2)
+            foreach (bool[][] f in CheckLabels.facets)
             {
                 if (f.Count(p => p[0] == false) != 0)
                 {
@@ -1965,7 +1783,7 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Check labelling.
+        /// Check labeling.
         /// </summary>
         ///
         /// <param name="observables">     all game logs. </param>
@@ -1974,43 +1792,47 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;bool[][],bool[][][]&gt;
         /// </returns>
-        internal static Tuple<bool[][], bool[][][]> CheckLabelling(Observables observables, Tuple<string[], string[][]> CompetencyModel)
+        internal static (bool[][] competencies, bool[][][] facets) CheckLabelling(
+            Observables observables,
+            (string[] competencies, string[][] facets) CompetencyModel)
         {
             //! Stores information whether the data for the given competencies is labeled to decide ML approach.
-            bool[][] CheckLabellingCompetencies = new bool[CompetencyModel.Item1.Length][];
+            bool[][] CheckLabellingCompetencies = new bool[CompetencyModel.competencies.Length][];
 
             //! Stores information whether the data for the given facets of the declared competencies is labeled to decide ML approach.
-            bool[][][] CheckLabellingFacets = new bool[CompetencyModel.Item1.Length][][];
+            bool[][][] CheckLabellingFacets = new bool[CompetencyModel.competencies.Length][][];
 
             //! Stores information whether the data for the given facets and competencies is labeled to decide ML approach.
-            Tuple<bool[][], bool[][][]> CheckLabels = new Tuple<bool[][], bool[][][]>(CheckLabellingCompetencies, CheckLabellingFacets);
+            (bool[][] competencies, bool[][][] facets) CheckLabels = (competencies: CheckLabellingCompetencies, facets: CheckLabellingFacets);
 
             //! Initialisation of arrays.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
                 CheckLabellingCompetencies[x] = new bool[1];
-                CheckLabellingFacets[x] = new bool[CompetencyModel.Item2[x].Length][];
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                CheckLabellingFacets[x] = new bool[CompetencyModel.facets[x].Length][];
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     CheckLabellingFacets[x][y] = new bool[1];
                 }
             }
 
             //! Check if labels exists for all declared competencies and facets.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item1[x]));
+                CheckLabellingCompetencies[x][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.competencies[x]));
 
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
-                    CheckLabellingFacets[x][y][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.Item2[x][y]));
+                    CheckLabellingFacets[x][y][0] = observables.Any(p => p.ObservableName.Equals(CompetencyModel.facets[x][y]));
                 }
             }
 
             return CheckLabels;
         }
 
-        internal static bool[][] CheckLabellingUni(Observables observables, string[] UniCompetencyModel)
+        internal static bool[][] CheckLabellingUni(
+            Observables observables,
+            String[] UniCompetencyModel)
         {
             //! Stores information whether the data for the given competencies is labeled to decide ML approach.
             bool[][] CheckLabellingCompetencies = new bool[UniCompetencyModel.Length][];
@@ -2031,143 +1853,6 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Generates .arff files for correlation analysis.
-        /// </summary>
-        ///
-        /// <param name="MyProject">          my project. </param>
-        /// <param name="CompetencyModel">    The competency model. </param>
-        /// <param name="RandomLabelledData"> Information describing the random labelled. </param>
-        /// <param name="OutputLabels">       The output labels. </param>
-        internal static void GenerateArffFilesForCA(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> RandomLabelledData, Tuple<int[][], int[][][]> OutputLabels)
-        {
-            //! Declaring Variables.
-            double[][] vals = Array.Empty<double[]>();
-
-            //! Generated .arff files for the declared competencies.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-
-                //! Added extra SafeGuard for empty arff files.
-
-                if (RandomLabelledData.Item1[x] != null && RandomLabelledData.Item1[x].Length != 0)
-                {
-                    String arff_c = Path.Combine(MyProject, @"data\CA\" + CompetencyModel.Item1[x] + ".arff");
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
-
-                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
-                    {
-                        arffWriter.WriteRelationName(CompetencyModel.Item1[x]);
-
-                        //! Set up attributes
-                        arffWriter.WriteAttribute(new ArffAttribute("External data for item " + CompetencyModel.Item1[x], ArffAttributeType.Numeric));
-                        arffWriter.WriteAttribute(new ArffAttribute("Labelled data for item " + CompetencyModel.Item1[x], ArffAttributeType.Numeric));
-
-                        Int32 AttrCount = 2;
-
-                        //! Fill with data
-                        vals = new double[OutputLabels.Item1[x].Length][];
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount];
-                        }
-
-                        for (int i = 0; i < OutputLabels.Item1[x].Length; i++)
-                        {
-                            for (int a = 0; a < AttrCount; a++)
-                            {
-                                if (a == 0)
-                                {
-                                    vals[i][a] = RandomLabelledData.Item1[x][i];
-                                }
-                                else if (a == 1)
-                                {
-                                    vals[i][a] = OutputLabels.Item1[x][i];
-                                }
-                            }
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            arffWriter.WriteInstance(vals[k].Select(p => (Object)p).ToArray());
-                        }
-
-                        //! Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
-                    }
-                }
-                else
-                {
-                    Logger.Warn("No external data was found.");
-                };
-
-                //! Generated .arff files for the declared facets.
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-
-                    //! Added extra SafeGuard for empty arff files.
-
-                    if (RandomLabelledData.Item2[x][y] != null && RandomLabelledData.Item2[x][y].Length != 0)
-                    {
-                        String arff_f = Path.Combine(MyProject, @"data\CA\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
-
-                        Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
-
-                        //! 1)
-                        using (ArffWriter arffWriter = new ArffWriter(arff_f))
-                        {
-                            //! Set up attributes
-                            arffWriter.WriteAttribute(new ArffAttribute("External data for item " + CompetencyModel.Item2[x][y], ArffAttributeType.Numeric));
-                            arffWriter.WriteAttribute(new ArffAttribute("Labelled data for item " + CompetencyModel.Item2[x][y], ArffAttributeType.Numeric));
-
-                            Int32 AttrCount = 2;
-
-                            //! Fill with data
-                            vals = new double[OutputLabels.Item2[x][y].Length][];
-                            for (int a = 0; a < vals.Length; a++)
-                            {
-                                vals[a] = new double[AttrCount];
-                            }
-
-                            for (int i = 0; i < OutputLabels.Item2[x][y].Length; i++)
-                            {
-                                for (int a = 0; a < AttrCount; a++)
-                                {
-                                    if (a == 0)
-                                    {
-                                        vals[i][a] = RandomLabelledData.Item2[x][y][i];
-                                    }
-                                    else if (a == 1)
-                                    {
-                                        vals[i][a] = OutputLabels.Item2[x][y][i];
-                                    }
-                                }
-                            }
-
-                            //! Add data
-                            for (int k = 0; k < vals.Length; k++)
-                            {
-                                arffWriter.WriteInstance(vals[k].Select(p => (Object)p).ToArray());
-                            }
-
-                            //! Save data
-                            arffWriter.Flush();
-
-                            Logger.Info($"'{Utils.MakePathRelative(arff_f)}' file successfully.");
-                        }
-                    }
-                    else
-                    {
-                        Logger.Warn("No external data was found.");
-                    };
-                }
-            }
-        }
-
-        /// <summary>
         /// Generates an arff files for competencies.
         /// </summary>
         ///
@@ -2176,35 +1861,40 @@ namespace StealthAssessmentWizard
         /// <param name="StatisticalSubmodel"> The statistical submodel. </param>
         /// <param name="CheckLabels">         The check labels. </param>
         /// <param name="LabelledData">        Information describing the labeled data. </param>
-        internal static void GenerateArffFilesForCompetencies(String MyProject, Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
+        internal static void GenerateArffFilesForCompetencies(
+            String MyProject,
+            (string[] competencies, string[][] facets) CompetencyModel,
+            string[][][] StatisticalSubmodel,
+            (bool[][] competencies, bool[][][] facets) CheckLabels,
+            (int[][] competencies, int[][][] facets) LabelledData)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
             string[][] valsClass = Array.Empty<string[]>();
             string[] Class = new string[3] { "0", "1", "2" };
 
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                if (CheckLabels.Item1[x][0] == true)
+                if (CheckLabels.competencies[x][0] == true)
                 {
-                    Logger.Info($"Labeled data has been found for {CompetencyModel.Item1[x]}.");
+                    Logger.Info($"Labeled data has been found for {CompetencyModel.competencies[x]}.");
 
-                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
+                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
 
                     Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
                     //! 1)
                     using (ArffWriter arffWriter = new ArffWriter(arff_c))
                     {
-                        arffWriter.WriteRelationName(CompetencyModel.Item1[x]);
+                        arffWriter.WriteRelationName(CompetencyModel.competencies[x]);
 
                         Int32 AttrCount = 0;
 
                         //! Set up attributes
-                        for (int i = 0; i < CompetencyModel.Item2[x].Length; i++)
+                        for (int i = 0; i < CompetencyModel.facets[x].Length; i++)
                         {
                             //! 2)
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + CompetencyModel.Item2[x][i], ArffAttributeType.Numeric));
+                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + CompetencyModel.facets[x][i], ArffAttributeType.Numeric));
 
                             AttrCount++;
                         }
@@ -2214,24 +1904,24 @@ namespace StealthAssessmentWizard
                         AttrCount++;
 
                         //! Fill with data
-                        vals = new double[LabelledData.Item1[x].Length][];
-                        valsClass = new string[LabelledData.Item1[x].Length][];
+                        vals = new double[LabelledData.competencies[x].Length][];
+                        valsClass = new string[LabelledData.competencies[x].Length][];
                         for (int a = 0; a < vals.Length; a++)
                         {
                             vals[a] = new double[AttrCount - 1];
                             valsClass[a] = new string[1];
                         }
 
-                        for (int i = 0; i < LabelledData.Item1[x].Length; i++)
+                        for (int i = 0; i < LabelledData.competencies[x].Length; i++)
                         {
-                            for (int a = 0; a < LabelledData.Item2[x].Length; a++)
+                            for (int a = 0; a < LabelledData.facets[x].Length; a++)
                             {
                                 if (a != AttrCount - 1)
                                 {
-                                    vals[i][a] = LabelledData.Item2[x][a][i];
+                                    vals[i][a] = LabelledData.facets[x][a][i];
                                 }
                             }
-                            valsClass[i][0] = Convert.ToString(LabelledData.Item1[x][i]);
+                            valsClass[i][0] = Convert.ToString(LabelledData.competencies[x][i]);
                         }
 
                         //! Add data
@@ -2258,38 +1948,38 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
-                    Logger.Warn($"No labeled data has been found for '{CompetencyModel.Item1[x]}'.");
+                    Logger.Warn($"No labeled data has been found for '{CompetencyModel.competencies[x]}'.");
 
-                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
+                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
 
                     Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
                     using (ArffWriter arffWriter = new ArffWriter(arff_c))
                     {
-                        arffWriter.WriteRelationName(CompetencyModel.Item1[x]);
+                        arffWriter.WriteRelationName(CompetencyModel.competencies[x]);
 
                         Int32 AttrCount = 0;
 
                         //! Set up attributes
-                        for (int i = 0; i < CompetencyModel.Item2[x].Length; i++)
+                        for (int i = 0; i < CompetencyModel.facets[x].Length; i++)
                         {
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + CompetencyModel.Item2[x][i], ArffAttributeType.Numeric));
+                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + CompetencyModel.facets[x][i], ArffAttributeType.Numeric));
 
                             AttrCount++;
                         }
 
                         //! Fill with data
-                        vals = new double[LabelledData.Item1[x].Length][];
+                        vals = new double[LabelledData.competencies[x].Length][];
                         for (int a = 0; a < vals.Length; a++)
                         {
                             vals[a] = new double[AttrCount];
                         }
 
-                        for (int i = 0; i < LabelledData.Item1[x].Length; i++)
+                        for (int i = 0; i < LabelledData.competencies[x].Length; i++)
                         {
-                            for (int a = 0; a < LabelledData.Item2[x].Length; a++)
+                            for (int a = 0; a < LabelledData.facets[x].Length; a++)
                             {
-                                vals[i][a] = LabelledData.Item2[x][a][i];
+                                vals[i][a] = LabelledData.facets[x][a][i];
                             }
                         }
 
@@ -2318,34 +2008,40 @@ namespace StealthAssessmentWizard
         /// <param name="Instances">           The check labels. </param>
         /// <param name="CheckLabels">         Information describing the labeled data. </param>
         /// <param name="LabelledData">        Information describing the labelled. </param>
-        internal static void GenerateArffFilesForFacets(String MyProject, Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel, double[][][][] Instances, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData)
+        internal static void GenerateArffFilesForFacets(
+            String MyProject,
+            (string[] competencies, string[][] facets) CompetencyModel,
+            String[][][] StatisticalSubmodel,
+            double[][][][] Instances,
+            (bool[][] competencies, bool[][][] facets) CheckLabels,
+            (int[][] competencies, int[][][] facets) LabelledData)
         {
             //! Declaring Variables.
             double[][] vals = Array.Empty<double[]>();
             string[][] valsClass = Array.Empty<string[]>();
             string[] Class = new string[3] { "0", "1", "2" };
 
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                if (CheckLabels.Item1[x][0] == true)
+                if (CheckLabels.competencies[x][0] == true)
                 {
-                    Logger.Info($"Labeled data has been found for '{CompetencyModel.Item1[x]}'.");
+                    Logger.Info($"Labeled data has been found for '{CompetencyModel.competencies[x]}'.");
 
-                    for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                    for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                     {
                         //! 0)
-                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
+                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
 
                         Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
-                        if (CheckLabels.Item2[x][y][0] == true)
+                        if (CheckLabels.facets[x][y][0] == true)
                         {
-                            Logger.Info($"Labeled data has been found for '{CompetencyModel.Item2[x][y]}'.");
+                            Logger.Info($"Labeled data has been found for '{CompetencyModel.facets[x][y]}'.");
 
                             //! 1)
                             using (ArffWriter arffWriter = new ArffWriter(arff_f))
                             {
-                                arffWriter.WriteRelationName(CompetencyModel.Item2[x][y]);
+                                arffWriter.WriteRelationName(CompetencyModel.facets[x][y]);
 
                                 Int32 AttrCount = 0;
 
@@ -2382,7 +2078,7 @@ namespace StealthAssessmentWizard
                                         }
                                         else
                                         {
-                                            valsClass[i][0] = Convert.ToString(LabelledData.Item2[x][y][i]);
+                                            valsClass[i][0] = Convert.ToString(LabelledData.facets[x][y][i]);
                                         }
                                     }
                                 }
@@ -2411,11 +2107,11 @@ namespace StealthAssessmentWizard
                         }
                         else
                         {
-                            Logger.Warn($"No labeled data has been found for '{CompetencyModel.Item2[x][y]}'.");
+                            Logger.Warn($"No labeled data has been found for '{CompetencyModel.facets[x][y]}'.");
 
                             using (ArffWriter arffWriter = new ArffWriter(arff_f))
                             {
-                                arffWriter.WriteRelationName(CompetencyModel.Item2[x][y]);
+                                arffWriter.WriteRelationName(CompetencyModel.facets[x][y]);
 
                                 //! #Attributes will be StatisticalSubmodel[x][y].Length (Items) +0 (Labels).
                                 Int32 AttrCount = 0;
@@ -2463,21 +2159,21 @@ namespace StealthAssessmentWizard
                 else
                 {
                     // Debug.WriteLine($"No labeled data has been found for {CompetencyModel.Item1[x]}.");
-                    for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                    for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                     {
                         //! 0)
-                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
+                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
 
                         Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
-                        if (CheckLabels.Item2[x][y][0] == true)
+                        if (CheckLabels.facets[x][y][0] == true)
                         {
-                            Logger.Info($"Labeled data has been found for '{CompetencyModel.Item2[x][y]}'.");
+                            Logger.Info($"Labeled data has been found for '{CompetencyModel.facets[x][y]}'.");
 
                             //! 1)
                             using (ArffWriter arffWriter = new ArffWriter(arff_f))
                             {
-                                arffWriter.WriteRelationName(CompetencyModel.Item2[x][y]);
+                                arffWriter.WriteRelationName(CompetencyModel.facets[x][y]);
 
                                 //! #Attributes will be StatisticalSubmodel[x][y].Length (Items) +1 (Labels).
                                 Int32 AttrCount = 0;
@@ -2513,7 +2209,7 @@ namespace StealthAssessmentWizard
                                         }
                                         else
                                         {
-                                            valsClass[i][0] = Convert.ToString(LabelledData.Item2[x][y][i]);
+                                            valsClass[i][0] = Convert.ToString(LabelledData.facets[x][y][i]);
                                         }
                                     }
                                 }
@@ -2542,12 +2238,12 @@ namespace StealthAssessmentWizard
                         }
                         else
                         {
-                            Logger.Warn($"No labeled data has been found for '{CompetencyModel.Item2[x][y]}'.");
+                            Logger.Warn($"No labeled data has been found for '{CompetencyModel.facets[x][y]}'.");
 
                             //! 1)
                             using (ArffWriter arffWriter = new ArffWriter(arff_f))
                             {
-                                arffWriter.WriteRelationName(CompetencyModel.Item2[x][y]);
+                                arffWriter.WriteRelationName(CompetencyModel.facets[x][y]);
 
                                 Int32 AttrCount = 0;
 
@@ -2592,264 +2288,6 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Generates an arff files for randomization.
-        /// </summary>
-        ///
-        /// <param name="MyProject">       my project. </param>
-        /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="ExternalDataCF">  The external data cf. </param>
-        ///
-        /// ### <param name="competencyModel"> The competency model. </param>
-        ///
-        /// ### <param name="externalDataCF"> The external data cf. </param>
-        internal static void GenerateArffFilesforRandomization(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> ExternalDataCF)
-        {
-            //! Declaring Variables.
-            double[][] vals = Array.Empty<double[]>();
-
-            //! Generated .arff files for the declared competencies.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                if (ExternalDataCF.Item1[x] != null)
-                {
-                    String arff_c = Path.Combine(MyProject, @"data\CA\Randomized\" + CompetencyModel.Item1[x] + ".arff");
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
-
-                    //! 1)
-                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
-                    {
-                        arffWriter.WriteRelationName(CompetencyModel.Item1[x]);
-
-                        Int32 AttrCount = 0;
-
-                        //! Set up attributes
-                        arffWriter.WriteAttribute(new ArffAttribute("External data for item " + CompetencyModel.Item1[x], ArffAttributeType.Numeric));
-                        AttrCount++;
-
-                        //! Fill with data
-                        vals = new double[ExternalDataCF.Item1[x].Length][];
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount];
-                        }
-
-                        for (int i = 0; i < ExternalDataCF.Item1[x].Length; i++)
-                        {
-                            for (int a = 0; a < AttrCount; a++)
-                            {
-                                vals[i][a] = ExternalDataCF.Item1[x][i];
-                            }
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            arffWriter.WriteInstance(vals[k].Select(p => (Object)p).ToArray());
-                        }
-
-                        //! Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
-                    }
-                }
-                else
-                {
-                    Logger.Warn("No external data was found.");
-                };
-
-                //===R
-                //
-                //! Generated .arff files for the declared facets.
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-                    if (ExternalDataCF.Item2[x][y] != null)
-                    {
-                        String arff_f = Path.Combine(MyProject, @"data\CA\Randomized\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
-
-                        Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
-
-                        //! 1)
-                        using (ArffWriter arffWriter = new ArffWriter(arff_f))
-                        {
-                            arffWriter.WriteRelationName(CompetencyModel.Item2[x][y]);
-
-                            Int32 AttrCount = 0;
-
-                            //! Set up attributes
-                            arffWriter.WriteAttribute(new ArffAttribute("External data for item " + CompetencyModel.Item2[x][y], ArffAttributeType.Numeric));
-                            AttrCount++;
-
-                            //! Fill with data
-                            vals = new double[ExternalDataCF.Item2[x][y].Length][];
-                            for (int a = 0; a < vals.Length; a++)
-                            {
-                                vals[a] = new double[AttrCount];
-                            }
-
-                            for (int i = 0; i < ExternalDataCF.Item2[x][y].Length; i++)
-                            {
-                                for (int a = 0; a < AttrCount; a++)
-                                {
-                                    vals[i][a] = ExternalDataCF.Item2[x][y][i];
-                                }
-                            }
-
-                            //! Add data
-                            for (int k = 0; k < vals.Length; k++)
-                            {
-                                arffWriter.WriteInstance(vals[k].Select(p => (Object)p).ToArray());
-                            }
-
-                            //! Save data
-                            arffWriter.Flush();
-
-                            Logger.Info($"'{Utils.MakePathRelative(arff_f)}' file successfully.");
-                        }
-                    }
-                    else
-                    {
-                        Logger.Warn("No external data was found.");
-                    };
-                }
-            }
-        }
-
-        /*
-        internal static void GenerateArffFilesForUniCompetencies(String MyProject, string[] UniCompetencyModel, string[][] UniEvidenceModel, bool[][] CheckLabelsUni, int[][] LabelledDataUni)
-        {
-            //! Declaring Variables.
-            double[][] vals = new double[][] { };
-            string[][] valsClass = new string[][] { };
-            string[] Class = new string[3] { "0", "1", "2" };
-
-            for (int x = 0; x < UniCompetencyModel.Length; x++)
-            {
-                if (CheckLabelsUni[x][0] == true)
-                {
-                    Logger.Info($"Labeled data has been found for {UniCompetencyModel[x]}.");
-
-                    String arff_c = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
-
-                    //! 1)
-                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
-                    {
-                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
-
-                        Int32 AttrCount = 0;
-
-                        //! Set up attributes
-                        for (int i = 0; i < UniCompetencyModel[x].Length; i++)
-                        {
-                            //! 2)
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniCompetencyModel[i], ArffAttributeType.Numeric));
-
-                            AttrCount++;
-                        }
-
-                        //! 3)
-                        arffWriter.WriteAttribute(new ArffAttribute("Labelled Data", ArffAttributeType.Nominal(Class.ToArray())));
-                        AttrCount++;
-
-                        //! Fill with data
-                        vals = new double[LabelledDataUni[x].Length][];
-                        valsClass = new string[LabelledDataUni[x].Length][];
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount - 1];
-                            valsClass[a] = new string[1];
-                        }
-
-                        for (int i = 0; i < LabelledDataUni.Length; i++)
-                        {
-                            for (int a = 0; a < LabelledDataUni[x].Length; a++)
-                            {
-                                if (a != AttrCount - 1)
-                                {
-                                    vals[i][a] = LabelledDataUni[x][a];
-                                }
-                            }
-                            valsClass[i][0] = Convert.ToString(LabelledDataUni[x][i]);
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            List<Object> instance = new List<Object>();
-
-                            for (int v = 0; v < AttrCount; v++)
-                            {
-                                instance.Add(
-                                          (v != AttrCount - 1)
-                                          ? (object)vals[k][v]
-                                          : (object)valsClass[k][0]);
-                            }
-
-                            arffWriter.WriteInstance(instance.ToArray());
-                        }
-
-                        // Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
-                    }
-                }
-                else
-                {
-                    Logger.Warn($"No labeled data has been found for '{UniCompetencyModel[x]}'.");
-
-                    String arff_c = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
-
-                    Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
-
-                    using (ArffWriter arffWriter = new ArffWriter(arff_c))
-                    {
-                        arffWriter.WriteRelationName(UniCompetencyModel[x]);
-
-                        Int32 AttrCount = 0;
-
-                        //! Set up attributes
-                        for (int i = 0; i < UniCompetencyModel[x].Length; i++)
-                        {
-                            arffWriter.WriteAttribute(new ArffAttribute("Data for item " + UniCompetencyModel[x][i], ArffAttributeType.Numeric));
-
-                            AttrCount++;
-                        }
-
-                        //! Fill with data
-                        vals = new double[LabelledDataUni[x].Length][];
-                        for (int a = 0; a < vals.Length; a++)
-                        {
-                            vals[a] = new double[AttrCount];
-                        }
-
-                        for (int i = 0; i < LabelledDataUni[x].Length; i++)
-                        {
-                            for (int a = 0; a < LabelledDataUni[x].Length; a++)
-                            {
-                                vals[i][a] = LabelledDataUni[x][a];
-                            }
-                        }
-
-                        //! Add data
-                        for (int k = 0; k < vals.Length; k++)
-                        {
-                            arffWriter.WriteInstance(vals[k].Select(p => (Object)p).ToArray());
-                        }
-
-                        //! Save data
-                        arffWriter.Flush();
-
-                        Logger.Info($"'{Utils.MakePathRelative(arff_c)}' file successfully.");
-                    }
-                }
-            }
-        }
-        */
-        /// <summary>
         /// Generates an arff files for uni competencies.
         /// </summary>
         ///
@@ -2859,11 +2297,15 @@ namespace StealthAssessmentWizard
         /// <param name="InstancesUni">       The instances uni. </param>
         /// <param name="CheckLabelsUni">     The check labels uni. </param>
         /// <param name="LabelledDataUni">    The labeled data uni. </param>
-        internal static void GenerateArffFilesForUniCompetencies(String MyProject, string[] UniCompetencyModel, string[][] UniEvidenceModel, double[][][] InstancesUni, bool[][] CheckLabelsUni, int[][] LabelledDataUni)
+        internal static void GenerateArffFilesForUniCompetencies(
+            String MyProject,
+            String[] UniCompetencyModel,
+            String[][] UniEvidenceModel,
+            double[][][] InstancesUni,
+            bool[][] CheckLabelsUni,
+            int[][] LabelledDataUni)
         {
             //! Declaring Variables.
-            double[][] vals = Array.Empty<double[]>();
-            string[][] valsClass = Array.Empty<string[]>();
             string[] Class = new string[3] { "0", "1", "2" };
 
             for (int x = 0; x < UniCompetencyModel.Length; x++)
@@ -2897,8 +2339,8 @@ namespace StealthAssessmentWizard
                         AttrCount++;
 
                         //! Fill with data
-                        vals = new double[InstancesUni[x].Length][];
-                        valsClass = new string[InstancesUni[x].Length][];
+                        double[][] vals = new double[InstancesUni[x].Length][];
+                        string[][] valsClass = new string[InstancesUni[x].Length][];
 
                         for (int a = 0; a < vals.Length; a++)
                         {
@@ -2973,8 +2415,9 @@ namespace StealthAssessmentWizard
                         AttrCount++;
 
                         //! Fill with data
-                        vals = new double[InstancesUni[x].Length][];
-                        valsClass = new string[InstancesUni[x].Length][];
+                        double[][] vals = new double[InstancesUni[x].Length][];
+                        string[][] valsClass = new string[InstancesUni[x].Length][];
+
                         for (int a = 0; a < vals.Length; a++)
                         {
                             vals[a] = new double[AttrCount - 1];
@@ -3032,26 +2475,28 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// The labeled data.
         /// </returns>
-        internal static Tuple<int[][], int[][][]> GetLabelledData(Tuple<string[], string[][]> CompetencyModel, Observables observables)
+        internal static (int[][] competencies, int[][][] facets) GetLabelledData(
+            (string[] competencies, string[][] facets) CompetencyModel,
+            Observables observables)
         {
             //! Stores the labeling data for the given competencies.
-            int[][] LabelledDataCompetencies = new int[CompetencyModel.Item1.Length][];
+            int[][] LabelledDataCompetencies = new int[CompetencyModel.competencies.Length][];
 
             //! Stores the labeling data for the given facets.
-            int[][][] LabelledDataFacets = new int[CompetencyModel.Item1.Length][][];
+            int[][][] LabelledDataFacets = new int[CompetencyModel.competencies.Length][][];
 
             //! Stores the labeling data for the given facets and competencies.
-            Tuple<int[][], int[][][]> LabelledData = new Tuple<int[][], int[][][]>(LabelledDataCompetencies, LabelledDataFacets);
+            (int[][] competencies, int[][][] facets) LabelledData = (competencies: LabelledDataCompetencies, facets: LabelledDataFacets);
 
             //! Initialisation of arrays.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
                 for (int i = 0; i < observables.Count; i++)
                 {
                     //! PROBLEM HERE IS THAT Item1 has a length of 18 and Item2 (used for the size of the LabelledDataCompetencies) has a length of 11.
                     //! SEEMS Item2 does not contain the calculated facets & competencies yet.
                     //! Observables (after loading the ini) contains 18 and 11 items in it's two arrays.
-                    if (CompetencyModel.Item1[x] == observables[i].ObservableName)
+                    if (CompetencyModel.competencies[x] == observables[i].ObservableName)
                     {
                         LabelledDataCompetencies[x] = new int[observables[i].Length];
                         break;
@@ -3061,13 +2506,13 @@ namespace StealthAssessmentWizard
                         LabelledDataCompetencies[x] = new int[observables[i].Length];
                     }
                 }
-                LabelledDataFacets[x] = new int[CompetencyModel.Item2[x].Length][];
+                LabelledDataFacets[x] = new int[CompetencyModel.facets[x].Length][];
 
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     for (int i = 0; i < observables.Count; i++)
                     {
-                        if (CompetencyModel.Item2[x][y] == observables[i].ObservableName)
+                        if (CompetencyModel.facets[x][y] == observables[i].ObservableName)
                         {
 #warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                             LabelledDataFacets[x][y] = new int[observables[i].Length];
@@ -3083,11 +2528,11 @@ namespace StealthAssessmentWizard
             }
 
             //! Store labelled data.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
                 for (int i = 0; i < observables.Count; i++)
                 {
-                    if (CompetencyModel.Item1[x] == observables[i].ObservableName)
+                    if (CompetencyModel.competencies[x] == observables[i].ObservableName)
                     {
                         for (int k = 0; k < observables[i].Length; k++)
                         {
@@ -3097,11 +2542,11 @@ namespace StealthAssessmentWizard
                     }
                 }
 
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     for (int i = 0; i < observables.Count; i++)
                     {
-                        if (CompetencyModel.Item2[x][y] == observables[i].ObservableName)
+                        if (CompetencyModel.facets[x][y] == observables[i].ObservableName)
                         {
                             for (int k = 0; k < observables[i].Length; k++)
                             {
@@ -3116,7 +2561,9 @@ namespace StealthAssessmentWizard
             return LabelledData;
         }
 
-        internal static int[][] GetLabelledDataUni(string[] UniCompetencyModel, Observables observables)
+        internal static int[][] GetLabelledDataUni(
+            String[] UniCompetencyModel,
+            Observables observables)
         {
             //! Stores the labeling data for the given competencies.
             int[][] LabelledDataCompetencies = new int[UniCompetencyModel.Length][];
@@ -3167,7 +2614,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// An int[].
         /// </returns>
-        internal static int[] KMeans(String MyProject, ArffReader reader, string Competency)
+        internal static int[] KMeans(
+            String MyProject,
+            ArffReader reader,
+            String Competency)
         {
             Accord.Math.Random.Generator.Seed = 1;
 
@@ -3366,21 +2816,25 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// The instances.
         /// </returns>
-        internal static Tuple<double[][][][], double[][][][]> LoadInstances(Observables observables, Tuple<string[], string[][]> CompetencyModel, string[][][] StatisticalSubmodel)
+        internal static (double[][][][] facets, double[][][][] observables) LoadInstances(
+            Observables observables,
+            (string[] competencies, string[][] facets) CompetencyModel,
+            String[][][] StatisticalSubmodel)
         {
-            //! Stores instances per declared observable in the statistical submodels.
-            double[][][][] InstancesPerObservable = new double[CompetencyModel.Item1.Length][][][];
+            //! Stores instances per declared observable in the statistical sub models.
+            double[][][][] InstancesPerObservable = new double[CompetencyModel.competencies.Length][][][];
 
             //! Stores instances per declared facet in the competency model.
-            double[][][][] Instances = new double[CompetencyModel.Item1.Length][][][];
-            Tuple<double[][][][], double[][][][]> Inst = new Tuple<double[][][][], double[][][][]>(Instances, InstancesPerObservable);
+            double[][][][] Instances = new double[CompetencyModel.competencies.Length][][][];
+
+            (double[][][][] facets, double[][][][] observables) Inst = (facets: Instances, observables: InstancesPerObservable);
 
             //! Initialisation of arrays.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                InstancesPerObservable[x] = new double[CompetencyModel.Item2[x].Length][][];
-                Instances[x] = new double[CompetencyModel.Item2[x].Length][][];
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                InstancesPerObservable[x] = new double[CompetencyModel.facets[x].Length][][];
+                Instances[x] = new double[CompetencyModel.facets[x].Length][][];
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     InstancesPerObservable[x][y] = new double[StatisticalSubmodel[x][y].Length][];
                     for (int i = 0; i < StatisticalSubmodel[x][y].Length; i++)
@@ -3399,9 +2853,9 @@ namespace StealthAssessmentWizard
             }
 
             //! Store Instances per declared observable in the statistical submodels.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     for (int i = 0; i < StatisticalSubmodel[x][y].Length; i++)
                     {
@@ -3421,9 +2875,9 @@ namespace StealthAssessmentWizard
             }
 
             //! Initialisation of array Instances.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     for (int i = 0; i < Instances[x][y].Length; i++)
                     {
@@ -3433,9 +2887,9 @@ namespace StealthAssessmentWizard
             }
 
             //! Stores instances per declared facet in the competency model.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     for (int i = 0; i < Instances[x][y].Length; i++)
                     {
@@ -3450,104 +2904,10 @@ namespace StealthAssessmentWizard
             return Inst;
         }
 
-        /// <summary>
-        /// Loads instances external facets competencies.
-        /// </summary>
-        ///
-        /// <param name="AllExternalMeasurementData"> Information describing all external measurement. </param>
-        /// <param name="CompetencyModel">            The competency model. </param>
-        ///
-        /// <returns>
-        /// The instances external facets competencies.
-        /// </returns>
-        internal static Tuple<int[][], int[][][]> LoadInstancesExternalFacetsCompetencies(Tuple<string[], string[][]> AllExternalMeasurementData, Tuple<string[], string[][]> CompetencyModel)
-        {
-            //! Stores the external data for the given competencies.
-            int[][] ExternalDataCompetencies = new int[CompetencyModel.Item1.Length][];
 
-            //! Stores the external data for the given facets.
-            int[][][] ExternalDataFacets = new int[CompetencyModel.Item1.Length][][];
-
-            //! Stores the external data for the given facets and competencies.
-            Tuple<int[][], int[][][]> ExternalDataCF = new Tuple<int[][], int[][][]>(ExternalDataCompetencies, ExternalDataFacets);
-
-            //! Initialization of arrays.
-
-            //! check if external data exists for a given competency.
-            bool flagC = false;
-
-            //! check if data exists for a given facet.
-            bool flagF = false;
-
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                ExternalDataFacets[x] = new int[CompetencyModel.Item2[x].Length][];
-                for (int y = 0; y < AllExternalMeasurementData.Item1.Length; y++)
-                {
-                    if (CompetencyModel.Item1[x] == AllExternalMeasurementData.Item1[y])
-                    {
-                        ExternalDataCompetencies[x] = new int[AllExternalMeasurementData.Item2[y].Length];
-                        flagC = true;
-                    }
-                }
-
-                if (!flagC)
-                {
-                    ExternalDataCompetencies[x] = new int[1];
-                }
-
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-                    for (int i = 0; i < AllExternalMeasurementData.Item1.Length; i++)
-                    {
-                        if (CompetencyModel.Item2[x][y] == AllExternalMeasurementData.Item1[i])
-                        {
-                            ExternalDataFacets[x][y] = new int[AllExternalMeasurementData.Item2[i].Length];
-                            flagF = true;
-                        }
-                    }
-
-                    if (!flagF)
-                    {
-                        ExternalDataFacets[x][y] = new int[1];
-                    }
-                }
-            }
-
-            //! Store external data for competencies.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
-            {
-                for (int y = 0; y < AllExternalMeasurementData.Item1.Length; y++)
-                {
-                    if (CompetencyModel.Item1[x] == AllExternalMeasurementData.Item1[y])
-                    {
-                        for (int i = 0; i < AllExternalMeasurementData.Item2[y].Length; i++)
-                        {
-                            ExternalDataCompetencies[x][i] = Convert.ToInt32(AllExternalMeasurementData.Item2[y][i]);
-                        }
-                    }
-                }
-
-                //! Store external data for facets.
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
-                {
-                    for (int i = 0; i < AllExternalMeasurementData.Item1.Length; i++)
-                    {
-                        if (CompetencyModel.Item2[x][y] == AllExternalMeasurementData.Item1[i])
-                        {
-                            for (int k = 0; k < AllExternalMeasurementData.Item2[i].Length; k++)
-                            {
-                                ExternalDataFacets[x][y][k] = Convert.ToInt32(AllExternalMeasurementData.Item2[i][k]);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return ExternalDataCF;
-        }
-
-        internal static Tuple<double[][][], double[][][]> LoadInstancesUni(Observables observables, string[] UniCompetencyModel, string[][] UniEvidenceModel)
+        internal static Tuple<double[][][], double[][][]> LoadInstancesUni(
+            Observables observables, string[] UniCompetencyModel,
+            String[][] UniEvidenceModel)
         {
             //! Stores instances per declared observable in the statistical submodels.
             double[][][] InstancesPerObservable = new double[UniCompetencyModel.Length][][];
@@ -3626,7 +2986,8 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A double[][][][].
         /// </returns>
-        internal static double[][][][] Normalisation(double[][][][] Instances)
+        internal static double[][][][] Normalisation(
+            double[][][][] Instances)
         {
             double[][][][] InstancesNorm = new double[Instances.Length][][][];
             double[][][][] sample = new double[Instances.Length][][][];
@@ -3696,7 +3057,8 @@ namespace StealthAssessmentWizard
             return InstancesNorm;
         }
 
-        internal static double[][][] NormalisationUni(double[][][] InstancesUni)
+        internal static double[][][] NormalisationUni(
+            double[][][] InstancesUni)
         {
             double[][][] InstancesNorm = new double[InstancesUni.Length][][];
             double[][][] sample = new double[InstancesUni.Length][][];
@@ -3766,18 +3128,22 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;int[][],int[][][],int[][]&gt;
         /// </returns>
-        internal static Tuple<int[][], int[][][], int[][]> SelectLabelsforCompetencies(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
+        internal static (int[][] competencies, int[][][] facets, int[][] output) SelectLabelsforCompetencies(
+            String MyProject,
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (int[][] competencies, int[][][] facets) LabelledData)
         {
-            int[][] output = new int[CompetencyModel.Item1.Length][];
-            Tuple<int[][], int[][][], int[][]> LabelledOutput = new Tuple<int[][], int[][][], int[][]>(LabelledData.Item1, LabelledData.Item2, output);
+            int[][] output = new int[CompetencyModel.competencies.Length][];
 
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            (int[][] competencies, int[][][] facets, int[][] output) LabelledOutput = (LabelledData.competencies, LabelledData.facets, output);
+
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                Logger.Warn($"No labeled data has been found for '{CompetencyModel.Item1[x]}'.");
+                Logger.Warn($"No labeled data has been found for '{CompetencyModel.competencies[x]}'.");
 
                 //! Select a clustering algorithm (KMEANS only).
 
-                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
+                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
 
                 //! Get data from the .arff file.
 
@@ -3788,14 +3154,14 @@ namespace StealthAssessmentWizard
                     case MLClustering.KMeans:
                         using (ArffReader arffReader = new ArffReader(arff_c))
                         {
-                            int[] labels = KMeans(MyProject, arffReader, CompetencyModel.Item1[x]);
+                            int[] labels = KMeans(MyProject, arffReader, CompetencyModel.competencies[x]);
 
-                            LabelledData.Item1[x] = new int[labels.Length];
+                            LabelledData.competencies[x] = new int[labels.Length];
                             output[x] = new int[labels.Length];
 
                             for (int i = 0; i < labels.Length; i++)
                             {
-                                LabelledData.Item1[x][i] = labels[i];
+                                LabelledData.competencies[x][i] = labels[i];
                                 output[x][i] = labels[i];
                             }
                         }
@@ -3817,24 +3183,27 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
         /// </returns>
-        internal static Tuple<int[][], int[][][], int[][][]> SelectLabelsforFacets(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
+        internal static (int[][] competencies, int[][][] facets, int[][][] output) SelectLabelsforFacets(
+            String MyProject,
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (int[][] competencies, int[][][] facets) LabelledData)
         {
-            int[][][] output = new int[CompetencyModel.Item1.Length][][];
+            int[][][] output = new int[CompetencyModel.competencies.Length][][];
 
-            Tuple<int[][], int[][][], int[][][]> LabelledOutput = new Tuple<int[][], int[][][], int[][][]>(LabelledData.Item1, LabelledData.Item2, output);
+            (int[][] competencies, int[][][] facets, int[][][] output) LabelledOutput = (LabelledData.competencies, LabelledData.facets, output);
 
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                output[x] = new int[CompetencyModel.Item2[x].Length][];
+                output[x] = new int[CompetencyModel.facets[x].Length][];
 
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     //===R
 
                     //Debug.WriteLine($"No labeled data has been found for {CompetencyModel.Item2[x][y]}.");
 
-                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
+                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
 
                     //! Get data from the .arff file.
 
@@ -3846,14 +3215,14 @@ namespace StealthAssessmentWizard
                         case MLClustering.KMeans:
                             using (ArffReader arffReader = new ArffReader(arff_f))
                             {
-                                int[] labels = KMeans(MyProject, arffReader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]); ;
+                                int[] labels = KMeans(MyProject, arffReader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]); ;
 
-                                LabelledData.Item2[x][y] = new int[labels.Length];
+                                LabelledData.facets[x][y] = new int[labels.Length];
                                 output[x][y] = new int[labels.Length];
 
                                 for (int i = 0; i < labels.Length; i++)
                                 {
-                                    LabelledData.Item2[x][y][i] = labels[i];
+                                    LabelledData.facets[x][y][i] = labels[i];
                                     output[x][y][i] = labels[i];
                                 }
                             }
@@ -3876,7 +3245,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;int[][],int[][],int[][]&gt;
         /// </returns>
-        internal static Tuple<int[][], int[][], int[][]> SelectLabelsforUniCompetencies(String MyProject, string[] UniCompetencyModel, int[][] UniLabelledData)
+        internal static Tuple<int[][], int[][], int[][]> SelectLabelsforUniCompetencies(
+            String MyProject,
+            String[] UniCompetencyModel,
+            int[][] UniLabelledData)
         {
             //! This variable allows access to functions of the Exceptions class.
             //var Exceptions = new Exceptions();
@@ -3940,19 +3312,23 @@ namespace StealthAssessmentWizard
         ///
         /// ### <param name="checkLabels">  The check labels. </param>
         /// ### <param name="labelledData"> Information describing the labeled data. </param>
-        internal static Tuple<int[][], int[][][], int[][]> SelectMLforCompetencies(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
+        internal static (int[][] competencies, int[][][] facets, int[][] output) SelectMLforCompetencies(
+            String MyProject,
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (int[][] competencies, int[][][] facets) LabelledData)
         {
             //! This variable allows access to functions of the Exceptions class.
-            int[][] output = new int[CompetencyModel.Item1.Length][];
+            int[][] output = new int[CompetencyModel.competencies.Length][];
             int[] outputLabels;
-            Tuple<int[][], int[][][], int[][]> LabelledOutput = new Tuple<int[][], int[][][], int[][]>(LabelledData.Item1, LabelledData.Item2, output);
 
-            //! Browse for labelled data for each declared facet and decide which ML algorithm to apply accordingly.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            (int[][] competencies, int[][][] facets, int[][] output) LabelledOutput = (LabelledData.competencies, LabelledData.facets, output);
+
+            //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                Logger.Info($"Labeled data has been found for '{CompetencyModel.Item1[x]}'.");
+                Logger.Info($"Labeled data has been found for '{CompetencyModel.competencies[x]}'.");
 
-                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + ".arff");
+                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
 
                 //! Get data from the .arff file.
                 using (ArffReader reader = new ArffReader(arff_c))
@@ -3962,7 +3338,7 @@ namespace StealthAssessmentWizard
                     {
                         case MLAlgorithms.NaiveBayes:
                             {
-                                outputLabels = NaiveBayesAccord_C(MyProject, reader, CompetencyModel.Item1[x]);
+                                outputLabels = NaiveBayesAccord_C(MyProject, reader, CompetencyModel.competencies[x]);
 
                                 output[x] = new int[outputLabels.Length];
                                 for (int i = 0; i < outputLabels.Length; i++)
@@ -3974,7 +3350,7 @@ namespace StealthAssessmentWizard
 
                         case MLAlgorithms.DecisionTrees:
                             {
-                                outputLabels = DecisionTreesAccord_C(MyProject, reader, CompetencyModel.Item1[x]);
+                                outputLabels = DecisionTreesAccord_C(MyProject, reader, CompetencyModel.competencies[x]);
                                 output[x] = new int[outputLabels.Length];
                                 for (int i = 0; i < outputLabels.Length; i++)
                                 {
@@ -3999,28 +3375,33 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;int[][],int[][][],int[][][]&gt;
         /// </returns>
-        internal static Tuple<int[][], int[][][], int[][][]> SelectMLforFacets(String MyProject, Tuple<string[], string[][]> CompetencyModel, Tuple<int[][], int[][][]> LabelledData)
+        internal static (int[][] competencies, int[][][] facets, int[][][] output) SelectMLforFacets(
+            String MyProject,
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (int[][] competencies, int[][][] facets) LabelledData)
         {
             //! This variable allows access to functions of the Exceptions class.
-            var Exceptions = new Exceptions();
-            int[][][] output = new int[CompetencyModel.Item1.Length][][];
+            // Exceptions Exceptions = new Exceptions();
+
+            int[][][] output = new int[CompetencyModel.competencies.Length][][];
             int[] outputLabels;
-            Tuple<int[][], int[][][], int[][][]> LabelledOutput = new Tuple<int[][], int[][][], int[][][]>(LabelledData.Item1, LabelledData.Item2, output);
+
+            (int[][] competencies, int[][][] facets, int[][][] output) LabelledOutput = (LabelledData.competencies, LabelledData.facets, output);
 
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
-            for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+            for (int x = 0; x < CompetencyModel.competencies.Length; x++)
             {
-                output[x] = new int[CompetencyModel.Item2[x].Length][];
+                output[x] = new int[CompetencyModel.facets[x].Length][];
 
                 // Debug.WriteLine($"Labeled data has been found for {CompetencyModel.Item1[x]}." );
-                for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                 {
                     //===R
 
-                    Logger.Info($"Labeled data has been found for '{CompetencyModel.Item2[x][y]}'.");
+                    Logger.Info($"Labeled data has been found for '{CompetencyModel.facets[x][y]}'.");
 
                     //! Select a ML algorithm.
-                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.Item1[x] + @"\" + CompetencyModel.Item2[x][y] + ".arff");
+                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
 
                     //! Get data from the .arff file.
                     using (ArffReader reader = new ArffReader(arff_f))
@@ -4031,7 +3412,7 @@ namespace StealthAssessmentWizard
                             //! (1) Naive Bayes
                             case MLAlgorithms.NaiveBayes:
                                 {
-                                    outputLabels = NaiveBayesAccord_F(MyProject, reader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]);
+                                    outputLabels = NaiveBayesAccord_F(MyProject, reader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]);
 
                                     output[x][y] = new int[outputLabels.Length];
                                     for (int i = 0; i < outputLabels.Length; i++)
@@ -4044,7 +3425,7 @@ namespace StealthAssessmentWizard
                             //! (2) Decision Trees
                             case MLAlgorithms.DecisionTrees:
                                 {
-                                    outputLabels = DecisionTreesAccord_F(MyProject, reader, CompetencyModel.Item1[x], CompetencyModel.Item2[x][y]);
+                                    outputLabels = DecisionTreesAccord_F(MyProject, reader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]);
                                     output[x][y] = new int[outputLabels.Length];
                                     for (int i = 0; i < outputLabels.Length; i++)
                                     {
@@ -4070,7 +3451,10 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// A Tuple&lt;int[][],int[][],int[][]&gt;
         /// </returns>
-        internal static Tuple<int[][], int[][], int[][]> SelectMLforUniCompetencies(String MyProject, string[] UniCompetencyModel, int[][] LabelledDataUni)
+        internal static Tuple<int[][], int[][], int[][]> SelectMLforUniCompetencies(
+            String MyProject,
+            String[] UniCompetencyModel,
+            int[][] LabelledDataUni)
         {
             //! This variable allows access to functions of the Exceptions class.
             int[][] output = new int[UniCompetencyModel.Length][];

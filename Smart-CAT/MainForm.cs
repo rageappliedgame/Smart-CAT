@@ -50,18 +50,20 @@ namespace StealthAssessmentWizard
     {
         #region Fields
 
-        private EnumItemCollection AlgorithmItems = new EnumItemCollection(typeof(MLAlgorithms));
+        private readonly EnumItemCollection AlgorithmItems = new EnumItemCollection(typeof(MLAlgorithms));
+
+#pragma warning disable IDE0044 // Add readonly modifier
         private Font SelectedFont = null;
-        private String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
+#pragma warning restore IDE0044 // Add readonly modifier
+
+        private readonly String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
         private String MyProject = String.Empty;
         private String MyInput = String.Empty;
 
-        //private ConsoleListener consoleListener = new ConsoleListener();
-
-        BackgroundWorker Step1BackgroundWorker = new BackgroundWorker();
-        BackgroundWorker Step2BackgroundWorker = new BackgroundWorker();
-        BackgroundWorker Step3BackgroundWorker = new BackgroundWorker();
-        BackgroundWorker Step4BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step1BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step2BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step3BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step4BackgroundWorker = new BackgroundWorker();
 
         #endregion Fields
 
@@ -948,7 +950,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="sender"> Source of the event. </param>
         /// <param name="e">      Cancel event information. </param>
-        private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void ContextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ListView lv = (ListView)((ContextMenuStrip)sender).SourceControl;
 
@@ -1177,7 +1179,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="sender"> Source of the event. </param>
         /// <param name="e">      Event information. </param>
-        private void groupedComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void GroupedComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (groupedComboBox1.SelectedItem != null)
             {
@@ -1257,7 +1259,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="sender"> Source of the event. </param>
         /// <param name="e">      Event information. </param>
-        private void helpBtn_Click(object sender, EventArgs e)
+        private void HelpBtn_Click(object sender, EventArgs e)
         {
             //! See https://docs.microsoft.com/en-us/dotnet/framework/winforms/controls/helpprovider-component-overview-windows-forms
             //helpProvider1.
@@ -1335,7 +1337,7 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
-                    Excel.Stamp = $"_{DateTime.Now.ToString("yyyyMMdd-HHmm")}";
+                    Excel.Stamp = $"_{DateTime.Now:yyyyMMdd-HHmm}";
 
                     StateMachine.Flags[StateMachine.IMPORT_DATA] = true;
 
@@ -1642,7 +1644,7 @@ namespace StealthAssessmentWizard
             if (lv != null && lv.SelectedItems.Count == 1 && lv.SelectedItems[0].Group != null)
             {
                 Int32 ndx = lv.SelectedItems[0].Index;
-                String group = lv.SelectedItems[0].Group.Name;
+                //String group = lv.SelectedItems[0].Group.Name;
                 Int32 gndx = lv.Groups.IndexOf(lv.SelectedItems[0].Group);
 
                 switch (UniDimensional)
@@ -1806,7 +1808,7 @@ namespace StealthAssessmentWizard
 
             String filename = e.Argument.ToString();
 
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
+            // String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             //ConsoleDialog.HighVideo();
             //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
@@ -1847,7 +1849,7 @@ namespace StealthAssessmentWizard
 
             //! Normalization of the instances for the declared statistical submodels.
             Debug.Write("Normalisation of instances... ");
-            Data.Instances = BayesNet.Normalisation(Data.Inst.Item1);
+            Data.Instances = BayesNet.Normalisation(Data.Inst.facets);
             Data.InstancesUni = BayesNet.NormalisationUni(Data.InstUni.Item1);
             Debug.WriteLine("Completed.\r\n");
 
@@ -1985,7 +1987,7 @@ namespace StealthAssessmentWizard
 
                     //! Normalization of the instances for the declared statistical submodels.
                     Debug.Write("Normalisation of instances... ");
-                    Data.Instances = BayesNet.Normalisation(Data.Inst.Item1);
+                    Data.Instances = BayesNet.Normalisation(Data.Inst.facets);
                     Data.InstancesUni = BayesNet.NormalisationUni(Data.InstUni.Item1);
                     Debug.WriteLine("Completed.\r\n");
                 }
@@ -2024,7 +2026,7 @@ namespace StealthAssessmentWizard
                 }
 
                 {
-                    Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
+                    Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
                 }
 
                 (sender as BackgroundWorker).ReportProgress(4);
@@ -2137,7 +2139,7 @@ namespace StealthAssessmentWizard
 
                 //! Normalization of the instances for the declared statistical submodels.
                 Debug.Write("Normalisation of instances... ");
-                Data.Instances = BayesNet.Normalisation(Data.Inst.Item1);
+                Data.Instances = BayesNet.Normalisation(Data.Inst.facets);
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Check for labeled data.
@@ -2171,7 +2173,7 @@ namespace StealthAssessmentWizard
             Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(MyProject, Data.competencies.ToTuple(), Data.LabelledData);
             Debug.WriteLine("Selection completed.\r\n");
 
-            Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
+            Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
 
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
@@ -2206,7 +2208,7 @@ namespace StealthAssessmentWizard
             Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(MyProject, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
             Debug.WriteLine("Selection completed.\r\n");
 
-            Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
+            Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
 
             groupedComboBox1.InvokeIfRequired(o =>
             {
@@ -2402,13 +2404,13 @@ namespace StealthAssessmentWizard
                     Debug.WriteLine("ExternalData: {0}", Data.ExternalData);
 
                     //Run correlation analysis for multi-dimensional competencies
-                    Data.spearmansMulti = BayesNet.CorrelationAnalysisMulti(Data.competencies.ToTuple().Item1, Data.LabelledOutputC.Item3, Data.ExternalData);
+                    Data.spearmansMulti = BayesNet.CorrelationAnalysisMulti(Data.competencies.ToTuple().competencies, Data.LabelledOutputC.output, Data.ExternalData);
 
                     //Run correlation analysis for uni-dimensional competencies
                     Data.spearmansUni = BayesNet.CorrelationAnalysisUni(Data.unicompetencies.ToTuple(), Data.UniLabelledOutputC.Item3, Data.ExternalData);
 
                     //Run reliability analysis for multi-dimensional competencies.
-                    Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.Item2);
+                    Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
 
                     //Run reliability analysis for uni-dimensional competencies.
                     Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());

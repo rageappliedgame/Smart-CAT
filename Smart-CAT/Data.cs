@@ -64,13 +64,22 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Stores information whether the data for the given facets and competencies is labeled to
         /// decide ML approach.
+        /// 
+        /// Item1 [Competencies] -> Label Presence
+        /// Item2 [Competences][Facets] -> Label Presence
+        /// 
+        /// Note: The Label Presence Arrays have a length of 1. (See line 1995 in BayesNet.cs).
+        /// Note: Could be 1 dimension flatter.
         /// </summary>
         internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(Array.Empty<bool[]>(), Array.Empty<bool[][]>());
-
-        /// <summary>
+#warning TEST OF C#7 NAMED TUPLE SYNTAX (Note: it does not mix with Tuple<T,U>
+#if NAMED_TUPLE_SYNTAX
+        static (bool[][] competencies, bool[][][] facets) CheckLabelsTEST = (competencies: Array.Empty<bool[]>(), facets: Array.Empty<bool[][]>());
+        static readonly bool c15present = CheckLabelsTEST.competencies[15][0];
+#endif
         /// The correlations (Competencies, Facets).
         /// </summary>
-        internal static Tuple<double[][], double[][][]> Correlations = Tuple.Create<double[][], double[][][]>(Array.Empty<double[]>(), Array.Empty<double[][]>());
+        //internal static Tuple<double[][], double[][][]> Correlations = Tuple.Create<double[][], double[][][]>(Array.Empty<double[]>(), Array.Empty<double[][]>());
 
         /// <summary>
         /// The instance.
@@ -115,15 +124,15 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Stores the pruned observables and the correlation analysis results.
         /// </summary>
-        internal static Tuple<string[][][][], double[][][][][]> PrunedResults = Tuple.Create<string[][][][], double[][][][][]>(Array.Empty<string[][][]>(), Array.Empty<double[][][][]>());
+        //internal static Tuple<string[][][][], double[][][][][]> PrunedResults = Tuple.Create<string[][][][], double[][][][][]>(Array.Empty<string[][][]>(), Array.Empty<double[][][][]>());
 
         /// <summary>
         /// Stores the external data for the given facets and competencies.
         /// </summary>
-        internal static Tuple<int[][], int[][][]> RandomLabelledData = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
+        //internal static Tuple<int[][], int[][][]> RandomLabelledData = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
 
         /// <summary>
-        /// Stores the Statistical Submodel .
+        /// Stores the Statistical Sub Model .
         /// </summary>
         //[Obsolete("Evidence now in (Uni)Competencies")]
         //internal static string[][][] StatisticalSubmodel = Array.Empty<string[][]>();
@@ -134,7 +143,7 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Options for controlling the validation and verification.
         /// </summary>
-        internal static VandVOptions VandVOptions = new VandVOptions(Double.NaN, Double.NaN);
+        //internal static VandVOptions VandVOptions = new VandVOptions(Double.NaN, Double.NaN);
 
         internal static Tuple<double[][][], double[][][]> InstUni = new Tuple<double[][][], double[][][]>(Array.Empty<double[][]>(), Array.Empty<double[][]>());
 
@@ -154,7 +163,7 @@ namespace StealthAssessmentWizard
 
         internal static Tuple<string[], double[]> cronbachAlphaUni = new Tuple<string[], double[]>(Array.Empty<string>(), Array.Empty<double>()) { };
 
-        internal static double pSignificance = new double();
+        //internal static double pSignificance = new double();
 
         internal static Tuple<string[], string[][]> ExternalData = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
 

@@ -109,3 +109,13 @@ Data.StatisticalSubmodel = string[][][] = Ragged 2D array with lists of observab
 
 Data.UniCompetencyModel (String[])
 Data.UniEvidenceModel	(String[][])	= ragged 2D array
+
+--------------
+
+Source: https://docs.microsoft.com/en-us/archive/msdn-magazine/2017/august/essential-net-csharp-7-0-tuples-explained?msclkid=23c418d5d09e11ec8e61e90bfd1b0e48
+
+	There’s another tuple type that was included with the .NET Framework 4.5—System.Tuple<…>. 
+	At that time, it was expected to be the core tuple implementation going forward. However, 
+	once C# supported tuple syntax, it was realized that a value type generally performed better 
+	and so System.ValueTuple<…> was introduced, effectively replacing System.Tuple<…> in all 
+	cases except for backward compatibility with existing APIs that depend on System.Tuple<…>.

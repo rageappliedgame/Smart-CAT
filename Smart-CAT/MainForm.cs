@@ -412,7 +412,12 @@ namespace StealthAssessmentWizard
                                     foreach (PropertyInfo prop in props)
                                     {
                                         worksheet.Cells[rofs, cofs + 0].Value = prop.Name;
-                                        worksheet.Cells[rofs, cofs + 1].Value = prop.GetValue(Data.MLOptions);
+                                        
+                                        object val = prop.GetValue(Data.MLOptions);
+                                        worksheet.Cells[rofs, cofs + 1].Value = (Double.TryParse(val.ToString(), out Double dbl)
+                                            ? dbl
+                                            : val);
+
                                         rofs++;
                                     }
 
@@ -447,7 +452,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 1, cofs + 0].Value = Competency;
                                     rofs++;
 
-                                    for (Int32 f = 0; f < Data.competencies.Count; f++)
+                                    for (Int32 f = 0; f < Data.competencies[i].Count; f++)
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = Data.competencies[i][f].FacetName;
 
@@ -676,7 +681,11 @@ namespace StealthAssessmentWizard
                                     foreach (PropertyInfo prop in props)
                                     {
                                         worksheet.Cells[rofs, cofs + 0].Value = prop.Name;
-                                        worksheet.Cells[rofs, cofs + 1].Value = prop.GetValue(Data.MLOptions);
+                                        
+                                        object val = prop.GetValue(Data.MLOptions);
+                                        worksheet.Cells[rofs, cofs + 1].Value = (Double.TryParse(val.ToString(), out Double dbl)
+                                            ? dbl
+                                            : val);
                                         rofs++;
                                     }
 
@@ -707,7 +716,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 1].Value = "Observables";
 
                                     worksheet.Cells[rofs + 1, cofs + 0].Value = Data.unicompetencies[i];
-                                    foreach (String o in Data.unicompetencies.Names)
+                                    foreach (String o in Data.unicompetencies[i].Names)
                                     {
                                         obs.Add(o);
 
@@ -978,14 +987,14 @@ namespace StealthAssessmentWizard
                 listView1.Items.Clear();
                 listView1.Groups.Clear();
 
-                //! Visualize the Competencies/Facets/Observables in ListView1.
-                //
-                for (Int32 c = 0; c < Data.competencies.Count; c++)
+            //! Visualize the Competencies/Facets/Observables in ListView1.
+            //
+            for (Int32 c = 0; c < Data.competencies.Count; c++)
                 {
-                    //! 1) Multi-Dimensional.
-                    //
-                    Int32 gndx = listView1.Groups.IndexOf(
-                                        listView1.Groups.Add(Data.competencies[c].CompetencyName, Data.competencies[c].CompetencyName));
+                //! 1) Multi-Dimensional.
+                //
+                Int32 gndx = listView1.Groups.IndexOf(
+                                listView1.Groups.Add(Data.competencies[c].CompetencyName, Data.competencies[c].CompetencyName));
 
                     for (Int32 f = 0; f < Data.competencies[c].Count(); f++)
                     {
@@ -1010,18 +1019,18 @@ namespace StealthAssessmentWizard
 
                 Int32 cndx = listView2.Groups.IndexOf(listView2.Groups.Add("Competencies", "Competencies"));
 
-                //! Visualize the Competencies/Observables in ListView2.
-                //
-                for (Int32 c = 0; c < Data.unicompetencies.Count; c++)
+            //! Visualize the Competencies/Observables in ListView2.
+            //
+            for (Int32 c = 0; c < Data.unicompetencies.Count; c++)
                 {
-                    //! Uni-Dimensional.
-                    //
-                    ListViewItem lvi = listView2.Items.Add(Data.unicompetencies[c].CompetencyName, Data.unicompetencies[c].CompetencyName, 0);
+                //! Uni-Dimensional.
+                //
+                ListViewItem lvi = listView2.Items.Add(Data.unicompetencies[c].CompetencyName, Data.unicompetencies[c].CompetencyName, 0);
                     lvi.Group = listView2.Groups[cndx];
 
-                    //String[] vars = Data.uni UniEvidenceModel[c];
+                //String[] vars = Data.uni UniEvidenceModel[c];
 
-                    lvi.SubItems.Add(String.Join(",", Data.unicompetencies[c].Names));
+                lvi.SubItems.Add(String.Join(",", Data.unicompetencies[c].Names));
                 }
 
                 listView2.Refresh();
@@ -2250,8 +2259,8 @@ namespace StealthAssessmentWizard
                         IsCompetency = true,
                     });
                 }
-                //TODO Always expecting multidimensional!!.
-                groupedComboBox1.ValueMember = "Value";
+            //TODO Always expecting multidimensional!!.
+            groupedComboBox1.ValueMember = "Value";
                 groupedComboBox1.DisplayMember = "Display";
                 groupedComboBox1.GroupMember = "Group";
                 groupedComboBox1.DataSource = new BindingSource(items, String.Empty);

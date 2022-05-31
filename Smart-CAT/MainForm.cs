@@ -715,7 +715,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 0].Value = "Competency";
                                     worksheet.Cells[rofs + 0, cofs + 1].Value = "Observables";
 
-                                    worksheet.Cells[rofs + 1, cofs + 0].Value = Data.unicompetencies[i];
+                                    worksheet.Cells[rofs + 1, cofs + 0].Value = Data.unicompetencies[i].CompetencyName;
                                     foreach (String o in Data.unicompetencies[i].Names)
                                     {
                                         obs.Add(o);
@@ -846,7 +846,7 @@ namespace StealthAssessmentWizard
 
                                     rofs++;
 
-                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + $"{suffix}.ini")))
                                     {
                                         for (Int32 r = 0; r < testSize; r++)
                                         {

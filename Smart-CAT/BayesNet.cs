@@ -201,7 +201,7 @@ namespace StealthAssessmentWizard
         /// An int[].
         /// </returns>
         public static int[] DecisionTreesAccord_C(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency)
         {
@@ -295,12 +295,12 @@ namespace StealthAssessmentWizard
                 //! Moreover, we may decide to convert our tree to a set of rules:
                 DecisionSet rules = tree.ToRules();
 
-                using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.ini")))
+                using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + "_DecisionTreesAccord.ini")))
                 {
                     ini.Clear();
 
                     //! Save BayesNet results in .txt file
-                    using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.txt")))
+                    using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency + "_DecisionTreesAccord.txt")))
                     {
                         //! We can get different performance measures to assess how good our model was at
                         //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -393,6 +393,7 @@ namespace StealthAssessmentWizard
         /// Runs Decision Trees C45 from the Accord library.
         /// </summary>
         ///
+        /// <param name="MyData">     Information describing my. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         /// <param name="Facet">      The facet. </param>
@@ -401,7 +402,7 @@ namespace StealthAssessmentWizard
         /// An int[].
         /// </returns>
         public static int[] DecisionTreesAccord_F(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency,
             String Facet)
@@ -489,12 +490,12 @@ namespace StealthAssessmentWizard
             //! Moreover, we may decide to convert our tree to a set of rules:
             DecisionSet rules = tree.ToRules();
 
-            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_DecisionTreesAccord.ini")))
+            using (IniFile ini = new IniFile(Path.Combine(MyData, Competency, Facet + "_DecisionTreesAccord.ini")))
             {
                 ini.Clear();
 
                 //! Save BayesNet results in .txt file
-                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_DecisionTreesAccord.txt")))
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency, Facet + "_DecisionTreesAccord.txt")))
                 {
                     //! We can get different performance measures to assess how good our model was at
                     //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -576,6 +577,7 @@ namespace StealthAssessmentWizard
         /// Runs K-Means clustering from the Accord library.
         /// </summary>
         ///
+        /// <param name="MyData">     Information describing my. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         /// <param name="Facet">      The facet. </param>
@@ -584,7 +586,7 @@ namespace StealthAssessmentWizard
         /// An int[].
         /// </returns>
         public static int[] KMeans(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency,
             String Facet)
@@ -681,7 +683,7 @@ namespace StealthAssessmentWizard
             int[] newlabels = new int[randData.Length];
 
             //! Save BayesNet results in .txt file
-            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_KMeansAccord.txt")))
+            using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency, Facet + "_KMeansAccord.txt")))
             {
                 int noCl = 0;
                 foreach (var value in clusters)
@@ -773,7 +775,7 @@ namespace StealthAssessmentWizard
         /// An int[].
         /// </returns>
         public static int[] NaiveBayesAccord_C(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency)
         {
@@ -859,17 +861,17 @@ namespace StealthAssessmentWizard
                 //! performance of Naive Bayes on the above data set:
                 NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-                nb.Save(Path.Combine(MyProject, "NATIVE.TXT"), SerializerCompression.None);
+                nb.Save(Path.Combine(MyData, "NATIVE.TXT"), SerializerCompression.None);
 
                 predicted = nb.Decide(GameLogsTest);
                 double[][] probs = nb.Probabilities(GameLogsTest);
 
-                using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.ini")))
+                using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + "_BayesAccord.ini")))
                 {
                     ini.Clear();
 
                     //! Save BayesNet results in .txt file
-                    using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.txt")))
+                    using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency + "_BayesAccord.txt")))
                     {
                         //! We can get different performance measures to assess how good our model was at
                         //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -963,6 +965,7 @@ namespace StealthAssessmentWizard
         /// Naive Bayes accord facets.
         /// </summary>
         ///
+        /// <param name="MyData">     my project. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         /// <param name="Facet">      The facet. </param>
@@ -971,7 +974,7 @@ namespace StealthAssessmentWizard
         /// An int[].
         /// </returns>
         public static int[] NaiveBayesAccord_F(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency,
             String Facet)
@@ -1066,18 +1069,18 @@ namespace StealthAssessmentWizard
 
             NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-            nb.Save(Path.Combine(MyProject, "NATIVE.TXT"), SerializerCompression.None);
-            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyProject, "NATIVE.TXT"));
+            nb.Save(Path.Combine(MyData, "NATIVE.TXT"), SerializerCompression.None);
+            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyData, "NATIVE.TXT"));
 
             int[] predicted = nb2.Decide(GameLogsTest);
             double[][] probs = nb2.Probabilities(GameLogsTest);
 
-            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_BayesAccord.ini")))
+            using (IniFile ini = new IniFile(Path.Combine(MyData, Competency, Facet + "_BayesAccord.ini")))
             {
                 ini.Clear();
 
                 //! Save BayesNet results in .txt file
-                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + @"\" + Facet + "_BayesAccord.txt")))
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency, Facet + "_BayesAccord.txt")))
                 {
                     //! We can get different performance measures to assess how good our model was at
                     //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -1390,7 +1393,7 @@ namespace StealthAssessmentWizard
         }
 
         public static int[] UniDecisionTreesAccord_C(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency)
         {
@@ -1477,12 +1480,12 @@ namespace StealthAssessmentWizard
             //! Moreover, we may decide to convert our tree to a set of rules:
             DecisionSet rules = tree.ToRules();
 
-            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.ini")))
+            using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + "_DecisionTreesAccord.ini")))
             {
                 ini.Clear();
 
                 //! Save BayesNet results in .txt file
-                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_DecisionTreesAccord.txt")))
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency + "_DecisionTreesAccord.txt")))
                 {
                     //! We can get different performance measures to assess how good our model was at
                     //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -1564,7 +1567,7 @@ namespace StealthAssessmentWizard
         /// Uni naive bayes accord c.
         /// </summary>
         ///
-        /// <param name="MyProject">  my project. </param>
+        /// <param name="MyData">  my project. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         ///
@@ -1572,7 +1575,7 @@ namespace StealthAssessmentWizard
         /// An int[].
         /// </returns>
         public static int[] UniNaiveBayesAccord_C(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency)
         {
@@ -1666,18 +1669,18 @@ namespace StealthAssessmentWizard
 
             NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-            nb.Save(Path.Combine(MyProject, "NATIVE.TXT"), SerializerCompression.None);
-            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyProject, "NATIVE.TXT"));
+            nb.Save(Path.Combine(MyData, "NATIVE.TXT"), SerializerCompression.None);
+            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyData, "NATIVE.TXT"));
 
             int[] predicted = nb2.Decide(GameLogsTest);
             double[][] probs = nb2.Probabilities(GameLogsTest);
 
-            using (IniFile ini = new IniFile(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.ini")))
+            using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + "_BayesAccord.ini")))
             {
                 ini.Clear();
 
                 //! Save BayesNet results in .txt file
-                using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_BayesAccord.txt")))
+                using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency + "_BayesAccord.txt")))
                 {
                     //! We can get different performance measures to assess how good our model was at
                     //! predicting the true, expected, ground-truth labels for the decision problem:
@@ -1856,13 +1859,13 @@ namespace StealthAssessmentWizard
         /// Generates an arff files for competencies.
         /// </summary>
         ///
-        /// <param name="MyProject">           my project. </param>
+        /// <param name="MyData">              my project. </param>
         /// <param name="CompetencyModel">     The competency model. </param>
         /// <param name="StatisticalSubmodel"> The statistical submodel. </param>
         /// <param name="CheckLabels">         The check labels. </param>
         /// <param name="LabelledData">        Information describing the labeled data. </param>
         internal static void GenerateArffFilesForCompetencies(
-            String MyProject,
+            String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,
             string[][][] StatisticalSubmodel,
             (bool[][] competencies, bool[][][] facets) CheckLabels,
@@ -1879,7 +1882,7 @@ namespace StealthAssessmentWizard
                 {
                     Logger.Info($"Labeled data has been found for {CompetencyModel.competencies[x]}.");
 
-                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
+                    String arff_c = Path.Combine(MyData, CompetencyModel.competencies[x] + ".arff");
 
                     Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
@@ -1950,7 +1953,7 @@ namespace StealthAssessmentWizard
                 {
                     Logger.Warn($"No labeled data has been found for '{CompetencyModel.competencies[x]}'.");
 
-                    String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
+                    String arff_c = Path.Combine(MyData, CompetencyModel.competencies[x] + ".arff");
 
                     Directory.CreateDirectory(Path.GetDirectoryName(arff_c));
 
@@ -2002,14 +2005,14 @@ namespace StealthAssessmentWizard
         /// Generates an arff files for facets.
         /// </summary>
         ///
-        /// <param name="MyProject">           The competency model. </param>
+        /// <param name="MyData">              The competency model. </param>
         /// <param name="CompetencyModel">     The statistical submodel. </param>
         /// <param name="StatisticalSubmodel"> The instances. </param>
         /// <param name="Instances">           The check labels. </param>
         /// <param name="CheckLabels">         Information describing the labeled data. </param>
         /// <param name="LabelledData">        Information describing the labelled. </param>
         internal static void GenerateArffFilesForFacets(
-            String MyProject,
+            String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,
             String[][][] StatisticalSubmodel,
             double[][][][] Instances,
@@ -2030,7 +2033,7 @@ namespace StealthAssessmentWizard
                     for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                     {
                         //! 0)
-                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
+                        String arff_f = Path.Combine(MyData, CompetencyModel.competencies[x], CompetencyModel.facets[x][y] + ".arff");
 
                         Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
@@ -2162,7 +2165,7 @@ namespace StealthAssessmentWizard
                     for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                     {
                         //! 0)
-                        String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
+                        String arff_f = Path.Combine(MyData, CompetencyModel.competencies[x], CompetencyModel.facets[x][y] + ".arff");
 
                         Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
@@ -2291,14 +2294,14 @@ namespace StealthAssessmentWizard
         /// Generates an arff files for uni competencies.
         /// </summary>
         ///
-        /// <param name="MyProject">          my project. </param>
+        /// <param name="MyData">             my project. </param>
         /// <param name="UniCompetencyModel"> The uni competency model. </param>
         /// <param name="UniEvidenceModel">   The uni evidence model. </param>
         /// <param name="InstancesUni">       The instances uni. </param>
         /// <param name="CheckLabelsUni">     The check labels uni. </param>
         /// <param name="LabelledDataUni">    The labeled data uni. </param>
         internal static void GenerateArffFilesForUniCompetencies(
-            String MyProject,
+            String MyData,
             String[] UniCompetencyModel,
             String[][] UniEvidenceModel,
             double[][][] InstancesUni,
@@ -2314,7 +2317,7 @@ namespace StealthAssessmentWizard
                 {
                     Logger.Info($"Labeled data has been found for '{UniCompetencyModel[x]}'.");
 
-                    String arff_f = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+                    String arff_f = Path.Combine(MyData, UniCompetencyModel[x] + ".arff");
 
                     Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
@@ -2390,7 +2393,7 @@ namespace StealthAssessmentWizard
                 {
 
                     //! 0)
-                    String arff_f = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+                    String arff_f = Path.Combine(MyData, UniCompetencyModel[x] + ".arff");
 
                     Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 
@@ -2608,6 +2611,7 @@ namespace StealthAssessmentWizard
         /// Runs K-Means clustering from the Accord library.
         /// </summary>
         ///
+        /// <param name="MyData">     Information describing my. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         ///
@@ -2615,7 +2619,7 @@ namespace StealthAssessmentWizard
         /// An int[].
         /// </returns>
         internal static int[] KMeans(
-            String MyProject,
+            String MyData,
             ArffReader reader,
             String Competency)
         {
@@ -2711,7 +2715,7 @@ namespace StealthAssessmentWizard
             int[] newlabels = new int[randData.Length];
 
             //! Save BayesNet results in .txt file
-            using (StreamWriter file = new StreamWriter(Path.Combine(MyProject, @"data\" + Competency + "_KMeansAccord.txt")))
+            using (StreamWriter file = new StreamWriter(Path.Combine(MyData, Competency + "_KMeansAccord.txt")))
             {
                 int noCl = 0;
                 foreach (var value in clusters)
@@ -2904,7 +2908,17 @@ namespace StealthAssessmentWizard
             return Inst;
         }
 
-
+        /// <summary>
+        /// Loads instances uni.
+        /// </summary>
+        ///
+        /// <param name="observables">        The observables. </param>
+        /// <param name="UniCompetencyModel"> The uni competency model. </param>
+        /// <param name="UniEvidenceModel">   The uni evidence model. </param>
+        ///
+        /// <returns>
+        /// The instances uni.
+        /// </returns>
         internal static (double[][][], double[][][]) LoadInstancesUni(
             Observables observables, string[] UniCompetencyModel,
             String[][] UniEvidenceModel)
@@ -2953,7 +2967,7 @@ namespace StealthAssessmentWizard
                 }
             }
 
-            //! Initialisation of array Instances.
+            //! Initialization of array Instances.
             for (int x = 0; x < UniCompetencyModel.Length; x++)
             {
                 for (int i = 0; i < Instances[x].Length; i++)
@@ -3057,6 +3071,15 @@ namespace StealthAssessmentWizard
             return InstancesNorm;
         }
 
+        /// <summary>
+        /// Normalization uni.
+        /// </summary>
+        ///
+        /// <param name="InstancesUni"> The instances uni. </param>
+        ///
+        /// <returns>
+        /// A double[][][].
+        /// </returns>
         internal static double[][][] NormalisationUni(
             double[][][] InstancesUni)
         {
@@ -3122,6 +3145,7 @@ namespace StealthAssessmentWizard
         /// Select labelsfor competencies.
         /// </summary>
         ///
+        /// <param name="MyData">          Information describing my. </param>
         /// <param name="CompetencyModel"> The competency model. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
@@ -3129,7 +3153,7 @@ namespace StealthAssessmentWizard
         /// A (int[][],int[][][],int[][])
         /// </returns>
         internal static (int[][] competencies, int[][][] facets, int[][] output) SelectLabelsforCompetencies(
-            String MyProject,
+            String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,
             (int[][] competencies, int[][][] facets) LabelledData)
         {
@@ -3143,7 +3167,7 @@ namespace StealthAssessmentWizard
 
                 //! Select a clustering algorithm (KMEANS only).
 
-                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
+                String arff_c = Path.Combine(MyData, CompetencyModel.competencies[x] + ".arff");
 
                 //! Get data from the .arff file.
 
@@ -3154,7 +3178,7 @@ namespace StealthAssessmentWizard
                     case MLClustering.KMeans:
                         using (ArffReader arffReader = new ArffReader(arff_c))
                         {
-                            int[] labels = KMeans(MyProject, arffReader, CompetencyModel.competencies[x]);
+                            int[] labels = KMeans(MyData, arffReader, CompetencyModel.competencies[x]);
 
                             LabelledData.competencies[x] = new int[labels.Length];
                             output[x] = new int[labels.Length];
@@ -3184,7 +3208,7 @@ namespace StealthAssessmentWizard
         /// A (int[][],int[][][],int[][][])
         /// </returns>
         internal static (int[][] competencies, int[][][] facets, int[][][] output) SelectLabelsforFacets(
-            String MyProject,
+            String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,
             (int[][] competencies, int[][][] facets) LabelledData)
         {
@@ -3203,7 +3227,7 @@ namespace StealthAssessmentWizard
 
                     //Debug.WriteLine($"No labeled data has been found for {CompetencyModel.Item2[x][y]}.");
 
-                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
+                    String arff_f = Path.Combine(MyData, CompetencyModel.competencies[x], CompetencyModel.facets[x][y] + ".arff");
 
                     //! Get data from the .arff file.
 
@@ -3215,7 +3239,7 @@ namespace StealthAssessmentWizard
                         case MLClustering.KMeans:
                             using (ArffReader arffReader = new ArffReader(arff_f))
                             {
-                                int[] labels = KMeans(MyProject, arffReader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]); ;
+                                int[] labels = KMeans(MyData, arffReader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]); ;
 
                                 LabelledData.facets[x][y] = new int[labels.Length];
                                 output[x][y] = new int[labels.Length];
@@ -3238,7 +3262,7 @@ namespace StealthAssessmentWizard
         /// Select labelsfor uni competencies.
         /// </summary>
         ///
-        /// <param name="MyProject">          my project. </param>
+        /// <param name="MyData">             my project. </param>
         /// <param name="UniCompetencyModel"> The uni competency model. </param>
         /// <param name="UniLabelledData">    Information describing the uni labelled. </param>
         ///
@@ -3246,7 +3270,7 @@ namespace StealthAssessmentWizard
         /// A (int[][],int[][],int[][])
         /// </returns>
         internal static (int[][], int[][], int[][]) SelectLabelsforUniCompetencies(
-            String MyProject,
+            String MyData,
             String[] UniCompetencyModel,
             int[][] UniLabelledData)
         {
@@ -3265,7 +3289,7 @@ namespace StealthAssessmentWizard
 
                 //Debug.WriteLine($"No labeled data has been found for {CompetencyModel.Item2[x][y]}.");
 
-                String arff_f = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+                String arff_f = Path.Combine(MyData, UniCompetencyModel[x] + ".arff");
 
                 //! Get data from the .arff file.
 
@@ -3277,7 +3301,7 @@ namespace StealthAssessmentWizard
                     case MLClustering.KMeans:
                         using (ArffReader arffReader = new ArffReader(arff_f))
                         {
-                            int[] labels = KMeans(MyProject, arffReader, UniCompetencyModel[x]); ;
+                            int[] labels = KMeans(MyData, arffReader, UniCompetencyModel[x]); ;
 
                             UniLabelledData[x] = new int[labels.Length];
                             output[x] = new int[labels.Length];
@@ -3313,7 +3337,7 @@ namespace StealthAssessmentWizard
         /// ### <param name="checkLabels">  The check labels. </param>
         /// ### <param name="labelledData"> Information describing the labeled data. </param>
         internal static (int[][] competencies, int[][][] facets, int[][] output) SelectMLforCompetencies(
-            String MyProject,
+            String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,
             (int[][] competencies, int[][][] facets) LabelledData)
         {
@@ -3328,7 +3352,7 @@ namespace StealthAssessmentWizard
             {
                 Logger.Info($"Labeled data has been found for '{CompetencyModel.competencies[x]}'.");
 
-                String arff_c = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + ".arff");
+                String arff_c = Path.Combine(MyData, CompetencyModel.competencies[x] + ".arff");
 
                 //! Get data from the .arff file.
                 using (ArffReader reader = new ArffReader(arff_c))
@@ -3338,7 +3362,7 @@ namespace StealthAssessmentWizard
                     {
                         case MLAlgorithms.NaiveBayes:
                             {
-                                outputLabels = NaiveBayesAccord_C(MyProject, reader, CompetencyModel.competencies[x]);
+                                outputLabels = NaiveBayesAccord_C(MyData, reader, CompetencyModel.competencies[x]);
 
                                 output[x] = new int[outputLabels.Length];
                                 for (int i = 0; i < outputLabels.Length; i++)
@@ -3350,7 +3374,7 @@ namespace StealthAssessmentWizard
 
                         case MLAlgorithms.DecisionTrees:
                             {
-                                outputLabels = DecisionTreesAccord_C(MyProject, reader, CompetencyModel.competencies[x]);
+                                outputLabels = DecisionTreesAccord_C(MyData, reader, CompetencyModel.competencies[x]);
                                 output[x] = new int[outputLabels.Length];
                                 for (int i = 0; i < outputLabels.Length; i++)
                                 {
@@ -3369,6 +3393,7 @@ namespace StealthAssessmentWizard
         /// Select ml for facets.
         /// </summary>
         ///
+        /// <param name="MyData">          Information describing my. </param>
         /// <param name="CompetencyModel"> The competency model. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
@@ -3376,7 +3401,7 @@ namespace StealthAssessmentWizard
         /// A (int[][],int[][][],int[][][])
         /// </returns>
         internal static (int[][] competencies, int[][][] facets, int[][][] output) SelectMLforFacets(
-            String MyProject,
+            String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,
             (int[][] competencies, int[][][] facets) LabelledData)
         {
@@ -3401,7 +3426,7 @@ namespace StealthAssessmentWizard
                     Logger.Info($"Labeled data has been found for '{CompetencyModel.facets[x][y]}'.");
 
                     //! Select a ML algorithm.
-                    String arff_f = Path.Combine(MyProject, @"data\" + CompetencyModel.competencies[x] + @"\" + CompetencyModel.facets[x][y] + ".arff");
+                    String arff_f = Path.Combine(MyData, CompetencyModel.competencies[x], CompetencyModel.facets[x][y] + ".arff");
 
                     //! Get data from the .arff file.
                     using (ArffReader reader = new ArffReader(arff_f))
@@ -3412,7 +3437,7 @@ namespace StealthAssessmentWizard
                             //! (1) Naive Bayes
                             case MLAlgorithms.NaiveBayes:
                                 {
-                                    outputLabels = NaiveBayesAccord_F(MyProject, reader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]);
+                                    outputLabels = NaiveBayesAccord_F(MyData, reader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]);
 
                                     output[x][y] = new int[outputLabels.Length];
                                     for (int i = 0; i < outputLabels.Length; i++)
@@ -3425,7 +3450,7 @@ namespace StealthAssessmentWizard
                             //! (2) Decision Trees
                             case MLAlgorithms.DecisionTrees:
                                 {
-                                    outputLabels = DecisionTreesAccord_F(MyProject, reader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]);
+                                    outputLabels = DecisionTreesAccord_F(MyData, reader, CompetencyModel.competencies[x], CompetencyModel.facets[x][y]);
                                     output[x][y] = new int[outputLabels.Length];
                                     for (int i = 0; i < outputLabels.Length; i++)
                                     {
@@ -3445,6 +3470,7 @@ namespace StealthAssessmentWizard
         /// Select m lfor uni competencies.
         /// </summary>
         ///
+        /// <param name="MyData">             Information describing my. </param>
         /// <param name="UniCompetencyModel"> The uni competency model. </param>
         /// <param name="LabelledDataUni">    The labelled data uni. </param>
         ///
@@ -3452,7 +3478,7 @@ namespace StealthAssessmentWizard
         /// A (int[][],int[][],int[][])
         /// </returns>
         internal static (int[][], int[][], int[][]) SelectMLforUniCompetencies(
-            String MyProject,
+            String MyData,
             String[] UniCompetencyModel,
             int[][] LabelledDataUni)
         {
@@ -3467,7 +3493,7 @@ namespace StealthAssessmentWizard
             {
                 Logger.Info($"Labeled data has been found for '{UniCompetencyModel[x]}'.");
 
-                String arff_c = Path.Combine(MyProject, @"data\" + UniCompetencyModel[x] + ".arff");
+                String arff_c = Path.Combine(MyData, UniCompetencyModel[x] + ".arff");
 
                 //! Get data from the .arff file.
                 using (ArffReader reader = new ArffReader(arff_c))
@@ -3477,7 +3503,7 @@ namespace StealthAssessmentWizard
                     {
                         case MLAlgorithms.NaiveBayes:
                             {
-                                outputLabels = UniNaiveBayesAccord_C(MyProject, reader, UniCompetencyModel[x]);
+                                outputLabels = UniNaiveBayesAccord_C(MyData, reader, UniCompetencyModel[x]);
 
                                 output[x] = new int[outputLabels.Length];
                                 for (int i = 0; i < outputLabels.Length; i++)
@@ -3489,7 +3515,7 @@ namespace StealthAssessmentWizard
 
                         case MLAlgorithms.DecisionTrees:
                             {
-                                outputLabels = UniDecisionTreesAccord_C(MyProject, reader, UniCompetencyModel[x]);
+                                outputLabels = UniDecisionTreesAccord_C(MyData, reader, UniCompetencyModel[x]);
                                 output[x] = new int[outputLabels.Length];
                                 for (int i = 0; i < outputLabels.Length; i++)
                                 {

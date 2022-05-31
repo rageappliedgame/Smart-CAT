@@ -130,7 +130,7 @@ namespace StealthAssessmentWizard
 
                     if (RandomLabelledData.Item2[x][y] != null && RandomLabelledData.Item2[x][y].Length != 0)
                     {
-                        String arff_f = Path.Combine(MyData, "CA", CompetencyModel.Item1[x], CompetencyModel.Item2[x][y] + ".arff");
+                        String arff_f = Path.Combine(MyData, @"CA", CompetencyModel.Item1[x], CompetencyModel.Item2[x][y] + ".arff");
 
                         Directory.CreateDirectory(Path.GetDirectoryName(arff_f));
 

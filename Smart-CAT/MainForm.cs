@@ -58,6 +58,7 @@ namespace StealthAssessmentWizard
 
         private readonly String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
         private String MyProject = String.Empty;
+        private String MyData = String.Empty;
         private String MyInput = String.Empty;
 
         private readonly BackgroundWorker Step1BackgroundWorker = new BackgroundWorker();
@@ -412,7 +413,7 @@ namespace StealthAssessmentWizard
                                     foreach (PropertyInfo prop in props)
                                     {
                                         worksheet.Cells[rofs, cofs + 0].Value = prop.Name;
-                                        
+
                                         object val = prop.GetValue(Data.MLOptions);
                                         worksheet.Cells[rofs, cofs + 1].Value = (Double.TryParse(val.ToString(), out Double dbl)
                                             ? dbl
@@ -681,7 +682,7 @@ namespace StealthAssessmentWizard
                                     foreach (PropertyInfo prop in props)
                                     {
                                         worksheet.Cells[rofs, cofs + 0].Value = prop.Name;
-                                        
+
                                         object val = prop.GetValue(Data.MLOptions);
                                         worksheet.Cells[rofs, cofs + 1].Value = (Double.TryParse(val.ToString(), out Double dbl)
                                             ? dbl
@@ -987,14 +988,14 @@ namespace StealthAssessmentWizard
                 listView1.Items.Clear();
                 listView1.Groups.Clear();
 
-            //! Visualize the Competencies/Facets/Observables in ListView1.
-            //
-            for (Int32 c = 0; c < Data.competencies.Count; c++)
-                {
-                //! 1) Multi-Dimensional.
+                //! Visualize the Competencies/Facets/Observables in ListView1.
                 //
-                Int32 gndx = listView1.Groups.IndexOf(
-                                listView1.Groups.Add(Data.competencies[c].CompetencyName, Data.competencies[c].CompetencyName));
+                for (Int32 c = 0; c < Data.competencies.Count; c++)
+                {
+                    //! 1) Multi-Dimensional.
+                    //
+                    Int32 gndx = listView1.Groups.IndexOf(
+                                    listView1.Groups.Add(Data.competencies[c].CompetencyName, Data.competencies[c].CompetencyName));
 
                     for (Int32 f = 0; f < Data.competencies[c].Count(); f++)
                     {
@@ -1019,18 +1020,18 @@ namespace StealthAssessmentWizard
 
                 Int32 cndx = listView2.Groups.IndexOf(listView2.Groups.Add("Competencies", "Competencies"));
 
-            //! Visualize the Competencies/Observables in ListView2.
-            //
-            for (Int32 c = 0; c < Data.unicompetencies.Count; c++)
-                {
-                //! Uni-Dimensional.
+                //! Visualize the Competencies/Observables in ListView2.
                 //
-                ListViewItem lvi = listView2.Items.Add(Data.unicompetencies[c].CompetencyName, Data.unicompetencies[c].CompetencyName, 0);
+                for (Int32 c = 0; c < Data.unicompetencies.Count; c++)
+                {
+                    //! Uni-Dimensional.
+                    //
+                    ListViewItem lvi = listView2.Items.Add(Data.unicompetencies[c].CompetencyName, Data.unicompetencies[c].CompetencyName, 0);
                     lvi.Group = listView2.Groups[cndx];
 
-                //String[] vars = Data.uni UniEvidenceModel[c];
+                    //String[] vars = Data.uni UniEvidenceModel[c];
 
-                lvi.SubItems.Add(String.Join(",", Data.unicompetencies[c].Names));
+                    lvi.SubItems.Add(String.Join(",", Data.unicompetencies[c].Names));
                 }
 
                 listView2.Refresh();
@@ -1346,10 +1347,12 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
+                    // Create Timestamp for copies.
                     Excel.Stamp = $"_{DateTime.Now:yyyyMMdd-HHmm}";
 
                     StateMachine.Flags[StateMachine.IMPORT_DATA] = true;
 
+                    // Create project folder.
                     MyProject = Path.Combine(MyProjects, Path.GetFileNameWithoutExtension(openFileDialog1.FileName));
                     if (!Directory.Exists(MyProject))
                     {
@@ -1357,6 +1360,23 @@ namespace StealthAssessmentWizard
                         Logger.Info($"Created Project Folder <My Document>{MyProject.Replace(MyProjects, String.Empty)}.");
                     }
                     MyInput = Path.Combine(MyProject, Path.GetFileName(openFileDialog1.FileName));
+
+                    // Create data folder in project folder if not present already.
+                    MyData = Path.Combine(MyProject, "data");
+                    if (!Directory.Exists(MyData))
+                    {
+                        Directory.CreateDirectory(MyData);
+                    }
+
+                    // Clear data folder if present.
+                    foreach (String file in Directory.EnumerateFiles(MyData, "*", SearchOption.AllDirectories))
+                    {
+                        File.Delete(file);
+                    }
+                    foreach (String folder in Directory.EnumerateDirectories(MyData, "*", SearchOption.AllDirectories))
+                    {
+                        Directory.Delete(folder);
+                    }
 
                     if (!File.Exists(MyInput))
                     {
@@ -2259,8 +2279,8 @@ namespace StealthAssessmentWizard
                         IsCompetency = true,
                     });
                 }
-            //TODO Always expecting multidimensional!!.
-            groupedComboBox1.ValueMember = "Value";
+                //TODO Always expecting multidimensional!!.
+                groupedComboBox1.ValueMember = "Value";
                 groupedComboBox1.DisplayMember = "Display";
                 groupedComboBox1.GroupMember = "Group";
                 groupedComboBox1.DataSource = new BindingSource(items, String.Empty);

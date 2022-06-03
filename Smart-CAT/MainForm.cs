@@ -1406,6 +1406,7 @@ namespace StealthAssessmentWizard
                     //! Clear Model after loading a new input file.
                     // 
                     Data.competencies = new Competencies();
+                    Data.unicompetencies = new UniCompetencies();
                     //Data.StatisticalSubmodel = Array.Empty<string[][]>();
                 }
             }

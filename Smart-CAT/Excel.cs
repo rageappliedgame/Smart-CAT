@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright 2020 Open University of the Netherlands (OUNL)
+* Copyright 2022 Open University of the Netherlands (OUNL)
 *
 * Authors: Konstantinos Georgiadis, Wim van der Vegt.
 * Organization: Open University of the Netherlands (OUNL).
@@ -30,6 +30,7 @@
 namespace StealthAssessmentWizard
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
 
@@ -44,6 +45,7 @@ namespace StealthAssessmentWizard
     {
         internal const string GSATScratchPad = "Smart-CAT";
         internal const string ModelScratchPad = "Model";
+        internal static string Stamp = "_TMP_";
 
         /// <summary>
         /// Returns true if the file exists and is locked for R/W access.
@@ -70,84 +72,107 @@ namespace StealthAssessmentWizard
                     return false;
                 }
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception e)
             {
                 Logger.Error(e.Message);
 
                 return true;
             }
+#pragma warning restore CA1031 // Do not catch general exception types
         }
 
         /// <summary>
-        /// Use Epplus to read a xlsx file int a Tuple.
+        /// Use Epplus to read an xlsx file into a Tuple.
         /// </summary>
         ///
         /// <param name="filename"> Filename of the file. </param>
         ///
         /// <returns>
-        /// A Tuple&lt;string[],string[][]&gt;
+        /// A (string[],string[][])
         /// </returns>
-        internal static Tuple<string[], string[][]> EPPlus(string filename)
+        internal static Observables EPPlus(string filename)
         {
             //! Variables for storing the data.
-            string[] AllObservables = Array.Empty<string>();
-            string[][] AllData = Array.Empty<string[]>();
+            Observables observables = new Observables();
 
             FileInfo fileInfo = new FileInfo(filename);
+
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
+
+            FileInfo fileInfoTS = new FileInfo(filenameTS);
 
             if (fileInfo.Exists)
             {
                 using (ExcelPackage p = new ExcelPackage(fileInfo))
                 {
-                    //! Save the size of the worksheet.
-                    // 
-                    if (!p.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))
+                    using (ExcelWorksheet ws = p.Workbook.Worksheets[0])
                     {
-                        using (ExcelWorksheet ws = p.Workbook.Worksheets[0])
+                        using (ExcelPackage pTS = new ExcelPackage(fileInfoTS))
                         {
-                            Logger.Info($"Spreadsheet Raw Data Size {ws.Dimension.Rows - 1} x {ws.Dimension.Columns}.");
+#warning TODO - CREATE GSATScratchPad and ModelScratchPad in a timestamped excel file and use that for the remaining calculations.
 
-                            using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
+                            //! Save the size of the worksheet.
+                            // 
+                            if (!pTS.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))
                             {
-                                ini.WriteInteger("RawData", "Rows", ws.Dimension.Rows);
-                                ini.WriteInteger("RawData", "Colums", ws.Dimension.Columns);
-                                ini.UpdateFile();
-                            }
+                                using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets.Add(GSATScratchPad))
+                                {
+                                    Logger.Info($"Spreadsheet Raw Data Size {ws.Dimension.Rows - 1} x {ws.Dimension.Columns}.");
 
-                            ExcelWorksheet worksheet = p.Workbook.Worksheets.Copy(ws.Name, GSATScratchPad);
+                                    using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
+                                    {
+                                        ini.WriteInteger("RawData", "Rows", ws.Dimension.Rows);
+                                        ini.WriteInteger("RawData", "Colums", ws.Dimension.Columns);
+                                        ini.UpdateFile();
+                                    }
 
-                            p.Save();
-                        }
-                    }
+                                    for (Int32 r = 0; r < ws.Dimension.Rows; r++)
+                                    {
+                                        for (Int32 c = 0; c < ws.Dimension.Columns; c++)
+                                        {
+                                            if (Double.TryParse(ws.Cells[r + 1, c + 1].Value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+                                            {
+                                                wsTS.Cells[r + 1, c + 1].Value = result;
+                                            }
+                                            else
+                                            {
+                                                wsTS.Cells[r + 1, c + 1].Value = ws.Cells[r + 1, c + 1].Value;
+                                            }
+                                        }
+                                    }
+                                    //ExcelWorksheet worksheet = p.Workbook.Worksheets.Copy(ws.Name, GSATScratchPad);
 
-                    using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
-                    {
-                        AllObservables = new String[ws.Dimension.Columns];
-
-                        for (Int32 i = 0; i < ws.Dimension.Columns; i++)
-                        {
-                            Data.Observables.Add(new ObservableData<String>(ws.Dimension.Rows - 1, ws.Cells[1, i + 1].Value.ToString()));
-
-                            AllObservables[i] = ws.Cells[1, i + 1].Value.ToString();
-                        }
-
-                        AllData = new String[ws.Dimension.Columns][];
-
-                        for (Int32 c = 0; c < ws.Dimension.Columns; c++)
-                        {
-                            AllData[c] = new String[ws.Dimension.Rows - 1];
-                            for (Int32 r = 0; r < ws.Dimension.Rows - 1; r++)
-                            {
-                                Data.Observables[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
-
-                                AllData[c][r] = ws.Cells[r + 2, c + 1].Value.ToString();
+                                    pTS.Save();
+                                }
                             }
                         }
                     }
                 }
             }
 
-            return new Tuple<string[], string[][]>(AllObservables, AllData);
+            fileInfoTS = new FileInfo(filenameTS);
+
+            if (fileInfoTS.Exists)
+            {
+                using (ExcelPackage pTS = new ExcelPackage(fileInfoTS))
+                {
+                    using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets[GSATScratchPad])
+                    {
+                        for (Int32 c = 0; c < wsTS.Dimension.Columns; c++)
+                        {
+                            observables.Add(new Observable<String>(wsTS.Dimension.Rows - 1, wsTS.Cells[1, c + 1].Value.ToString()));
+
+                            for (Int32 r = 0; r < wsTS.Dimension.Rows - 1; r++)
+                            {
+                                observables[c][r] = wsTS.Cells[r + 2, c + 1].Value.ToString();
+                            }
+                        }
+                    }
+                }
+            }
+
+            return observables;
         }
 
         /// <summary>
@@ -158,7 +183,11 @@ namespace StealthAssessmentWizard
         /// <param name="CheckLabels">     The check labels. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         /// <param name="filename">        Filename of the file. </param>
-        internal static void AddLabelsforCompetencies(Tuple<string[], string[][]> CompetencyModel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData, string filename)
+        internal static void AddLabelsforCompetencies(
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (bool[][] competencies, bool[][][] facets) CheckLabels,
+            (int[][] competencies, int[][][] facets) LabelledData,
+            string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             // 
@@ -170,21 +199,21 @@ namespace StealthAssessmentWizard
                 {
                     using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
                     {
-                        for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+                        for (int x = 0; x < CompetencyModel.competencies.Length; x++)
                         {
-                            if (!CheckLabels.Item1[x][0])
+                            if (!CheckLabels.competencies[x][0])
                             {
                                 Int32 i = ws.Dimension.Columns;
-                                Int32 length = LabelledData.Item1[x].Length;
+                                Int32 length = LabelledData.competencies[x].Length;
 
-                                Logger.Info($"Adding {length} Competency Labels in Column {i}.");
+                                Logger.Info($"Adding {length} Competency Labels in Column {i}: '{CompetencyModel.competencies[x]}'.");
 
-                                ws.Cells[1, i + 1].Value = CompetencyModel.Item1[x].ToString();
+                                ws.Cells[1, i + 1].Value = CompetencyModel.competencies[x].ToString();
                                 ws.Cells[1, i + 1].Style.Font.Bold = true;
 
                                 for (int y = 0; y < length; y++)
                                 {
-                                    ws.Cells[2 + y, i + 1].Value = LabelledData.Item1[x][y];
+                                    ws.Cells[2 + y, i + 1].Value = LabelledData.competencies[x][y];
                                 }
                             }
                         }
@@ -203,7 +232,11 @@ namespace StealthAssessmentWizard
         /// <param name="CheckLabels">     The check labels. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         /// <param name="filename">        Filename of the file. </param>
-        internal static void AddLabelsforFacets(Tuple<string[], string[][]> CompetencyModel, Tuple<bool[][], bool[][][]> CheckLabels, Tuple<int[][], int[][][]> LabelledData, string filename)
+        internal static void AddLabelsforFacets(
+            (string[] competencies, string[][] facets) CompetencyModel,
+            (bool[][] competencies, bool[][][] facets) CheckLabels,
+            (int[][] competencies, int[][][] facets) LabelledData,
+            string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             // 
@@ -216,23 +249,23 @@ namespace StealthAssessmentWizard
                     using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
                     {
 
-                        for (int x = 0; x < CompetencyModel.Item1.Length; x++)
+                        for (int x = 0; x < CompetencyModel.competencies.Length; x++)
                         {
-                            for (int y = 0; y < CompetencyModel.Item2[x].Length; y++)
+                            for (int y = 0; y < CompetencyModel.facets[x].Length; y++)
                             {
-                                if (!CheckLabels.Item2[x][y][0])
+                                if (!CheckLabels.facets[x][y][0])
                                 {
                                     Int32 i = ws.Dimension.Columns;
-                                    Int32 length = LabelledData.Item1[x].Length;
+                                    Int32 length = LabelledData.competencies[x].Length;
 
-                                    Logger.Info($"Adding {length} Facet Labels in Column {i}.");
+                                    Logger.Info($"Adding {length} Facet Labels in Column {i}: '{CompetencyModel.facets[x][y]}'.");
 
-                                    ws.Cells[1, i + 1].Value = CompetencyModel.Item2[x][y].ToString();
+                                    ws.Cells[1, i + 1].Value = CompetencyModel.facets[x][y].ToString();
                                     ws.Cells[1, i + 1].Style.Font.Bold = true;
 
                                     for (int w = 0; w < length; w++)
                                     {
-                                        ws.Cells[2 + w, i + 1].Value = LabelledData.Item2[x][y][w];
+                                        ws.Cells[2 + w, i + 1].Value = LabelledData.facets[x][y][w];
                                     }
                                 }
                             }
@@ -252,7 +285,11 @@ namespace StealthAssessmentWizard
         /// <param name="UniCheckLabels">     The uni check labels. </param>
         /// <param name="UniLabelledData">    Information describing the uni labelled. </param>
         /// <param name="filename">           Filename of the file. </param>
-        internal static void AddLabelsforUniCompetencies(string[] UniCompetencyModel, bool[][] UniCheckLabels, int[][] UniLabelledData, string filename)
+        internal static void AddLabelsforUniCompetencies(
+            string[] UniCompetencyModel,
+            bool[][] UniCheckLabels,
+            int[][] UniLabelledData,
+            string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             // 
@@ -271,7 +308,7 @@ namespace StealthAssessmentWizard
                                 Int32 i = ws.Dimension.Columns;
                                 Int32 length = UniLabelledData[x].Length;
 
-                                Logger.Info($"Adding {length} Competency Labels in Column {i}.");
+                                Logger.Info($"Adding {length} Competency Labels in Column {i}: '{UniCompetencyModel[x]}'.");
 
                                 ws.Cells[1, i + 1].Value = UniCompetencyModel[x].ToString();
                                 ws.Cells[1, i + 1].Style.Font.Bold = true;
@@ -316,9 +353,9 @@ namespace StealthAssessmentWizard
                         ws.Cells[row, col].Style.Font.Bold = true;
                         ws.Cells[row++, col++].Value = "Observables";
 
-                        foreach (String obs in Data.AllGameLogs.Item1)
+                        foreach (String observable in Data.observables.Names)
                         {
-                            ws.Cells[row, col++].Value = obs;
+                            ws.Cells[row, col++].Value = observable;
                             if ((col - 2) % 8 == 0)
                             {
                                 col = 2;
@@ -334,41 +371,25 @@ namespace StealthAssessmentWizard
                         col++;
 
                         //! 1) CompetencyModel.
-                        string[] Competencies = Data.CompetencyModel.Item1;
-                        string[][] Facets = Data.CompetencyModel.Item2;
+                        //string[] Competencies = Data.competencies.Names;
+                        //string[][] Facets = Data.competencies.Item2;
 
-                        for (int x = 0; x < Competencies.Length; x++)
+                        for (int x = 0; x < Data.competencies.Count; x++)
                         {
-                            ws.Cells[row++, col++].Value = Competencies[x];
+                            ws.Cells[row++, col++].Value = Data.competencies[x].CompetencyName;
 
-                            for (int y = 0; y < Facets[x].Length; y++)
+                            for (int y = 0; y < Data.competencies[x].Count(); y++)
                             {
-                                ws.Cells[row++, col++].Value = Facets[x][y];
+                                ws.Cells[row++, col++].Value = Data.competencies[x][y].FacetName;
 
-                                for (int z = 0; z < Data.StatisticalSubmodel[x][y].Length; z++)
+                                for (int z = 0; z < Data.competencies[x][y].Length; z++)
                                 {
-                                    ws.Cells[row++, col].Value = Data.StatisticalSubmodel[x][y][z];
+                                    ws.Cells[row++, col].Value = Data.competencies[x][y][z];
                                 }
                                 col = 3;
                             }
                             col = 2;
                         }
-
-                        //ECD.SaveCompetencyModel(CompetencyModel, filename);
-
-                        ////! 2) Statistical Submodel.
-                        //ECD.SaveEvidenceModel(Data.StatisticalSubmodel, filename);
-
-                        ////! 3) Load Observables.
-                        ////! NOTE: Observables might be empty (they are extracted from the data file).
-                        //ECD.SaveObservables(Data.AllGameLogs.Item1, filename);
-
-                        ////! 4) Uni CompetencyModel.
-                        //ECD.SaveUniCompetencyModel(Data.UniCompetencyModel, filename);
-
-                        ////! 5) Uni Statistical Submodel.
-
-                        //ECD.SaveUniEvidenceModel(Data.UniEvidenceModel, filename);
 
                         p.Save();
                     }

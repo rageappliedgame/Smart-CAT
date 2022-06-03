@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright 2020 Open University of the Netherlands (OUNL)
+* Copyright 2022 Open University of the Netherlands (OUNL)
 *
 * Authors: Konstantinos Georgiadis, Wim van der Vegt.
 * Organization: Open University of the Netherlands (OUNL).
@@ -50,15 +50,21 @@ namespace StealthAssessmentWizard
     {
         #region Fields
 
-        private EnumItemCollection AlgorithmItems = new EnumItemCollection(typeof(MLAlgorithms));
+        private readonly EnumItemCollection AlgorithmItems = new EnumItemCollection(typeof(MLAlgorithms));
+
+#pragma warning disable IDE0044 // Add readonly modifier
         private Font SelectedFont = null;
+#pragma warning restore IDE0044 // Add readonly modifier
 
-        //private ConsoleListener consoleListener = new ConsoleListener();
+        private readonly String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
+        private String MyProject = String.Empty;
+        private String MyData = String.Empty;
+        private String MyInput = String.Empty;
 
-        BackgroundWorker Step1BackgroundWorker = new BackgroundWorker();
-        BackgroundWorker Step2BackgroundWorker = new BackgroundWorker();
-        BackgroundWorker Step3BackgroundWorker = new BackgroundWorker();
-        BackgroundWorker Step4BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step1BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step2BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step3BackgroundWorker = new BackgroundWorker();
+        private readonly BackgroundWorker Step4BackgroundWorker = new BackgroundWorker();
 
         #endregion Fields
 
@@ -128,6 +134,10 @@ namespace StealthAssessmentWizard
             });
 
             SetHelpStrings();
+
+            Directory.CreateDirectory(MyProjects);
+
+            openFileDialog1.InitialDirectory = MyProjects;
         }
 
         #endregion Constructors
@@ -135,35 +145,24 @@ namespace StealthAssessmentWizard
         #region Methods
 
         /// <summary>
-        /// Loads the ecd.
+        /// Loads the ECD.
         /// </summary>
-        private static void LoadECD()
+        private static void LoadDefaultECD()
         {
             Debug.WriteLine("Loading Default ECD configuration...");
             {
                 Debug.Indent();
 
-                //! 1) Load the Competency Model.
-                Debug.Write("Loading Competency Model... ");
-                Data.CompetencyModel = ECD.LoadCompetencyModel();
-                Debug.WriteLine("Completed.");
+                //! Load the Model.
+                Debug.Write("Loading Default Observables, Competency and Evidence Models... ");
 
-                //! 2) Load the Evidence Model.
-                Debug.Write("Loading Evidence Model... ");
-                Data.StatisticalSubmodel = ECD.LoadEvidenceModel().Item2;
-                Debug.WriteLine("Completed.");
+                using (Models models = ECD.LoadModelData())
+                {
+                    //! Skip observables, loaded (with data) from Excel.
+                    Data.unicompetencies = models.unicompetencies;
+                    Data.competencies = models.competencies;
+                }
 
-                //! 3) Load Observables.
-                //! NOTE: Observables can't be loaded yet (extracted from file).
-
-                //! 4) Load the Uni Competency Model.
-                Debug.Write("Loading Competency Model... ");
-                Data.UniCompetencyModel = ECD.LoadUniCompetencyModel();
-                Debug.WriteLine("Completed.");
-
-                //! 5) Load the Uni-Dimensional Evidence Model.
-                Debug.Write("Loading Uni Evidence Model... ");
-                Data.UniEvidenceModel = ECD.LoadUniEvidenceModel();
                 Debug.WriteLine("Completed.");
 
                 Debug.Unindent();
@@ -184,7 +183,7 @@ namespace StealthAssessmentWizard
 
             Boolean UniDimensional = (lv == listView2);
 
-            IEnumerable<String> items = Data.AllGameLogs.Item1;
+            IEnumerable<String> items = Data.observables.Names;
 
             if (lv != null)
             {
@@ -260,7 +259,7 @@ namespace StealthAssessmentWizard
             {
                 String group = lv.SelectedItems[0].Group.Name;
 
-                IEnumerable<String> items = Data.AllGameLogs.Item1;
+                IEnumerable<String> items = Data.observables.Names;
 
                 switch (UniDimensional)
                 {
@@ -350,9 +349,11 @@ namespace StealthAssessmentWizard
                             break;
                     }
 
-                    //! Input Spreadsheet.
+                    String filenameTS = Path.Combine(Path.GetDirectoryName(MyInput), Path.GetFileNameWithoutExtension(MyInput) + Excel.Stamp + Path.GetExtension(MyInput));
+
+                    //! Load Scratch Spreadsheet.
                     // 
-                    using (ExcelPackage ep = new ExcelPackage(new FileInfo(openFileDialog1.FileName)))
+                    using (ExcelPackage ep = new ExcelPackage(new FileInfo(filenameTS)))
                     {
                         Debug.WriteLine($"WorkSheets: {ep.Workbook.Worksheets.Count}");
 
@@ -375,14 +376,14 @@ namespace StealthAssessmentWizard
                         // 
                         using (ExcelPackage package = new ExcelPackage(new FileInfo(saveFileDialog1.FileName)))
                         {
-                            for (Int32 i = 0; i < Data.CompetencyModel.Item1.Length; i++)
+                            for (Int32 i = 0; i < Data.competencies.Count; i++)
                             {
                                 Int32 rofs = 1;
                                 Int32 cofs = 1;
 
                                 //! 1) Multi-Dimensional.
                                 //
-                                String Competency = Data.CompetencyModel.Item1[i];
+                                String Competency = Data.competencies[i].CompetencyName;
 
                                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(Competency);
 
@@ -412,7 +413,12 @@ namespace StealthAssessmentWizard
                                     foreach (PropertyInfo prop in props)
                                     {
                                         worksheet.Cells[rofs, cofs + 0].Value = prop.Name;
-                                        worksheet.Cells[rofs, cofs + 1].Value = prop.GetValue(Data.MLOptions);
+
+                                        object val = prop.GetValue(Data.MLOptions);
+                                        worksheet.Cells[rofs, cofs + 1].Value = (Double.TryParse(val.ToString(), out Double dbl)
+                                            ? dbl
+                                            : val);
+
                                         rofs++;
                                     }
 
@@ -427,7 +433,7 @@ namespace StealthAssessmentWizard
 
                                 //! Model.
                                 //
-                                Int32 cnt = Data.StatisticalSubmodel[i].Sum(p => p.Length) + 1;
+                                Int32 cnt = Data.competencies.ToStatisticalSubmodel()[i].Sum(p => p.Length) + 1;
 
                                 //! Cache Observables.
                                 // 
@@ -447,11 +453,11 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 1, cofs + 0].Value = Competency;
                                     rofs++;
 
-                                    for (Int32 f = 0; f < Data.CompetencyModel.Item2[i].Length; f++)
+                                    for (Int32 f = 0; f < Data.competencies[i].Count; f++)
                                     {
-                                        worksheet.Cells[rofs + 1, cofs + 1].Value = Data.CompetencyModel.Item2[i][f];
+                                        worksheet.Cells[rofs + 1, cofs + 1].Value = Data.competencies[i][f].FacetName;
 
-                                        foreach (String o in Data.StatisticalSubmodel[i][f])
+                                        foreach (String o in Data.competencies[i][f].Names)
                                         {
                                             obs.Add(o);
 
@@ -487,7 +493,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 5].Value = "RAE(%)";
                                     worksheet.Cells[rofs + 0, cofs + 6].Value = "RRSE(%)";
 
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + $"{suffix}.ini")))
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -500,11 +506,11 @@ namespace StealthAssessmentWizard
                                         rofs++;
                                     }
 
-                                    for (Int32 f = 0; f < Data.CompetencyModel.Item2[i].Length; f++)
+                                    for (Int32 f = 0; f < Data.competencies[i].Count(); f++)
                                     {
-                                        String Facet = Data.CompetencyModel.Item2[i][f];
+                                        String Facet = Data.competencies[i][f].FacetName;
 
-                                        using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + "/" + Facet + $"{suffix}.ini")))
+                                        using (IniFile ini = new IniFile(Path.Combine(MyData, Competency, Facet + $"{suffix}.ini")))
                                         {
                                             worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                             worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -514,7 +520,7 @@ namespace StealthAssessmentWizard
                                             worksheet.Cells[rofs + 1, cofs + 5].Value = ini.ReadDouble("Performance", "RAE(%)", 0);
                                             worksheet.Cells[rofs + 1, cofs + 6].Value = ini.ReadDouble("Performance", "RRSE(%)", 0);
 
-                                            foreach (String o in Data.StatisticalSubmodel[i][f])
+                                            foreach (String o in Data.competencies.ToStatisticalSubmodel()[i][f])
                                             {
                                                 rofs++;
                                             }
@@ -558,7 +564,7 @@ namespace StealthAssessmentWizard
                                             for (Int32 l = 0; l < Data.cronbachAlphaMulti.Item3[k].Length; l++)
                                             {
                                                 worksheet.Cells[rofs, cofs + 0].Value = Data.cronbachAlphaMulti.Item4[k][l];
-                                                rofs += Data.StatisticalSubmodel[k][l].Length;
+                                                rofs += Data.competencies.ToStatisticalSubmodel()[k][l].Length;
                                             }
                                         }
                                     }
@@ -606,7 +612,7 @@ namespace StealthAssessmentWizard
 
                                     rofs++;
 
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + $"{suffix}.ini")))
                                     {
                                         for (Int32 r = 0; r < testSize; r++)
                                         {
@@ -639,14 +645,14 @@ namespace StealthAssessmentWizard
 
                             //---R
 
-                            for (Int32 i = 0; i < Data.UniCompetencyModel.Length; i++)
+                            for (Int32 i = 0; i < Data.unicompetencies.Count; i++)
                             {
                                 Int32 rofs = 1;
                                 Int32 cofs = 1;
 
                                 //! Uni-Dimensional.
                                 //
-                                String Competency = Data.UniCompetencyModel[i];
+                                String Competency = Data.unicompetencies[i].CompetencyName;
 
                                 ExcelWorksheet worksheet = package.Workbook.Worksheets.Add(Competency);
 
@@ -676,7 +682,11 @@ namespace StealthAssessmentWizard
                                     foreach (PropertyInfo prop in props)
                                     {
                                         worksheet.Cells[rofs, cofs + 0].Value = prop.Name;
-                                        worksheet.Cells[rofs, cofs + 1].Value = prop.GetValue(Data.MLOptions);
+
+                                        object val = prop.GetValue(Data.MLOptions);
+                                        worksheet.Cells[rofs, cofs + 1].Value = (Double.TryParse(val.ToString(), out Double dbl)
+                                            ? dbl
+                                            : val);
                                         rofs++;
                                     }
 
@@ -695,7 +705,7 @@ namespace StealthAssessmentWizard
 
                                 //! Model.
                                 //
-                                Int32 cnt = Data.UniEvidenceModel[i].Length;
+                                Int32 cnt = Data.unicompetencies[i].Length;
                                 using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 1])
                                 {
                                     ExcelTable table = tblcollection.Add(Rng, $"tbl_model_{Competency}");
@@ -706,8 +716,8 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 0].Value = "Competency";
                                     worksheet.Cells[rofs + 0, cofs + 1].Value = "Observables";
 
-                                    worksheet.Cells[rofs + 1, cofs + 0].Value = Data.UniCompetencyModel[i];
-                                    foreach (String o in Data.UniEvidenceModel[i])
+                                    worksheet.Cells[rofs + 1, cofs + 0].Value = Data.unicompetencies[i].CompetencyName;
+                                    foreach (String o in Data.unicompetencies[i].Names)
                                     {
                                         obs.Add(o);
 
@@ -741,7 +751,7 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 5].Value = "RAE(%)";
                                     worksheet.Cells[rofs + 0, cofs + 6].Value = "RRSE(%)";
 
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + $"{suffix}.ini")))
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 0].Value = ini.ReadDouble("Performance", "Accuracy", 0) * 100;
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = ini.ReadDouble("Performance", "Error", 0);
@@ -837,7 +847,7 @@ namespace StealthAssessmentWizard
 
                                     rofs++;
 
-                                    using (IniFile ini = new IniFile(Path.Combine(IniFile.AppDir, "data/" + Competency + $"{suffix}.ini")))
+                                    using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + $"{suffix}.ini")))
                                     {
                                         for (Int32 r = 0; r < testSize; r++)
                                         {
@@ -950,7 +960,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="sender"> Source of the event. </param>
         /// <param name="e">      Cancel event information. </param>
-        private void contextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void ContextMenuStrip1_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ListView lv = (ListView)((ContextMenuStrip)sender).SourceControl;
 
@@ -980,19 +990,19 @@ namespace StealthAssessmentWizard
 
                 //! Visualize the Competencies/Facets/Observables in ListView1.
                 //
-                for (Int32 c = 0; c < Data.CompetencyModel.Item1.Length; c++)
+                for (Int32 c = 0; c < Data.competencies.Count; c++)
                 {
                     //! 1) Multi-Dimensional.
                     //
                     Int32 gndx = listView1.Groups.IndexOf(
-                                        listView1.Groups.Add(Data.CompetencyModel.Item1[c], Data.CompetencyModel.Item1[c]));
+                                    listView1.Groups.Add(Data.competencies[c].CompetencyName, Data.competencies[c].CompetencyName));
 
-                    for (Int32 f = 0; f < Data.CompetencyModel.Item2[c].Length; f++)
+                    for (Int32 f = 0; f < Data.competencies[c].Count(); f++)
                     {
-                        ListViewItem lvi = listView1.Items.Add(Data.CompetencyModel.Item2[c][f], Data.CompetencyModel.Item2[c][f], 0);
+                        ListViewItem lvi = listView1.Items.Add(Data.competencies[c][f].FacetName, Data.competencies[c][f].FacetName, 0);
                         lvi.Group = listView1.Groups[gndx];
 
-                        String[] vars = Data.StatisticalSubmodel[c][f];
+                        String[] vars = Data.competencies[c][f].Names.ToArray();
                         lvi.ForeColor = vars.Length == 0
                             ? Color.Red
                             : listView1.ForeColor;
@@ -1012,16 +1022,16 @@ namespace StealthAssessmentWizard
 
                 //! Visualize the Competencies/Observables in ListView2.
                 //
-                for (Int32 c = 0; c < Data.UniCompetencyModel.Length; c++)
+                for (Int32 c = 0; c < Data.unicompetencies.Count; c++)
                 {
                     //! Uni-Dimensional.
                     //
-                    ListViewItem lvi = listView2.Items.Add(Data.UniCompetencyModel[c], Data.UniCompetencyModel[c], 0);
+                    ListViewItem lvi = listView2.Items.Add(Data.unicompetencies[c].CompetencyName, Data.unicompetencies[c].CompetencyName, 0);
                     lvi.Group = listView2.Groups[cndx];
 
-                    String[] vars = Data.UniEvidenceModel[c];
+                    //String[] vars = Data.uni UniEvidenceModel[c];
 
-                    lvi.SubItems.Add(String.Join(",", vars));
+                    lvi.SubItems.Add(String.Join(",", Data.unicompetencies[c].Names));
                 }
 
                 listView2.Refresh();
@@ -1053,7 +1063,7 @@ namespace StealthAssessmentWizard
                                 ? String.Empty
                                 : lv.SelectedItems[0].SubItems[1]?.Text;
 
-                            IEnumerable<String> items = Data.AllGameLogs.Item1;
+                            IEnumerable<String> items = Data.observables.Names;
 
                             IEnumerable<String> chekeditems = lv.SelectedItems[0].SubItems[1].Text.Split(',');
 
@@ -1081,7 +1091,7 @@ namespace StealthAssessmentWizard
                                 ? String.Empty
                                 : lv.SelectedItems[0].SubItems[1]?.Text;
 
-                            IEnumerable<String> items = Data.AllGameLogs.Item1;
+                            IEnumerable<String> items = Data.observables.Names;
 
                             using (InputSelectDialog id = new InputSelectDialog("Edit Competency", "Enter the name of a Competency", lv.SelectedItems[0].Group.Header, items, Array.Empty<string>()))
                             {
@@ -1136,7 +1146,7 @@ namespace StealthAssessmentWizard
                         {
                             Int32 ndx = lv.SelectedItems[0].Index;
 
-                            IEnumerable<String> items = Data.AllGameLogs.Item1;
+                            IEnumerable<String> items = Data.observables.Names;
                             String sub = lv.SelectedItems[0].SubItems.Count == 1
                                 ? String.Empty
                                 : lv.SelectedItems[0].SubItems[1]?.Text;
@@ -1179,7 +1189,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="sender"> Source of the event. </param>
         /// <param name="e">      Event information. </param>
-        private void groupedComboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void GroupedComboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (groupedComboBox1.SelectedItem != null)
             {
@@ -1225,7 +1235,7 @@ namespace StealthAssessmentWizard
                     {
                         //! Note: The GCI.Facet member contains the Competency Name.
                         // 
-                        using (IniFile ini = new IniFile("./data/" + Facet + $"{suffix}.ini"))
+                        using (IniFile ini = new IniFile(Path.Combine(MyData, Facet + $"{suffix}.ini")))
                         {
                             for (Int32 i = 0; i < 3; i++)
                             {
@@ -1235,7 +1245,7 @@ namespace StealthAssessmentWizard
                     }
                     else
                     {
-                        using (IniFile ini = new IniFile("./data/" + Competency + "/" + Facet + $"{suffix}.ini"))
+                        using (IniFile ini = new IniFile(Path.Combine(MyData, Competency, Facet + $"{suffix}.ini")))
                         {
                             for (Int32 i = 0; i < 3; i++)
                             {
@@ -1259,7 +1269,7 @@ namespace StealthAssessmentWizard
         ///
         /// <param name="sender"> Source of the event. </param>
         /// <param name="e">      Event information. </param>
-        private void helpBtn_Click(object sender, EventArgs e)
+        private void HelpBtn_Click(object sender, EventArgs e)
         {
             //! See https://docs.microsoft.com/en-us/dotnet/framework/winforms/controls/helpprovider-component-overview-windows-forms
             //helpProvider1.
@@ -1337,18 +1347,67 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
+                    // Create Timestamp for copies.
+                    Excel.Stamp = $"_{DateTime.Now:yyyyMMdd-HHmm}";
+
                     StateMachine.Flags[StateMachine.IMPORT_DATA] = true;
 
-                    Text = $"{Application.ProductName} - {Path.GetFileName(openFileDialog1.FileName)}";
+                    // Create project folder.
+                    MyProject = Path.Combine(MyProjects, Path.GetFileNameWithoutExtension(openFileDialog1.FileName));
+                    if (!Directory.Exists(MyProject))
+                    {
+                        Directory.CreateDirectory(MyProject);
+                        Logger.Info($"Created Project Folder <My Document>{MyProject.Replace(MyProjects, String.Empty)}.");
+                    }
+                    MyInput = Path.Combine(MyProject, Path.GetFileName(openFileDialog1.FileName));
 
-                    StateMachine.exitWorkers[StateMachine.States.ImportData].argument = openFileDialog1.FileName;
-                    StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = openFileDialog1.FileName;
-                    StateMachine.exitWorkers[StateMachine.States.OptimizeML].argument = openFileDialog1.FileName;
+                    // Create data folder in project folder if not present already.
+                    MyData = Path.Combine(MyProject, "data" + Excel.Stamp);
+                    if (!Directory.Exists(MyData))
+                    {
+                        Directory.CreateDirectory(MyData);
+                    }
+
+                    // Clear data folder if present.
+                    foreach (String file in Directory.EnumerateFiles(MyData, "*", SearchOption.AllDirectories))
+                    {
+                        File.Delete(file);
+                    }
+                    foreach (String folder in Directory.EnumerateDirectories(MyData, "*", SearchOption.AllDirectories))
+                    {
+                        Directory.Delete(folder);
+                    }
+
+                    if (!File.Exists(MyInput))
+                    {
+                        Logger.Info("Copying Input File to Project Folder.");
+
+                        File.Copy(openFileDialog1.FileName, MyInput);
+                    }
+                    else
+                    {
+#warning TODO - OVERWRITE QUESTION?
+                        Logger.Warn("Input File already in the Project Folder, using Project one.");
+                    }
+
+                    //! Set Initial Directories to match the current project.
+                    // 
+                    saveFileDialog1.InitialDirectory = MyProject;
+                    saveFileDialog2.InitialDirectory = MyProject;
+                    openFileDialog2.InitialDirectory = MyProject;
+                    openFileDialog3.InitialDirectory = MyProject;
+
+                    Text = $"{Application.ProductName} - {Path.GetFileName(MyInput)}";
+
+                    StateMachine.exitWorkers[StateMachine.States.ImportData].argument = MyInput;
+                    StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = MyInput;
+                    StateMachine.exitWorkers[StateMachine.States.OptimizeML].argument = MyInput;
 
                     //! Clear Model after loading a new input file.
                     // 
-                    Data.CompetencyModel = new Tuple<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
-                    Data.StatisticalSubmodel = Array.Empty<string[][]>();
+                    Data.competencies = new Competencies();
+                    Data.unicompetencies = new UniCompetencies();
+                    //Data.StatisticalSubmodel = Array.Empty<string[][]>();
                 }
             }
 
@@ -1365,7 +1424,7 @@ namespace StealthAssessmentWizard
         {
             if (openFileDialog2.ShowDialog() == DialogResult.OK)
             {
-                Data.LoadDataAsDefault(openFileDialog2.FileName);
+                Data.LoadECD(openFileDialog2.FileName);
 
                 Data2Visualization();
 
@@ -1445,8 +1504,8 @@ namespace StealthAssessmentWizard
 
             MLAlgoritmSelector.DataSource = AlgorithmItems;
 
-            openFileDialog1.InitialDirectory = Path.Combine(IniFile.AppDir, "ConfigFiles");
-            openFileDialog1.FileName = "GameLogs.xlsx";
+            //openFileDialog1.InitialDirectory = Path.Combine(IniFile.AppDir, "ConfigFiles");
+            //openFileDialog1.FileName = "GameLogs.xlsx";
 
             Logger.Info($"Loading default ECD from '{Utils.MakePathRelative(Path.Combine(IniFile.AppData, IniFile.AppIni))}'.");
         }
@@ -1615,7 +1674,7 @@ namespace StealthAssessmentWizard
             if (lv != null && lv.SelectedItems.Count == 1 && lv.SelectedItems[0].Group != null)
             {
                 Int32 ndx = lv.SelectedItems[0].Index;
-                String group = lv.SelectedItems[0].Group.Name;
+                //String group = lv.SelectedItems[0].Group.Name;
                 Int32 gndx = lv.Groups.IndexOf(lv.SelectedItems[0].Group);
 
                 switch (UniDimensional)
@@ -1669,7 +1728,7 @@ namespace StealthAssessmentWizard
             {
                 Visualization2Data();
 
-                Data.SaveDataAsDefault(saveFileDialog2.FileName);
+                Data.SaveECD(saveFileDialog2.FileName);
             }
         }
 
@@ -1723,7 +1782,7 @@ namespace StealthAssessmentWizard
             //ConsoleDialog.NormVideo();
 
             //! Load the DEFAULT ECD configuration
-            LoadECD();
+            LoadDefaultECD();
 
             Data.DumpStatisticalSubModels();
         }
@@ -1773,9 +1832,13 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Do work event information. </param>
         private void Step2_DoWork(object sender, DoWorkEventArgs e)
         {
+            Logger.Info("Step2");
+
             StateMachine.Flags[StateMachine.STEP2_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
+
+            // String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             //ConsoleDialog.HighVideo();
             //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
@@ -1791,15 +1854,15 @@ namespace StealthAssessmentWizard
             Logger.Info($"Loading Game Logs from: '{Utils.MakePathRelative(filename)}'.");
 
             Debug.Write("Loading all game logs... ");
-            Data.AllGameLogs = BayesNet.LoadAllData(filename);
+            Data.observables = BayesNet.LoadAllData(filename);
             Debug.WriteLine("Completed.\r\n");
 
             //Data.DumpObservables();
 
             //! Load only the instances for the declared statistical sub-models.
             Debug.Write("Loading instances for the declared statistical submodels... ");
-            Data.Inst = BayesNet.LoadInstances(Data.AllGameLogs, Data.CompetencyModel, Data.StatisticalSubmodel);
-            Data.InstUni = BayesNet.LoadInstancesUni(Data.AllGameLogs, Data.UniCompetencyModel, Data.UniEvidenceModel);
+            Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
+            Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
             Debug.WriteLine("Completed.\r\n");
 
             //! Visualize ECD Configuration using two ListViews.
@@ -1816,7 +1879,7 @@ namespace StealthAssessmentWizard
 
             //! Normalization of the instances for the declared statistical submodels.
             Debug.Write("Normalisation of instances... ");
-            Data.Instances = BayesNet.Normalisation(Data.Inst.Item1);
+            Data.Instances = BayesNet.Normalisation(Data.Inst.facets);
             Data.InstancesUni = BayesNet.NormalisationUni(Data.InstUni.Item1);
             Debug.WriteLine("Completed.\r\n");
 
@@ -1824,16 +1887,16 @@ namespace StealthAssessmentWizard
 
             //! Check for labeled data.
             Debug.Write("Checking for labeled data to decide ML approach... ");
-            Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
-            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+            Data.CheckLabels = BayesNet.CheckLabelling(Data.observables, Data.competencies.ToTuple());
+            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.observables, Data.unicompetencies.ToTuple());
             Debug.WriteLine("Completed.\r\n");
 
             (sender as BackgroundWorker).ReportProgress(5);
 
             //! Retrieve labeled data.
             Debug.Write("Retrieving labeled data...");
-            Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.AllGameLogs);
-            Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.AllGameLogs);
+            Data.LabelledData = BayesNet.GetLabelledData(Data.competencies.ToTuple(), Data.observables);
+            Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.unicompetencies.ToTuple(), Data.observables);
             Debug.WriteLine("Completed.\r\n");
         }
 
@@ -1907,9 +1970,13 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Do work event information. </param>
         private void Step3_DoWork(object sender, DoWorkEventArgs e)
         {
+            Logger.Info("Step3");
+
             StateMachine.Flags[StateMachine.STEP3_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
+
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             //ConsoleDialog.HighVideo();
             //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
@@ -1925,14 +1992,17 @@ namespace StealthAssessmentWizard
 
             Data.DumpStatisticalSubModels();
 
-            Data.SaveModelToExcel(filename);
-            Data.SaveDataAsDefault(Path.ChangeExtension(filename, ".ini"));
+            Data.SaveModelToExcel(filenameTS);
+
+#warning Competenses & Facets from model are not saved.
+
+            Data.SaveECD(Path.ChangeExtension(filenameTS, ".json"));
 
             //! Needs to move to after the ML Options.
             //
-            Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
+            Data.CheckLabels = BayesNet.CheckLabelling(Data.observables, Data.competencies.ToTuple());
 
-            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+            Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.observables, Data.unicompetencies.ToTuple());
 
             if (!BayesNet.AllLabelled(Data.CheckLabels))
             {
@@ -1941,13 +2011,13 @@ namespace StealthAssessmentWizard
                 {
                     //! Redo part of Step1 as StatisticalSubmodel may have changed.
                     Debug.Write("Loading instances for the declared statistical submodels... ");
-                    Data.Inst = BayesNet.LoadInstances(Data.AllGameLogs, Data.CompetencyModel, Data.StatisticalSubmodel);
-                    Data.InstUni = BayesNet.LoadInstancesUni(Data.AllGameLogs, Data.UniCompetencyModel, Data.UniEvidenceModel);
+                    Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
+                    Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
                     Debug.WriteLine("Completed.\r\n");
 
                     //! Normalization of the instances for the declared statistical submodels.
                     Debug.Write("Normalisation of instances... ");
-                    Data.Instances = BayesNet.Normalisation(Data.Inst.Item1);
+                    Data.Instances = BayesNet.Normalisation(Data.Inst.facets);
                     Data.InstancesUni = BayesNet.NormalisationUni(Data.InstUni.Item1);
                     Debug.WriteLine("Completed.\r\n");
                 }
@@ -1955,38 +2025,38 @@ namespace StealthAssessmentWizard
                 {
                     //! Retrieve labeled data.
                     Debug.Write("Retrieving labeled data...");
-                    Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.AllGameLogs);
-                    Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.AllGameLogs);
+                    Data.LabelledData = BayesNet.GetLabelledData(Data.competencies.ToTuple(), Data.observables);
+                    Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.unicompetencies.ToTuple(), Data.observables);
                     Debug.WriteLine("Completed.\r\n");
 
                     //! Generate .arff files for facets.
                     Debug.WriteLine("Generating .arff files for the declared facets...");
-                    BayesNet.GenerateArffFilesForFacets(Data.CompetencyModel, Data.StatisticalSubmodel, Data.Instances, Data.CheckLabels, Data.LabelledData);
+                    BayesNet.GenerateArffFilesForFacets(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
                     Debug.WriteLine("Generation of .arff files completed.\r\n");
 
                     //! Select ML algorithms for the declared facets.
                     //
                     Debug.WriteLine("Select ML algoritms for te declared facets....");
-                    Data.LabelledOutputF = BayesNet.SelectLabelsforFacets(Data.CompetencyModel, Data.LabelledData);
+                    Data.LabelledOutputF = BayesNet.SelectLabelsforFacets(MyData, Data.competencies.ToTuple(), Data.LabelledData);
                     Debug.WriteLine("Selection completed.\r\n");
 
                     //! Generate .arff files for competencies.
                     Debug.WriteLine("Generating .arff files for the declared competencies...");
-                    BayesNet.GenerateArffFilesForCompetencies(Data.CompetencyModel, Data.StatisticalSubmodel, Data.CheckLabels, Data.LabelledData);
-                    BayesNet.GenerateArffFilesForUniCompetencies(Data.UniCompetencyModel, Data.UniEvidenceModel, Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+                    BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
+                    BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
                     Debug.WriteLine("Generation of .arff files completed.\r\n");
 
 
                     //! Select ML algorithms for the declared competencies.
                     //
                     Debug.WriteLine("Select ML algoritms for te declared competencies....");
-                    Data.LabelledOutputC = BayesNet.SelectLabelsforCompetencies(Data.CompetencyModel, Data.LabelledData);
-                    Data.UniLabelledOutputC = BayesNet.SelectLabelsforUniCompetencies(Data.UniCompetencyModel, Data.LabelledDataUni);
+                    Data.LabelledOutputC = BayesNet.SelectLabelsforCompetencies(MyData, Data.competencies.ToTuple(), Data.LabelledData);
+                    Data.UniLabelledOutputC = BayesNet.SelectLabelsforUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
                     Debug.WriteLine("Selection completed.\r\n");
                 }
 
                 {
-                    Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
+                    Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
                 }
 
                 (sender as BackgroundWorker).ReportProgress(4);
@@ -1994,17 +2064,17 @@ namespace StealthAssessmentWizard
                 //! Write Labels on Excel file.
                 {
                     Debug.WriteLine("Adding labels for the declared facets to Excel file...");
-                    Excel.AddLabelsforFacets(Data.CompetencyModel, Data.CheckLabels, Data.OutputLabels, filename);
+                    Excel.AddLabelsforFacets(Data.competencies.ToTuple(), Data.CheckLabels, Data.OutputLabels, filenameTS);
                     Debug.WriteLine("Adding labels for the declared competencies to Excel file...");
-                    Excel.AddLabelsforCompetencies(Data.CompetencyModel, Data.CheckLabels, Data.OutputLabels, filename);
+                    Excel.AddLabelsforCompetencies(Data.competencies.ToTuple(), Data.CheckLabels, Data.OutputLabels, filenameTS);
                     Debug.WriteLine("Adding labels for the declared uni-competencies to Excel file...");
-                    Excel.AddLabelsforUniCompetencies(Data.UniCompetencyModel, Data.CheckLabelsUni, Data.UniLabelledOutputC.Item3, filename);
+                    Excel.AddLabelsforUniCompetencies(Data.unicompetencies.ToTuple(), Data.CheckLabelsUni, Data.UniLabelledOutputC.Item3, filenameTS);
                     Debug.WriteLine("Adding labels completed.\r\n");
 
-                    Data.AllGameLogs = BayesNet.LoadAllData(filename);
+                    Data.observables = BayesNet.LoadAllData(filename);
 
-                    Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
-                    Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+                    Data.CheckLabels = BayesNet.CheckLabelling(Data.observables, Data.competencies.ToTuple());
+                    Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.observables, Data.unicompetencies.ToTuple());
                 }
             }
 
@@ -2082,64 +2152,64 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Do work event information. </param>
         private void Step4_DoWork(object sender, DoWorkEventArgs e)
         {
+            Logger.Info("Step4");
+
             StateMachine.Flags[StateMachine.STEP4_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
 
-            //ConsoleDialog.HighVideo();
-            //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
-            //ConsoleDialog.NormVideo();
+            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
-                Data.Inst = BayesNet.LoadInstances(Data.AllGameLogs, Data.CompetencyModel, Data.StatisticalSubmodel);
+                Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
                 Debug.Write("Normalisation of instances... ");
-                Data.Instances = BayesNet.Normalisation(Data.Inst.Item1);
+                Data.Instances = BayesNet.Normalisation(Data.Inst.facets);
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Check for labeled data.
                 Debug.Write("Checking for labeled data to decide ML approach... ");
-                Data.CheckLabels = BayesNet.CheckLabelling(Data.AllGameLogs, Data.CompetencyModel);
+                Data.CheckLabels = BayesNet.CheckLabelling(Data.observables, Data.competencies.ToTuple());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Retrieve labeled data.
                 Debug.Write("Retrieving labeled data...");
-                Data.LabelledData = BayesNet.GetLabelledData(Data.CompetencyModel, Data.AllGameLogs);
+                Data.LabelledData = BayesNet.GetLabelledData(Data.competencies.ToTuple(), Data.observables);
                 Debug.WriteLine("Completed.\r\n");
             }
 
             //! Generate .arff files for facets.
             Debug.WriteLine("Generating .arff files for the declared facets...");
-            BayesNet.GenerateArffFilesForFacets(Data.CompetencyModel, Data.StatisticalSubmodel, Data.Instances, Data.CheckLabels, Data.LabelledData);
+            BayesNet.GenerateArffFilesForFacets(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
             Debug.WriteLine("Generation of .arff files completed.\r\n");
 
             //! Select ML algorithms for the declared facets.
             Debug.WriteLine("Select ML algoritms for te declared facets....");
-            Data.LabelledOutputF = BayesNet.SelectMLforFacets(Data.CompetencyModel, Data.LabelledData);
+            Data.LabelledOutputF = BayesNet.SelectMLforFacets(MyData, Data.competencies.ToTuple(), Data.LabelledData);
             Debug.WriteLine("Selection completed.\r\n");
 
             //! Generate .arff files for competencies.
             Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForCompetencies(Data.CompetencyModel, Data.StatisticalSubmodel, Data.CheckLabels, Data.LabelledData);
+            BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
             Debug.WriteLine("Generation of .arff files completed.\r\n");
 
             //! Select ML algorithms for the declared competencies.
             Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(Data.CompetencyModel, Data.LabelledData);
+            Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(MyData, Data.competencies.ToTuple(), Data.LabelledData);
             Debug.WriteLine("Selection completed.\r\n");
 
-            Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
+            Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
 
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
-                Data.InstUni = BayesNet.LoadInstancesUni(Data.AllGameLogs, Data.UniCompetencyModel, Data.UniEvidenceModel);
+                Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
@@ -2149,64 +2219,64 @@ namespace StealthAssessmentWizard
 
                 //! Check for labeled data.
                 Debug.Write("Checking for labeled data to decide ML approach... ");
-                Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.AllGameLogs, Data.UniCompetencyModel);
+                Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.observables, Data.unicompetencies.ToTuple());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Retrieve labeled data.
                 Debug.Write("Retrieving labeled data...");
-                Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.UniCompetencyModel, Data.AllGameLogs);
+                Data.LabelledDataUni = BayesNet.GetLabelledDataUni(Data.unicompetencies.ToTuple(), Data.observables);
                 Debug.WriteLine("Completed.\r\n");
             }
 
             //! Generate .arff files for competencies.
             Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForUniCompetencies(Data.UniCompetencyModel, Data.UniEvidenceModel, Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+            BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
             Debug.WriteLine("Generation of .arff files completed.\r\n");
 
             //! Select ML algorithms for the declared competencies.
             Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(Data.UniCompetencyModel, Data.LabelledDataUni);
+            Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
             Debug.WriteLine("Selection completed.\r\n");
 
-            Data.OutputLabels = new Tuple<int[][], int[][][]>(Data.LabelledOutputC.Item3, Data.LabelledOutputF.Item3);
+            Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
 
             groupedComboBox1.InvokeIfRequired(o =>
             {
                 groupedComboBox1.DataSource = null;
 
                 List<GCI> items = new List<GCI>();
-                for (int x = 0; x < Data.CompetencyModel.Item1.Length; x++)
+                for (int x = 0; x < Data.competencies.Count; x++)
                 {
-                    for (int y = 0; y < Data.CompetencyModel.Item2[x].Length; y++)
+                    for (int y = 0; y < Data.competencies[x].Count(); y++)
                     {
                         items.Add(new GCI()
                         {
-                            Group = Data.CompetencyModel.Item1[x],
-                            Value = Data.CompetencyModel.Item2[x][y],
-                            Display = Data.CompetencyModel.Item2[x][y],
+                            Group = Data.competencies[x].CompetencyName,
+                            Value = Data.competencies[x][y].FacetName,
+                            Display = Data.competencies[x][y].FacetName,
                             IsCompetency = false,
                         });
                     }
                 }
 
-                for (int x = 0; x < Data.CompetencyModel.Item1.Length; x++)
+                for (int x = 0; x < Data.competencies.Count; x++)
                 {
                     items.Add(new GCI()
                     {
                         Group = "Competencies",
-                        Value = Data.CompetencyModel.Item1[x],
-                        Display = Data.CompetencyModel.Item1[x],
+                        Value = Data.competencies[x].CompetencyName,
+                        Display = Data.competencies[x].CompetencyName,
                         IsCompetency = true,
                     });
                 }
 
-                for (int x = 0; x < Data.UniCompetencyModel.Length; x++)
+                for (int x = 0; x < Data.unicompetencies.Count; x++)
                 {
                     items.Add(new GCI()
                     {
                         Group = "Competencies",
-                        Value = Data.UniCompetencyModel[x],
-                        Display = Data.UniCompetencyModel[x],
+                        Value = Data.unicompetencies[x].CompetencyName,
+                        Display = Data.unicompetencies[x].CompetencyName,
                         IsCompetency = true,
                     });
                 }
@@ -2276,10 +2346,10 @@ namespace StealthAssessmentWizard
         {
             //! Load Observable Mapper ListView into Data.CompetencyModel/EvidenceModel.
             //
-            string[] Competencies = new String[listView1.Groups.Count/* + listView2.Groups[gndx].Items.Count*/];
-            string[][] Facets = new string[Competencies.Length][];
+            //string[] Competencies = new String[listView1.Groups.Count/* + listView2.Groups[gndx].Items.Count*/];
+            //string[][] Facets = new string[Competencies.Length][];
 
-            Data.StatisticalSubmodel = new string[listView1.Groups.Count][][];
+            Data.competencies = new Competencies();
 
             //! Retrieve the Competencies/Facets/Observables from ListView1.
             //
@@ -2289,35 +2359,44 @@ namespace StealthAssessmentWizard
             {
                 ListViewGroup lvg = listView1.Groups[g];
 
-                Competencies[g] = lvg.Name;
-                Facets[g] = new String[lvg.Items.Count];
+                //Data.competencies.Add(new Competency(lvg.Items.Count, lvg.Name));
+                //Facets[g] = new String[lvg.Items.Count];
 
-                Data.StatisticalSubmodel[g] = new String[lvg.Items.Count][];
-
+                Competency competency = new Competency(lvg.Name);
                 for (Int32 i = 0; i < lvg.Items.Count; i++)
                 {
-                    Facets[g][i] = lvg.Items[i].Text;
+                    String[] observables = lvg.Items[i].SubItems[1].Text.Split(',').ToArray();
 
-                    Data.StatisticalSubmodel[g][i] = lvg.Items[i].SubItems[1].Text.Split(',').ToArray();
+                    Facet facet = new Facet(observables.Length, lvg.Items[i].Text);
+                    for (Int32 j = 0; j < observables.Length; j++)
+                    {
+                        facet[j] = observables[j];
+                    }
+                    competency.Add(facet);
                 }
+
+                Data.competencies.Add(competency);
             }
 
             //! Retrieve the Competencies/Observables from ListView2.
             //
             //! 2) Uni-Dimensional.
-            Data.UniCompetencyModel = new String[listView2.Groups[0].Items.Count];
-            Data.UniEvidenceModel = new string[listView2.Groups[0].Items.Count][];
-
+            Data.unicompetencies = new UniCompetencies();
             for (Int32 i = 0; i < listView2.Groups[0].Items.Count; i++)
             {
                 ListViewItem lvi = listView2.Groups[0].Items[i];
 
-                Data.UniCompetencyModel[i] = lvi.Text;
+                String[] observables = lvi.SubItems[1].Text.Split(',').ToArray();
 
-                Data.UniEvidenceModel[i] = lvi.SubItems[1].Text.Split(',').ToArray();
+                UniCompetency unicompetency = new UniCompetency(observables.Length, lvi.Text);
+
+                for (Int32 j = 0; j < observables.Length; j++)
+                {
+                    unicompetency[j] = observables[j];
+                }
+
+                Data.unicompetencies.Add(unicompetency);
             }
-
-            Data.CompetencyModel = Tuple.Create<string[], string[][]>(Competencies, Facets);
 
             Debug.WriteLine("Completed.\r\n");
         }
@@ -2340,7 +2419,6 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
-
                     String filename = openFileDialog3.FileName;
 
                     //! Load all the available external data.
@@ -2348,7 +2426,7 @@ namespace StealthAssessmentWizard
                     Logger.Info($"Loading External Data from: '{Utils.MakePathRelative(filename)}'.");
 
                     Debug.Write("Loading external data... ");
-                    Data.ExternalData = BayesNet.LoadAllData(filename);
+                    Data.observables = BayesNet.LoadAllData(filename);
                     Debug.WriteLine("Completed.\r\n");
 
                     //Data.DumpObservables();
@@ -2356,16 +2434,16 @@ namespace StealthAssessmentWizard
                     Debug.WriteLine("ExternalData: {0}", Data.ExternalData);
 
                     //Run correlation analysis for multi-dimensional competencies
-                    Data.spearmansMulti = BayesNet.CorrelationAnalysisMulti(Data.CompetencyModel.Item1, Data.LabelledOutputC.Item3, Data.ExternalData);
+                    Data.spearmansMulti = BayesNet.CorrelationAnalysisMulti(Data.competencies.ToTuple().competencies, Data.LabelledOutputC.output, Data.ExternalData);
 
                     //Run correlation analysis for uni-dimensional competencies
-                    Data.spearmansUni = BayesNet.CorrelationAnalysisUni(Data.UniCompetencyModel, Data.UniLabelledOutputC.Item3, Data.ExternalData);
+                    Data.spearmansUni = BayesNet.CorrelationAnalysisUni(Data.unicompetencies.ToTuple(), Data.UniLabelledOutputC.Item3, Data.ExternalData);
 
                     //Run reliability analysis for multi-dimensional competencies.
-                    Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.CompetencyModel, Data.StatisticalSubmodel, Data.Inst.Item2);
+                    Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
 
                     //Run reliability analysis for uni-dimensional competencies.
-                    Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.UniCompetencyModel, Data.InstUni.Item2, Data.UniEvidenceModel);
+                    Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());
                 }
             }
 

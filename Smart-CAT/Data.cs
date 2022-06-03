@@ -1,5 +1,5 @@
 ﻿/*
-* Copyright 2020 Open University of the Netherlands (OUNL)
+* Copyright 2022 Open University of the Netherlands (OUNL)
 *
 * Authors: Konstantinos Georgiadis, Wim van der Vegt.
 * Organization: Open University of the Netherlands (OUNL).
@@ -40,63 +40,77 @@ namespace StealthAssessmentWizard
     public static class Data
     {
         #region Fields
-        internal static Observables<String> Observables = new Observables<String>();
-
-        /// <summary>
-        /// This variable allows access to functions of the Exceptions class.
-        /// </summary>
-        internal static Exceptions aExceptions = new Exceptions();
 
         /// <summary>
         /// Stores all data and observables found at the game logs file.
         /// </summary>
-        internal static Tuple<string[], string[][]> AllGameLogs = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
+        internal static Observables observables = new Observables();
 
         /// <summary>
-        /// Stores information whether the data for the given facets and competencies is labelled to
-        /// decide ML approach.
+        /// The unicompetencies.
         /// </summary>
-        internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(Array.Empty<bool[]>(), Array.Empty<bool[][]>());
+        internal static UniCompetencies unicompetencies = new UniCompetencies();
 
         /// <summary>
         /// Stores all the elements declared at the Competency Model.
         /// </summary>
-        internal static Tuple<string[], string[][]> CompetencyModel = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
+        internal static Competencies competencies = new Competencies();
 
         /// <summary>
-        /// The uni competency model.
+        /// This variable allows access to functions of the Exceptions class.
         /// </summary>
-        internal static String[] UniCompetencyModel = Array.Empty<string>();
+        //internal static Exceptions aExceptions = new Exceptions();
 
         /// <summary>
-        /// The correlations (Competencies, Facets).
+        /// Stores information whether the data for the given facets and competencies is labeled to
+        /// decide ML approach.
+        /// 
+        /// Item1 [Competencies] -> Label Presence
+        /// Item2 [Competences][Facets] -> Label Presence
+        /// 
+        /// Note: The Label Presence Arrays have a length of 1. (See line 1995 in BayesNet.cs).
+        /// Note: Could be 1 dimension flatter.
         /// </summary>
-        internal static Tuple<double[][], double[][][]> Correlations = Tuple.Create<double[][], double[][][]>(Array.Empty<double[]>(), Array.Empty<double[][]>());
+        internal static (bool[][] competencies, bool[][][] facets) CheckLabels = (competencies: Array.Empty<bool[]>(), facets: Array.Empty<bool[][]>());
+
+#if NAMED_TUPLE_SYNTAX
+
+#warning TEST OF C#7 NAMED TUPLE SYNTAX (Note: it does not mix with Tuple<T,U>
+
+        //! Old Syntax:        
+        //x internal static Tuple<bool[][], bool[][][]> CheckLabels = Tuple.Create<bool[][], bool[][][]>(Array.Empty<bool[]>(), Array.Empty<bool[][]>());
+
+        //! New C# 7 Syntax:
+        static (bool[][] competencies, bool[][][] facets) CheckLabels = (competencies: Array.Empty<bool[]>(), facets: Array.Empty<bool[][]>());
+
+        //! Usage:
+        static readonly bool c15present = CheckLabelsTEST.competencies[15][0];
+#endif
 
         /// <summary>
         /// The instance.
         /// </summary>
-        internal static Tuple<double[][][][], double[][][][]> Inst = new Tuple<double[][][][], double[][][][]>(Array.Empty<double[][][]>(), Array.Empty<double[][][]>());
+        internal static (double[][][][] facets, double[][][][] observables) Inst = (facets: Array.Empty<double[][][]>(), observables: Array.Empty<double[][][]>());
 
         /// <summary>
-        /// Stores instances per statistical submodel.
+        /// Stores instances per statistical sub model.
         /// </summary>
         internal static double[][][][] Instances = Array.Empty<double[][][]>();
 
         /// <summary>
         /// Stores the labelling data for the given facets and competencies.
         /// </summary>
-        internal static Tuple<int[][], int[][][]> LabelledData = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
+        internal static (int[][] competencies, int[][][] facets) LabelledData = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>());
 
         /// <summary>
         /// The labeled output competencies.
         /// </summary>
-        internal static Tuple<int[][], int[][][], int[][]> LabelledOutputC = Tuple.Create<int[][], int[][][], int[][]>(Array.Empty<int[]>(), Array.Empty<int[][]>(), Array.Empty<int[]>());
+        internal static (int[][] competencies, int[][][] facets, int[][] output) LabelledOutputC = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>(), output: Array.Empty<int[]>());
 
         /// <summary>
         /// The labeled output facets.
         /// </summary>
-        internal static Tuple<int[][], int[][][], int[][][]> LabelledOutputF = Tuple.Create<int[][], int[][][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>(), Array.Empty<int[][]>());
+        internal static (int[][] competencies, int[][][] facets, int[][][] output) LabelledOutputF = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>(), output: Array.Empty<int[][]>());
 
         /// <summary>
         /// Options for controlling the miles.
@@ -106,36 +120,14 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// The output labels.
         /// </summary>
-        internal static Tuple<int[][], int[][][]> OutputLabels = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
+        internal static (int[][] competencies, int[][][] facets) OutputLabels = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>());
 
         /// <summary>
         /// The performance.
         /// </summary>
         internal static IPerformance Performance;
 
-        /// <summary>
-        /// Stores the pruned observables and the correlation analysis results.
-        /// </summary>
-        internal static Tuple<string[][][][], double[][][][][]> PrunedResults = Tuple.Create<string[][][][], double[][][][][]>(Array.Empty<string[][][]>(), Array.Empty<double[][][][]>());
-
-        /// <summary>
-        /// Stores the external data for the given facets and competencies.
-        /// </summary>
-        internal static Tuple<int[][], int[][][]> RandomLabelledData = Tuple.Create<int[][], int[][][]>(Array.Empty<int[]>(), Array.Empty<int[][]>());
-
-        /// <summary>
-        /// Stores the Statistical Submodel .
-        /// </summary>
-        internal static string[][][] StatisticalSubmodel = Array.Empty<string[][]>();
-
-        internal static string[][] UniEvidenceModel = Array.Empty<string[]>();
-
-        /// <summary>
-        /// Options for controlling the validation and verification.
-        /// </summary>
-        internal static VandVOptions VandVOptions = new VandVOptions(Double.NaN, Double.NaN);
-
-        internal static Tuple<double[][][], double[][][]> InstUni = new Tuple<double[][][], double[][][]>(Array.Empty<double[][]>(), Array.Empty<double[][]>());
+        internal static (double[][][], double[][][]) InstUni = (Array.Empty<double[][]>(), Array.Empty<double[][]>());
 
         internal static double[][][] InstancesUni = Array.Empty<double[][]>();
 
@@ -143,19 +135,17 @@ namespace StealthAssessmentWizard
 
         internal static int[][] LabelledDataUni = Array.Empty<int[]>();
 
-        internal static Tuple<int[][], int[][], int[][]> UniLabelledOutputC = Tuple.Create<int[][], int[][], int[][]>(Array.Empty<int[]>(), Array.Empty<int[]>(), Array.Empty<int[]>());
+        internal static (int[][], int[][], int[][]) UniLabelledOutputC = (Array.Empty<int[]>(), Array.Empty<int[]>(), Array.Empty<int[]>());
 
-        internal static Tuple<string[], double[][]> spearmansMulti = new Tuple<string[], double[][]>(Array.Empty<string>(), Array.Empty<double[]>());
+        internal static (string[], double[][]) spearmansMulti = (Array.Empty<string>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[][]> spearmansUni = new Tuple<string[], double[][]>(Array.Empty<string>(), Array.Empty<double[]>());
+        internal static (string[], double[][]) spearmansUni = (Array.Empty<string>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[], string[][], double[][]> cronbachAlphaMulti = new Tuple<string[], double[], string[][], double[][]>(Array.Empty<string>(), Array.Empty<double>(), Array.Empty<string[]>(), Array.Empty<double[]>()) { };
+        internal static (string[], double[], string[][], double[][]) cronbachAlphaMulti = (Array.Empty<string>(), Array.Empty<double>(), Array.Empty<string[]>(), Array.Empty<double[]>());
 
-        internal static Tuple<string[], double[]> cronbachAlphaUni = new Tuple<string[], double[]>(Array.Empty<string>(), Array.Empty<double>()) { };
+        internal static (string[], double[]) cronbachAlphaUni = (Array.Empty<string>(), Array.Empty<double>());
 
-        internal static double pSignificance = new double();
-
-        internal static Tuple<string[], string[][]> ExternalData = Tuple.Create<string[], string[][]>(Array.Empty<string>(), Array.Empty<string[]>());
+        internal static (string[], string[][]) ExternalData = (Array.Empty<string>(), Array.Empty<string[]>());
 
         #endregion Fields
 
@@ -164,27 +154,30 @@ namespace StealthAssessmentWizard
         /// <summary>
         /// Saves the data as default.
         /// </summary>
-        internal static void SaveDataAsDefault(String filename = null)
+        internal static void SaveECD(String filename = null)
         {
-            Logger.Info($"Saving ECD to: '{Utils.MakePathRelative(filename)}'.");
+            Logger.Info($"Saving Statistical Model to: '{Utils.MakePathRelative(filename)}'.");
 
-            //! 1) CompetencyModel.
-            ECD.SaveCompetencyModel(Data.CompetencyModel, filename);
-
-            //! 2) Statistical Submodel.
-            ECD.SaveEvidenceModel(Data.StatisticalSubmodel, filename);
-
-            //! 3) Load Observables.
-            //! NOTE: Observables might be empty (they are extracted from the data file).
-            ECD.SaveObservables(Data.AllGameLogs.Item1, filename);
-
-            //! 4) Uni CompetencyModel.
-            ECD.SaveUniCompetencyModel(Data.UniCompetencyModel, filename);
-
-            //! 5) Uni Statistical Submodel.
-            ECD.SaveUniEvidenceModel(Data.UniEvidenceModel, filename);
+            if (!String.IsNullOrEmpty(filename))
+            {
+                using (Models models = new Models()
+                {
+                    observables = Data.observables.Names,
+                    competencies = Data.competencies,
+                    unicompetencies = Data.unicompetencies
+                })
+                {
+                    //! 1) Save ECD.
+                    ECD.SaveModelData(models, filename);
+                }
+            }
         }
 
+        /// <summary>
+        /// Saves a model to excel.
+        /// </summary>
+        ///
+        /// <param name="filename"> Filename of the file. </param>
         internal static void SaveModelToExcel(String filename)
         {
             Excel.AddModel(filename);
@@ -195,33 +188,39 @@ namespace StealthAssessmentWizard
         /// </summary>
         ///
         /// <param name="filename"> (Optional) Filename of the file. </param>
-        internal static void LoadDataAsDefault(String filename = null)
+        internal static void LoadECD(String filename = null)
         {
             if (File.Exists(filename))
             {
-                Logger.Info($"Loading ECD from: '{Utils.MakePathRelative(filename)}'.");
+                Logger.Info($"Loading Statistical Model from: '{Utils.MakePathRelative(filename)}'.");
 
-                //! 1) CompetencyModel.
-                Data.CompetencyModel = ECD.LoadCompetencyModel(filename);
+                //! 1) Load ECD.
+                using (Models models = ECD.LoadModelData(filename))
+                {
+                    Data.competencies = models.competencies;
+                    Data.unicompetencies = models.unicompetencies;
 
-                //! 2) Statistical Submodel.
-                Data.StatisticalSubmodel = ECD.LoadEvidenceModel(filename).Item2;
+                    //! 2) Prune Loaded Observables.
 
-                //! 3) ObservablesModel.
+                    //! a) Extend Item2 with empty data to the size of obs fails.
+                    //! b) However truncating obs to the size of Item2 seems to work OK as
+                    //!    this data is loaded later where the sheet matches the size of obs.
 
-                //! a) Extend Item2 with empty data to the size of obs fails.
-                //! b) However truncating obs to the size of Item2 seems to work OK as
-                //!    this data is loaded later where the sheet matches the size of obs.
-                //
-                string[] obs = ECD.LoadObservables(filename);
-                Array.Resize(ref obs, Data.AllGameLogs.Item2.Length);
-                Data.AllGameLogs = new Tuple<string[], string[][]>(obs, Data.AllGameLogs.Item2);
-
-                //! 4) Uni CompetencyModel.
-                Data.UniCompetencyModel = ECD.LoadUniCompetencyModel(filename);
-
-                //! 5) Uni Statistical Submodel.
-                Data.UniEvidenceModel = ECD.LoadUniEvidenceModel(filename);
+                    //! 2) Truncate only (remove surplus of observables)...
+                    if (Data.observables.Count != 0)
+                    {
+                        foreach (String observable in models.observables)
+                        {
+                            int index = Data.observables.ToList().FindIndex(p => p.ObservableName.Equals(observable));
+                            if (index == -1)
+                            {
+                                Logger.Info($"Removing observable: '{observable}' as no data is found.");
+#warning TODO - SUSPICIOUS CODE - TRYING TO REMOVE at -1.
+                                //Data.observables.RemoveAt(index);
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -267,13 +266,11 @@ namespace StealthAssessmentWizard
         /// </summary>
         internal static void DumpObservables()
         {
-            //ConsoleDialog.HighVideo();
             //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
-            //ConsoleDialog.NormVideo();
 
-            //foreach (String o in Data.AllGameLogs.Item1)
+            //foreach (String observable in Data.Observables.Names)
             //{
-            //    Debug.WriteLine($"{o}");
+            //    Debug.WriteLine($"{observable}");
             //}
 
             //Debug.WriteLine(String.Empty);

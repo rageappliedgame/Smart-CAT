@@ -30,71 +30,76 @@
 namespace StealthAssessmentWizard
 {
     using System;
+    using System.Collections.Generic;
+    using System.Runtime.Serialization;
 
     /// <summary>
-    /// A Grouped Combobox Item.
+    /// An uni competency.
     /// </summary>
-    public class GCI
+    ///
+    /// <typeparam name="T"> Generic type parameter. </typeparam>
+    [DataContract]
+    public class UniCompetency
     {
         /// <summary>
-        /// Gets or sets the group.
+        /// The array.
+        /// </summary>
+        [DataMember(Name = "Observables")]
+        public String[] Items = Array.Empty<String>();
+
+        /// <summary>
+        /// Gets or sets the name of the competency.
         /// </summary>
         ///
         /// <value>
-        /// The group.
+        /// The name of the competency.
         /// </value>
-        public String Group
+        [DataMember]
+        public String CompetencyName { get; set; }
+
+        /// <summary>
+        /// Indexer to get or set items within this collection using array index syntax.
+        /// </summary>
+        ///
+        /// <param name="i"> Zero-based index of the entry to access. </param>
+        ///
+        /// <returns>
+        /// The indexed item.
+        /// </returns>
+        public String this[int i]
         {
-            get; set;
+            get { return Items[i]; }
+            set { Items[i] = value; }
         }
 
         /// <summary>
-        /// Gets or sets the value.
+        /// Gets the names.
         /// </summary>
         ///
         /// <value>
-        /// The value.
+        /// The names.
         /// </value>
-        public String Value
-        {
-            get; set;
-        }
+        public IEnumerable<String> Names => Items;
 
         /// <summary>
-        /// Gets or sets the display.
+        /// Gets the length.
         /// </summary>
         ///
         /// <value>
-        /// The display.
+        /// The length.
         /// </value>
-        public String Display
-        {
-            get; set;
-        }
+        public int Length => Items.Length;
 
         /// <summary>
-        /// Gets or sets the tool tip.
+        /// Constructor.
         /// </summary>
         ///
-        /// <value>
-        /// The tool tip.
-        /// </value>
-        public String ToolTip
+        /// <param name="size"> The size. </param>
+        /// <param name="name"> The name. </param>
+        public UniCompetency(int size, string name)
         {
-            get; set;
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether it's a competency.
-        /// </summary>
-        ///
-        /// <value>
-        /// True if a competency, false if not.
-        /// </value>
-        public Boolean IsCompetency
-        {
-            get;
-            set;
+            this.CompetencyName = name;
+            Items = new String[size];
         }
     }
 }

@@ -547,7 +547,7 @@ namespace StealthAssessmentWizard
 
                                 //! V&V
                                 // 
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 1])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + Data.competencies[i].Count, cofs + 1])
                                 {
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_VandV_{Competency}");
                                     table1.ShowHeader = true;
@@ -573,7 +573,7 @@ namespace StealthAssessmentWizard
                                             for (Int32 l = 0; l < Data.cronbachAlphaMulti.Item3[k].Length; l++)
                                             {
                                                 worksheet.Cells[rofs, cofs + 0].Value = Data.cronbachAlphaMulti.Item4[k][l];
-                                                rofs += Data.competencies.ToStatisticalSubmodel()[k][l].Length;
+                                                rofs += Data.competencies.ToStatisticalSubmodel()[k][l].Length + 1;
                                             }
                                         }
                                     }
@@ -787,7 +787,7 @@ namespace StealthAssessmentWizard
 
                                 //! V&V
                                 // 
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 1])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + 1, cofs + 1])
                                 {
                                     //! Header
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_VandV_{Competency}");
@@ -2198,6 +2198,14 @@ namespace StealthAssessmentWizard
                 Debug.WriteLine("Completed.\r\n");
             }
 
+            Logger.Info("Assessing Reliability.");
+
+            //Run reliability analysis for multi-dimensional competencies.
+            Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
+
+            //Run reliability analysis for uni-dimensional competencies.
+            Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());
+
             //! Generate .arff files for facets.
             Debug.WriteLine("Generating .arff files for the declared facets...");
             BayesNet.GenerateArffFilesForFacets(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
@@ -2453,12 +2461,6 @@ namespace StealthAssessmentWizard
 
                     //Run correlation analysis for uni-dimensional competencies
                     Data.spearmansUni = BayesNet.CorrelationAnalysisUni(Data.unicompetencies.ToTuple(), Data.UniLabelledOutputC.Item3, Data.ExternalData);
-
-                    //Run reliability analysis for multi-dimensional competencies.
-                    Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
-
-                    //Run reliability analysis for uni-dimensional competencies.
-                    Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());
                 }
             }
 

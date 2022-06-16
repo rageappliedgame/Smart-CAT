@@ -1206,7 +1206,7 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Reliability analysis multi.
+        /// Reliability analysis multi (Cronbach).
         /// </summary>
         ///
         /// <param name="CompetencyModel">     The competency model. </param>
@@ -1347,6 +1347,17 @@ namespace StealthAssessmentWizard
             return (CompetencyModel.competencies, CronAlphaComp, CompetencyModel.facets, CronAlphaFacet);
         }
 
+        /// <summary>
+        /// Reliability analysis uni.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel">  The competency model. </param>
+        /// <param name="InstUni">          The instance uni. </param>
+        /// <param name="UniEvidenceModel"> The uni evidence model. </param>
+        ///
+        /// <returns>
+        /// A Tuple.
+        /// </returns>
         public static (string[], double[]) ReliabilityAnalysisUni(
             string[] CompetencyModel,
             double[][][] InstUni,

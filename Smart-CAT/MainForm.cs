@@ -435,11 +435,11 @@ namespace StealthAssessmentWizard
                                 //
                                 Int32 cnt = Data.competencies.ToStatisticalSubmodel()[i].Sum(p => p.Length) + 1;
 
-                                //! Cache Observables.
+                                //! Observables.
                                 // 
                                 List<String> obs = new List<string>();
 
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 2])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + Data.competencies[i].Count, cofs + 2])
                                 {
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_model_{Competency}");
                                     table1.ShowHeader = true;
@@ -456,6 +456,8 @@ namespace StealthAssessmentWizard
                                     for (Int32 f = 0; f < Data.competencies[i].Count; f++)
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = Data.competencies[i][f].FacetName;
+
+                                        rofs++;
 
                                         foreach (String o in Data.competencies[i][f].Names)
                                         {
@@ -478,7 +480,12 @@ namespace StealthAssessmentWizard
 
                                 //! Accuracy.
                                 //
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 6])
+                                for (Int32 f = 0; f < Data.competencies[i].Count(); f++)
+                                {
+
+                                }
+
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + Data.competencies[i].Count, cofs + 6])
                                 {
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_accuracy_{Competency}");
                                     table1.ShowHeader = true;
@@ -519,6 +526,8 @@ namespace StealthAssessmentWizard
                                             worksheet.Cells[rofs + 1, cofs + 4].Value = ini.ReadDouble("Performance", "RMSE", 0);
                                             worksheet.Cells[rofs + 1, cofs + 5].Value = ini.ReadDouble("Performance", "RAE(%)", 0);
                                             worksheet.Cells[rofs + 1, cofs + 6].Value = ini.ReadDouble("Performance", "RRSE(%)", 0);
+
+                                            rofs++;
 
                                             foreach (String o in Data.competencies.ToStatisticalSubmodel()[i][f])
                                             {
@@ -650,7 +659,7 @@ namespace StealthAssessmentWizard
                                 Int32 rofs = 1;
                                 Int32 cofs = 1;
 
-                                //! Uni-Dimensional.
+                                //! 2. Uni-Dimensional.
                                 //
                                 String Competency = Data.unicompetencies[i].CompetencyName;
 
@@ -706,7 +715,7 @@ namespace StealthAssessmentWizard
                                 //! Model.
                                 //
                                 Int32 cnt = Data.unicompetencies[i].Length;
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 1])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + 1, cofs + 1])
                                 {
                                     ExcelTable table = tblcollection.Add(Rng, $"tbl_model_{Competency}");
                                     table.ShowHeader = true;
@@ -717,6 +726,9 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 1].Value = "Observables";
 
                                     worksheet.Cells[rofs + 1, cofs + 0].Value = Data.unicompetencies[i].CompetencyName;
+
+                                    rofs++;
+
                                     foreach (String o in Data.unicompetencies[i].Names)
                                     {
                                         obs.Add(o);
@@ -736,7 +748,7 @@ namespace StealthAssessmentWizard
 
                                 //! Accuracy.
                                 //
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 6])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + 1, cofs + 6])
                                 {
                                     ExcelTable table = tblcollection.Add(Rng, $"tbl_performance_{Competency}");
                                     table.ShowHeader = true;
@@ -1518,6 +1530,9 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Event information. </param>
         private void NewBtn_Click(object sender, EventArgs e)
         {
+            StateMachine.Flags.Clear();
+            StateMachine.Flags.Add(StateMachine.INIT_R, true);
+
             StateMachine.stateless.Fire(StateMachine.Triggers.New);
         }
 

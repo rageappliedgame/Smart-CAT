@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Smart-CAT")]
-[assembly: AssemblyCopyright("Copyright © Open University of the Netherlands 2020")]
+[assembly: AssemblyCopyright("Copyright © Open University of the Netherlands 2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

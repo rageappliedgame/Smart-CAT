@@ -43,8 +43,19 @@ namespace StealthAssessmentWizard
     /// </summary>
     public static class Excel
     {
+        /// <summary>
+        /// (Immutable) The gsat scratch pad.
+        /// </summary>
         internal const string GSATScratchPad = "Smart-CAT";
+
+        /// <summary>
+        /// (Immutable) The model scratch pad.
+        /// </summary>
         internal const string ModelScratchPad = "Model";
+
+        /// <summary>
+        /// The stamp.
+        /// </summary>
         internal static string Stamp = "_TMP_";
 
         /// <summary>
@@ -83,6 +94,20 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
+        /// File name for scratchpad.
+        /// </summary>
+        ///
+        /// <param name="filename"> Filename of the scratchpad file. </param>
+        ///
+        /// <returns>
+        /// A String.
+        /// </returns>
+        internal static String WorkingCopyFileName(string filename)
+        {
+            return Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + " (scratchpad)" + Path.GetExtension(filename));
+        }
+
+        /// <summary>
         /// Use Epplus to read an xlsx file into a Tuple.
         /// </summary>
         ///
@@ -98,7 +123,7 @@ namespace StealthAssessmentWizard
 
             FileInfo fileInfo = new FileInfo(filename);
 
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
+            String filenameTS = WorkingCopyFileName(filename);
 
             FileInfo fileInfoTS = new FileInfo(filenameTS);
 
@@ -110,8 +135,6 @@ namespace StealthAssessmentWizard
                     {
                         using (ExcelPackage pTS = new ExcelPackage(fileInfoTS))
                         {
-#warning TODO - CREATE GSATScratchPad and ModelScratchPad in a timestamped excel file and use that for the remaining calculations.
-
                             //! Save the size of the worksheet.
                             // 
                             if (!pTS.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))

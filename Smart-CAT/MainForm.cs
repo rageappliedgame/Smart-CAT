@@ -56,6 +56,20 @@ namespace StealthAssessmentWizard
         private Font SelectedFont = null;
 #pragma warning restore IDE0044 // Add readonly modifier
 
+        //! What to do with sheets with the same name? Ask/Add a suffix?
+        // 
+        //  [Smart-CAT Projects]
+        //     [sheet name]
+        //         sheet
+        //         json
+        //             [timestamp]
+        //                  copy sheet
+        //                  copy json
+        //                  [data]
+
+        /// <summary>
+        /// (Immutable) my projects.
+        /// </summary>
         private readonly String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
         private String MyProject = String.Empty;
         private String MyData = String.Empty;
@@ -319,6 +333,8 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Event information. </param>
         private void SaveReportBtn_Click(object sender, EventArgs e)
         {
+            saveFileDialog1.FileName = $"Results_{Excel.Stamp}.xlsx";
+
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 if (Excel.IsFileLocked(saveFileDialog1.FileName))
@@ -349,7 +365,7 @@ namespace StealthAssessmentWizard
                             break;
                     }
 
-                    String filenameTS = Path.Combine(Path.GetDirectoryName(MyInput), Path.GetFileNameWithoutExtension(MyInput) + Excel.Stamp + Path.GetExtension(MyInput));
+                    String filenameTS = Excel.WorkingCopyFileName(MyInput);
 
                     //! Load Scratch Spreadsheet.
                     // 
@@ -1359,8 +1375,17 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
+                    //  [Smart-CAT Projects]
+                    //     [sheet name]
+                    //         sheet
+                    //         json
+                    //             [timestamp]
+                    //                  copy sheet
+                    //                  copy json
+                    //                  [data]
+
                     // Create Timestamp for copies.
-                    Excel.Stamp = $"_{DateTime.Now:yyyyMMdd-HHmm}";
+                    Excel.Stamp = $"{DateTime.Now:yyyyMMdd-HHmmss}";
 
                     StateMachine.Flags[StateMachine.IMPORT_DATA] = true;
 
@@ -1371,13 +1396,15 @@ namespace StealthAssessmentWizard
                         Directory.CreateDirectory(MyProject);
                         Logger.Info($"Created Project Folder <My Document>{MyProject.Replace(MyProjects, String.Empty)}.");
                     }
-                    MyInput = Path.Combine(MyProject, Path.GetFileName(openFileDialog1.FileName));
+
+                    MyInput = Path.Combine(MyProject, Excel.Stamp, Path.GetFileName(openFileDialog1.FileName));
 
                     // Create data folder in project folder if not present already.
-                    MyData = Path.Combine(MyProject, "data" + Excel.Stamp);
+                    MyData = Path.Combine(MyProject, Excel.Stamp, "data");
                     if (!Directory.Exists(MyData))
                     {
                         Directory.CreateDirectory(MyData);
+                        Logger.Info($"Created Run Folder <My Document>{MyProject.Replace(MyProjects, String.Empty)}\\{Excel.Stamp}.");
                     }
 
                     // Clear data folder if present.
@@ -1409,7 +1436,7 @@ namespace StealthAssessmentWizard
                     openFileDialog2.InitialDirectory = MyProject;
                     openFileDialog3.InitialDirectory = MyProject;
 
-                    Text = $"{Application.ProductName} - {Path.GetFileName(MyInput)}";
+                    Text = $"{Application.ProductName} - {Path.GetFileName(MyInput)} - [{Excel.Stamp}]";
 
                     StateMachine.exitWorkers[StateMachine.States.ImportData].argument = MyInput;
                     StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = MyInput;
@@ -1853,12 +1880,6 @@ namespace StealthAssessmentWizard
 
             String filename = e.Argument.ToString();
 
-            // String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
-
-            //ConsoleDialog.HighVideo();
-            //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
-            //ConsoleDialog.NormVideo();
-
             (sender as BackgroundWorker).ReportProgress(1);
 
             //! Disabked for now.
@@ -1990,12 +2011,7 @@ namespace StealthAssessmentWizard
             StateMachine.Flags[StateMachine.STEP3_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
-
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
-
-            //ConsoleDialog.HighVideo();
-            //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
-            //ConsoleDialog.NormVideo();
+            String filenameTS = Excel.WorkingCopyFileName(filename);
 
             (sender as BackgroundWorker).ReportProgress(1);
 
@@ -2011,7 +2027,7 @@ namespace StealthAssessmentWizard
 
 #warning Competenses & Facets from model are not saved.
 
-            Data.SaveECD(Path.ChangeExtension(filenameTS, ".json"));
+            Data.SaveECD(Path.ChangeExtension(filename, ".json"));
 
             //! Needs to move to after the ML Options.
             //
@@ -2172,8 +2188,6 @@ namespace StealthAssessmentWizard
             StateMachine.Flags[StateMachine.STEP4_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
-
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
 
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.

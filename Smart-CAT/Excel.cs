@@ -202,12 +202,21 @@ namespace StealthAssessmentWizard
                                     {
                                         for (Int32 c = 0; c < cols; c++)
                                         {
-                                            if (Double.TryParse(ws.Cells[r + 1, c + 1].Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+                                            if (ws.Cells[r + 1, c + 1].Value != null && ws.Cells[r + 1, c + 1].Value is Double)
+                                            {
+                                                wsTS.Cells[r + 1, c + 1].Value = ws.Cells[r + 1, c + 1].Value;
+                                            }
+                                            else if (Double.TryParse(ws.Cells[r + 1, c + 1].Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
                                             {
                                                 wsTS.Cells[r + 1, c + 1].Value = result;
                                             }
                                             else
                                             {
+                                                if (r > 0)
+                                                {
+                                                    Logger.Error($"Can't Convert Cell[{r + 1},{c + 1}] = '{ws.Cells[r + 1, c + 1].Value}' to a Floating Point value.");
+                                                }
+
                                                 wsTS.Cells[r + 1, c + 1].Value = ws.Cells[r + 1, c + 1].Value;
                                             }
                                         }

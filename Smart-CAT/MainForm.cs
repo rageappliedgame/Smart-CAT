@@ -56,6 +56,20 @@ namespace StealthAssessmentWizard
         private Font SelectedFont = null;
 #pragma warning restore IDE0044 // Add readonly modifier
 
+        //! What to do with sheets with the same name? Ask/Add a suffix?
+        // 
+        //  [Smart-CAT Projects]
+        //     [sheet name]
+        //         sheet
+        //         json
+        //             [timestamp]
+        //                  copy sheet
+        //                  copy json
+        //                  [data]
+
+        /// <summary>
+        /// (Immutable) my projects.
+        /// </summary>
         private readonly String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
         private String MyProject = String.Empty;
         private String MyData = String.Empty;
@@ -319,6 +333,8 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Event information. </param>
         private void SaveReportBtn_Click(object sender, EventArgs e)
         {
+            saveFileDialog1.FileName = $"Results_{Excel.Stamp}.xlsx";
+
             if (saveFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 if (Excel.IsFileLocked(saveFileDialog1.FileName))
@@ -349,7 +365,7 @@ namespace StealthAssessmentWizard
                             break;
                     }
 
-                    String filenameTS = Path.Combine(Path.GetDirectoryName(MyInput), Path.GetFileNameWithoutExtension(MyInput) + Excel.Stamp + Path.GetExtension(MyInput));
+                    String filenameTS = Excel.WorkingCopyFileName(MyInput);
 
                     //! Load Scratch Spreadsheet.
                     // 
@@ -366,7 +382,7 @@ namespace StealthAssessmentWizard
 
                         //! Compensate for 1 header row.
                         // 
-                        int rawSize = ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Rows - 1;  //0
+                        int rawSize = ep.Workbook.Worksheets[Excel.ScratchPadName].Dimension.Rows - 1;  //0
                         int trainSize = (int)Math.Round((double)rawSize * percentsplit / 100);
                         int testSize = rawSize - trainSize;
 
@@ -435,11 +451,11 @@ namespace StealthAssessmentWizard
                                 //
                                 Int32 cnt = Data.competencies.ToStatisticalSubmodel()[i].Sum(p => p.Length) + 1;
 
-                                //! Cache Observables.
+                                //! Observables.
                                 // 
                                 List<String> obs = new List<string>();
 
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 2])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + Data.competencies[i].Count, cofs + 2])
                                 {
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_model_{Competency}");
                                     table1.ShowHeader = true;
@@ -456,6 +472,8 @@ namespace StealthAssessmentWizard
                                     for (Int32 f = 0; f < Data.competencies[i].Count; f++)
                                     {
                                         worksheet.Cells[rofs + 1, cofs + 1].Value = Data.competencies[i][f].FacetName;
+
+                                        rofs++;
 
                                         foreach (String o in Data.competencies[i][f].Names)
                                         {
@@ -478,7 +496,12 @@ namespace StealthAssessmentWizard
 
                                 //! Accuracy.
                                 //
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 6])
+                                for (Int32 f = 0; f < Data.competencies[i].Count(); f++)
+                                {
+
+                                }
+
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + Data.competencies[i].Count, cofs + 6])
                                 {
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_accuracy_{Competency}");
                                     table1.ShowHeader = true;
@@ -520,6 +543,8 @@ namespace StealthAssessmentWizard
                                             worksheet.Cells[rofs + 1, cofs + 5].Value = ini.ReadDouble("Performance", "RAE(%)", 0);
                                             worksheet.Cells[rofs + 1, cofs + 6].Value = ini.ReadDouble("Performance", "RRSE(%)", 0);
 
+                                            rofs++;
+
                                             foreach (String o in Data.competencies.ToStatisticalSubmodel()[i][f])
                                             {
                                                 rofs++;
@@ -538,7 +563,7 @@ namespace StealthAssessmentWizard
 
                                 //! V&V
                                 // 
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 1])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + Data.competencies[i].Count, cofs + 1])
                                 {
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_VandV_{Competency}");
                                     table1.ShowHeader = true;
@@ -564,7 +589,7 @@ namespace StealthAssessmentWizard
                                             for (Int32 l = 0; l < Data.cronbachAlphaMulti.Item3[k].Length; l++)
                                             {
                                                 worksheet.Cells[rofs, cofs + 0].Value = Data.cronbachAlphaMulti.Item4[k][l];
-                                                rofs += Data.competencies.ToStatisticalSubmodel()[k][l].Length;
+                                                rofs += Data.competencies.ToStatisticalSubmodel()[k][l].Length + 1;
                                             }
                                         }
                                     }
@@ -622,12 +647,12 @@ namespace StealthAssessmentWizard
 
                                             //! Raw Data.
                                             Int32 tmp = 1;
-                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Columns + 1; c++)
+                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.ScratchPadName].Dimension.Columns + 1; c++)
                                             {
-                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[1, c].Value.ToString()))
+                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[1, c].Value.ToString()))
                                                 {
                                                     //! Copy some data into save results.
-                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[r + trainSize + 2, c].Value;
+                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[r + trainSize + 2, c].Value;
                                                     tmp += 1;
                                                 }
                                             }
@@ -650,7 +675,7 @@ namespace StealthAssessmentWizard
                                 Int32 rofs = 1;
                                 Int32 cofs = 1;
 
-                                //! Uni-Dimensional.
+                                //! 2. Uni-Dimensional.
                                 //
                                 String Competency = Data.unicompetencies[i].CompetencyName;
 
@@ -706,7 +731,7 @@ namespace StealthAssessmentWizard
                                 //! Model.
                                 //
                                 Int32 cnt = Data.unicompetencies[i].Length;
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 1])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + 1, cofs + 1])
                                 {
                                     ExcelTable table = tblcollection.Add(Rng, $"tbl_model_{Competency}");
                                     table.ShowHeader = true;
@@ -717,6 +742,9 @@ namespace StealthAssessmentWizard
                                     worksheet.Cells[rofs + 0, cofs + 1].Value = "Observables";
 
                                     worksheet.Cells[rofs + 1, cofs + 0].Value = Data.unicompetencies[i].CompetencyName;
+
+                                    rofs++;
+
                                     foreach (String o in Data.unicompetencies[i].Names)
                                     {
                                         obs.Add(o);
@@ -736,7 +764,7 @@ namespace StealthAssessmentWizard
 
                                 //! Accuracy.
                                 //
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 6])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + 1, cofs + 6])
                                 {
                                     ExcelTable table = tblcollection.Add(Rng, $"tbl_performance_{Competency}");
                                     table.ShowHeader = true;
@@ -775,7 +803,7 @@ namespace StealthAssessmentWizard
 
                                 //! V&V
                                 // 
-                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt, cofs + 1])
+                                using (ExcelRange Rng = worksheet.Cells[rofs, cofs, rofs + cnt + 1, cofs + 1])
                                 {
                                     //! Header
                                     ExcelTable table1 = tblcollection.Add(Rng, $"tbl_VandV_{Competency}");
@@ -857,11 +885,11 @@ namespace StealthAssessmentWizard
 
                                             //! Raw Data.
                                             Int32 tmp = 1;
-                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Columns + 1; c++)
+                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.ScratchPadName].Dimension.Columns + 1; c++)
                                             {
-                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[1, c].Value.ToString()))
+                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[1, c].Value.ToString()))
                                                 {
-                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[r + trainSize + 2, c].Value;
+                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[r + trainSize + 2, c].Value;
                                                     tmp += 1;
                                                 }
                                             }
@@ -1347,8 +1375,17 @@ namespace StealthAssessmentWizard
                 }
                 else
                 {
+                    //  [Smart-CAT Projects]
+                    //     [sheet name]
+                    //         sheet
+                    //         json
+                    //             [timestamp]
+                    //                  copy sheet
+                    //                  copy json
+                    //                  [data]
+
                     // Create Timestamp for copies.
-                    Excel.Stamp = $"_{DateTime.Now:yyyyMMdd-HHmm}";
+                    Excel.Stamp = $"{DateTime.Now:yyyyMMdd-HHmmss}";
 
                     StateMachine.Flags[StateMachine.IMPORT_DATA] = true;
 
@@ -1359,13 +1396,15 @@ namespace StealthAssessmentWizard
                         Directory.CreateDirectory(MyProject);
                         Logger.Info($"Created Project Folder <My Document>{MyProject.Replace(MyProjects, String.Empty)}.");
                     }
-                    MyInput = Path.Combine(MyProject, Path.GetFileName(openFileDialog1.FileName));
+
+                    MyInput = Path.Combine(MyProject, Excel.Stamp, Path.GetFileName(openFileDialog1.FileName));
 
                     // Create data folder in project folder if not present already.
-                    MyData = Path.Combine(MyProject, "data" + Excel.Stamp);
+                    MyData = Path.Combine(MyProject, Excel.Stamp, "data");
                     if (!Directory.Exists(MyData))
                     {
                         Directory.CreateDirectory(MyData);
+                        Logger.Info($"Created Run Folder <My Document>{MyProject.Replace(MyProjects, String.Empty)}\\{Excel.Stamp}.");
                     }
 
                     // Clear data folder if present.
@@ -1397,7 +1436,7 @@ namespace StealthAssessmentWizard
                     openFileDialog2.InitialDirectory = MyProject;
                     openFileDialog3.InitialDirectory = MyProject;
 
-                    Text = $"{Application.ProductName} - {Path.GetFileName(MyInput)}";
+                    Text = $"{Application.ProductName} - {Path.GetFileName(MyInput)} - [{Excel.Stamp}]";
 
                     StateMachine.exitWorkers[StateMachine.States.ImportData].argument = MyInput;
                     StateMachine.exitWorkers[StateMachine.States.ConfigureECD].argument = MyInput;
@@ -1518,6 +1557,9 @@ namespace StealthAssessmentWizard
         /// <param name="e">      Event information. </param>
         private void NewBtn_Click(object sender, EventArgs e)
         {
+            StateMachine.Flags.Clear();
+            StateMachine.Flags.Add(StateMachine.INIT_R, true);
+
             StateMachine.stateless.Fire(StateMachine.Triggers.New);
         }
 
@@ -1838,12 +1880,6 @@ namespace StealthAssessmentWizard
 
             String filename = e.Argument.ToString();
 
-            // String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
-
-            //ConsoleDialog.HighVideo();
-            //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
-            //ConsoleDialog.NormVideo();
-
             (sender as BackgroundWorker).ReportProgress(1);
 
             //! Disabked for now.
@@ -1975,12 +2011,7 @@ namespace StealthAssessmentWizard
             StateMachine.Flags[StateMachine.STEP3_COMPLETED] = false;
 
             String filename = e.Argument.ToString();
-
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
-
-            //ConsoleDialog.HighVideo();
-            //Debug.WriteLine($"[{Extensions.GetCurrentMethod()}]");
-            //ConsoleDialog.NormVideo();
+            String filenameTS = Excel.WorkingCopyFileName(filename);
 
             (sender as BackgroundWorker).ReportProgress(1);
 
@@ -1996,7 +2027,7 @@ namespace StealthAssessmentWizard
 
 #warning Competenses & Facets from model are not saved.
 
-            Data.SaveECD(Path.ChangeExtension(filenameTS, ".json"));
+            Data.SaveECD(Path.ChangeExtension(filename, ".json"));
 
             //! Needs to move to after the ML Options.
             //
@@ -2158,8 +2189,6 @@ namespace StealthAssessmentWizard
 
             String filename = e.Argument.ToString();
 
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
-
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
 
@@ -2182,6 +2211,14 @@ namespace StealthAssessmentWizard
                 Data.LabelledData = BayesNet.GetLabelledData(Data.competencies.ToTuple(), Data.observables);
                 Debug.WriteLine("Completed.\r\n");
             }
+
+            Logger.Info("Assessing Reliability.");
+
+            //Run reliability analysis for multi-dimensional competencies.
+            Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
+
+            //Run reliability analysis for uni-dimensional competencies.
+            Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());
 
             //! Generate .arff files for facets.
             Debug.WriteLine("Generating .arff files for the declared facets...");
@@ -2438,12 +2475,6 @@ namespace StealthAssessmentWizard
 
                     //Run correlation analysis for uni-dimensional competencies
                     Data.spearmansUni = BayesNet.CorrelationAnalysisUni(Data.unicompetencies.ToTuple(), Data.UniLabelledOutputC.Item3, Data.ExternalData);
-
-                    //Run reliability analysis for multi-dimensional competencies.
-                    Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
-
-                    //Run reliability analysis for uni-dimensional competencies.
-                    Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());
                 }
             }
 

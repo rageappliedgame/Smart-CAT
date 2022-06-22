@@ -43,8 +43,19 @@ namespace StealthAssessmentWizard
     /// </summary>
     public static class Excel
     {
-        internal const string GSATScratchPad = "Smart-CAT";
+        /// <summary>
+        /// (Immutable) The gsat scratch pad.
+        /// </summary>
+        internal const string ScratchPadName = "Smart-CAT";
+
+        /// <summary>
+        /// (Immutable) The model scratch pad.
+        /// </summary>
         internal const string ModelScratchPad = "Model";
+
+        /// <summary>
+        /// The stamp.
+        /// </summary>
         internal static string Stamp = "_TMP_";
 
         /// <summary>
@@ -83,6 +94,20 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
+        /// File name for scratchpad.
+        /// </summary>
+        ///
+        /// <param name="filename"> Filename of the scratchpad file. </param>
+        ///
+        /// <returns>
+        /// A String.
+        /// </returns>
+        internal static String WorkingCopyFileName(string filename)
+        {
+            return Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + " (scratchpad)" + Path.GetExtension(filename));
+        }
+
+        /// <summary>
         /// Use Epplus to read an xlsx file into a Tuple.
         /// </summary>
         ///
@@ -98,7 +123,7 @@ namespace StealthAssessmentWizard
 
             FileInfo fileInfo = new FileInfo(filename);
 
-            String filenameTS = Path.Combine(Path.GetDirectoryName(filename), Path.GetFileNameWithoutExtension(filename) + Excel.Stamp + Path.GetExtension(filename));
+            String filenameTS = WorkingCopyFileName(filename);
 
             FileInfo fileInfoTS = new FileInfo(filenameTS);
 
@@ -110,37 +135,100 @@ namespace StealthAssessmentWizard
                     {
                         using (ExcelPackage pTS = new ExcelPackage(fileInfoTS))
                         {
-#warning TODO - CREATE GSATScratchPad and ModelScratchPad in a timestamped excel file and use that for the remaining calculations.
-
                             //! Save the size of the worksheet.
                             // 
-                            if (!pTS.Workbook.Worksheets.Any(q => q.Name.Equals(GSATScratchPad)))
+                            if (!pTS.Workbook.Worksheets.Any(q => q.Name.Equals(ScratchPadName)))
                             {
-                                using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets.Add(GSATScratchPad))
+                                using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets.Add(ScratchPadName))
                                 {
                                     Logger.Info($"Spreadsheet Raw Data Size {ws.Dimension.Rows - 1} x {ws.Dimension.Columns}.");
 
                                     using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
                                     {
-                                        ini.WriteInteger("RawData", "Rows", ws.Dimension.Rows);
-                                        ini.WriteInteger("RawData", "Colums", ws.Dimension.Columns);
+                                        ini.WriteInteger("Sheet Dimension", "Rows", ws.Dimension.Rows);
+                                        ini.WriteInteger("Sheet Dimension", "Colums", ws.Dimension.Columns);
                                         ini.UpdateFile();
                                     }
 
-                                    for (Int32 r = 0; r < ws.Dimension.Rows; r++)
+                                    //! TODO Determine dimensions.
+                                    int cols = 0;
+                                    while (ws.Cells[1, cols + 1].Value != null)
                                     {
-                                        for (Int32 c = 0; c < ws.Dimension.Columns; c++)
+                                        cols++;
+                                    }
+
+                                    using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
+                                    {
+                                        ini.WriteInteger("Scanned Dimension", "Colums", cols);
+                                        ini.UpdateFile();
+
+                                        if (cols != ws.Dimension.Columns)
                                         {
-                                            if (Double.TryParse(ws.Cells[r + 1, c + 1].Value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+                                            Logger.Warn($"Spreadsheet Data Column Count Mismatch, Found {cols} but expected {ws.Dimension.Columns}.");
+                                        }
+                                    }
+
+                                    int rows = 0;
+                                    do
+                                    {
+                                        bool ok = true;
+                                        for (Int32 i = 0; i < cols; i++)
+                                        {
+                                            if (ws.Cells[rows + 1, i + 1].Value == null || String.IsNullOrEmpty(ws.Cells[rows + 1, i + 1].Value.ToString().Trim()))
+                                            {
+                                                ok = false;
+                                                break;
+                                            }
+                                        }
+                                        if (!ok)
+                                        {
+                                            break;
+                                        }
+                                        rows++;
+                                    } while (true);
+
+                                    using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
+                                    {
+                                        ini.WriteInteger("Scanned Dimension", "Rows", rows);
+                                        ini.UpdateFile();
+
+                                        if (rows != ws.Dimension.Rows)
+                                        {
+                                            Logger.Warn($"Spreadsheet Data Row Count Mismatch, Found {rows} but expected {ws.Dimension.Rows}.");
+                                        }
+                                    }
+
+                                    for (Int32 r = 0; r < rows; r++)
+                                    {
+                                        for (Int32 c = 0; c < cols; c++)
+                                        {
+                                            if (ws.Cells[r + 1, c + 1].Value != null && ws.Cells[r + 1, c + 1].Value is Double)
+                                            {
+                                                wsTS.Cells[r + 1, c + 1].Value = ws.Cells[r + 1, c + 1].Value;
+                                            }
+                                            else if (Double.TryParse(ws.Cells[r + 1, c + 1].Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
                                             {
                                                 wsTS.Cells[r + 1, c + 1].Value = result;
                                             }
                                             else
                                             {
+                                                if (r > 0)
+                                                {
+                                                    Logger.Error($"Can't Convert Cell[{r + 1},{c + 1}] = '{ws.Cells[r + 1, c + 1].Value}' to a Floating Point value.");
+                                                }
+
                                                 wsTS.Cells[r + 1, c + 1].Value = ws.Cells[r + 1, c + 1].Value;
                                             }
                                         }
                                     }
+
+                                    using (IniFile ini = new IniFile(Path.ChangeExtension(filename, ".ini")))
+                                    {
+                                        ini.WriteInteger("ScratchPad Dimension", "Rows", wsTS.Dimension.Rows);
+                                        ini.WriteInteger("ScratchPad Dimension", "Colums", wsTS.Dimension.Columns);
+                                        ini.UpdateFile();
+                                    }
+
                                     //ExcelWorksheet worksheet = p.Workbook.Worksheets.Copy(ws.Name, GSATScratchPad);
 
                                     pTS.Save();
@@ -157,7 +245,7 @@ namespace StealthAssessmentWizard
             {
                 using (ExcelPackage pTS = new ExcelPackage(fileInfoTS))
                 {
-                    using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets[GSATScratchPad])
+                    using (ExcelWorksheet wsTS = pTS.Workbook.Worksheets[ScratchPadName])
                     {
                         for (Int32 c = 0; c < wsTS.Dimension.Columns; c++)
                         {
@@ -197,7 +285,7 @@ namespace StealthAssessmentWizard
             {
                 using (ExcelPackage p = new ExcelPackage(fileInfo))
                 {
-                    using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
+                    using (ExcelWorksheet ws = p.Workbook.Worksheets[ScratchPadName])
                     {
                         for (int x = 0; x < CompetencyModel.competencies.Length; x++)
                         {
@@ -246,7 +334,7 @@ namespace StealthAssessmentWizard
             {
                 using (ExcelPackage p = new ExcelPackage(fileInfo))
                 {
-                    using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
+                    using (ExcelWorksheet ws = p.Workbook.Worksheets[ScratchPadName])
                     {
 
                         for (int x = 0; x < CompetencyModel.competencies.Length; x++)
@@ -299,7 +387,7 @@ namespace StealthAssessmentWizard
             {
                 using (ExcelPackage p = new ExcelPackage(fileInfo))
                 {
-                    using (ExcelWorksheet ws = p.Workbook.Worksheets[GSATScratchPad])
+                    using (ExcelWorksheet ws = p.Workbook.Worksheets[ScratchPadName])
                     {
                         for (int x = 0; x < UniCompetencyModel.Length; x++)
                         {

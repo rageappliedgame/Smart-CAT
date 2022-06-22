@@ -1206,7 +1206,7 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
-        /// Reliability analysis multi.
+        /// Reliability analysis multi (Cronbach).
         /// </summary>
         ///
         /// <param name="CompetencyModel">     The competency model. </param>
@@ -1328,7 +1328,7 @@ namespace StealthAssessmentWizard
                 DataFrame dfComp = Utils.engine.CreateDataFrame(columnsFacet, columnNamesFacets);
                 Utils.engine.SetSymbol("dfComp", dfComp);
 
-                //Run reliability analysis per competency if more than one facets found.
+                //! Run reliability analysis per competency if more than one facets found.
                 if (CompetencyModel.competencies[i].Length > 1)
                 {
                     GenericVector alphaComp = Utils.engine.Evaluate("alpha(dfComp, keys=NULL,cumulative=FALSE, title=NULL, max=10,na.rm = TRUE, check.keys = FALSE, n.iter = 1, delete = TRUE, use = 'pairwise', warnings = TRUE, n.obs = NULL)").AsList();
@@ -1347,6 +1347,17 @@ namespace StealthAssessmentWizard
             return (CompetencyModel.competencies, CronAlphaComp, CompetencyModel.facets, CronAlphaFacet);
         }
 
+        /// <summary>
+        /// Reliability analysis uni.
+        /// </summary>
+        ///
+        /// <param name="CompetencyModel">  The competency model. </param>
+        /// <param name="InstUni">          The instance uni. </param>
+        /// <param name="UniEvidenceModel"> The uni evidence model. </param>
+        ///
+        /// <returns>
+        /// A Tuple.
+        /// </returns>
         public static (string[], double[]) ReliabilityAnalysisUni(
             string[] CompetencyModel,
             double[][][] InstUni,

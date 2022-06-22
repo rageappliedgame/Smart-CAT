@@ -154,7 +154,7 @@ namespace StealthAssessmentWizard
                                     {
                                         for (Int32 c = 0; c < ws.Dimension.Columns; c++)
                                         {
-                                            if (Double.TryParse(ws.Cells[r + 1, c + 1].Value.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
+                                            if (Double.TryParse(ws.Cells[r + 1, c + 1].Value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out double result))
                                             {
                                                 wsTS.Cells[r + 1, c + 1].Value = result;
                                             }

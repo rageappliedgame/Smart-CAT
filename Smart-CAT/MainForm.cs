@@ -382,7 +382,7 @@ namespace StealthAssessmentWizard
 
                         //! Compensate for 1 header row.
                         // 
-                        int rawSize = ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Rows - 1;  //0
+                        int rawSize = ep.Workbook.Worksheets[Excel.ScratchPadName].Dimension.Rows - 1;  //0
                         int trainSize = (int)Math.Round((double)rawSize * percentsplit / 100);
                         int testSize = rawSize - trainSize;
 
@@ -647,12 +647,12 @@ namespace StealthAssessmentWizard
 
                                             //! Raw Data.
                                             Int32 tmp = 1;
-                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Columns + 1; c++)
+                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.ScratchPadName].Dimension.Columns + 1; c++)
                                             {
-                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[1, c].Value.ToString()))
+                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[1, c].Value.ToString()))
                                                 {
                                                     //! Copy some data into save results.
-                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[r + trainSize + 2, c].Value;
+                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[r + trainSize + 2, c].Value;
                                                     tmp += 1;
                                                 }
                                             }
@@ -885,11 +885,11 @@ namespace StealthAssessmentWizard
 
                                             //! Raw Data.
                                             Int32 tmp = 1;
-                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.GSATScratchPad].Dimension.Columns + 1; c++)
+                                            for (Int32 c = 1; c < ep.Workbook.Worksheets[Excel.ScratchPadName].Dimension.Columns + 1; c++)
                                             {
-                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[1, c].Value.ToString()))
+                                                if (obs.Contains(ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[1, c].Value.ToString()))
                                                 {
-                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.GSATScratchPad].Cells[r + trainSize + 2, c].Value;
+                                                    worksheet.Cells[rofs + r, cofs + tmp].Value = ep.Workbook.Worksheets[Excel.ScratchPadName].Cells[r + trainSize + 2, c].Value;
                                                     tmp += 1;
                                                 }
                                             }

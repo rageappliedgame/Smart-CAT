@@ -978,6 +978,7 @@ namespace StealthAssessmentWizard
                         break;
                 }
 
+                // TODO: Support multiple MLOptions (one per competency)
                 propertyGrid1.SelectedObject = Data.MLOptions;
             }
         }
@@ -1221,12 +1222,12 @@ namespace StealthAssessmentWizard
         {
             if (groupedComboBox1.SelectedItem != null)
             {
-                //TODO Always expecting multidimensional.
+                //! 1) Unidimensional Compentens show up in the group 'competencies' besides Multi-Dimensional competencies. 
+                //! 2) Facets show up under a group with the name of the Multi-Dimensional competency.
+                // 
                 String Competency = (groupedComboBox1.SelectedItem as GCI).Group;
                 String Facet = (groupedComboBox1.SelectedItem as GCI).Value;
                 Boolean IsCompetency = (groupedComboBox1.SelectedItem as GCI).IsCompetency;
-
-                //Debug.WriteLine($"{Competency} - {Facet}");
 
                 chart1.Series.Clear();
                 chart1.ChartAreas.Clear();
@@ -2317,7 +2318,7 @@ namespace StealthAssessmentWizard
                         IsCompetency = true,
                     });
                 }
-                //TODO Always expecting multidimensional!!.
+
                 groupedComboBox1.ValueMember = "Value";
                 groupedComboBox1.DisplayMember = "Display";
                 groupedComboBox1.GroupMember = "Group";

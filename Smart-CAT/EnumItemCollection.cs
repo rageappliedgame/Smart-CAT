@@ -127,7 +127,7 @@ namespace Swiss
         {
             get
             {
-                // TODO:  Add EnumItemCollection.IsSynchronized getter implementation
+                //! TODO:  Add EnumItemCollection.IsSynchronized getter implementation
                 return false;
             }
         }
@@ -145,7 +145,7 @@ namespace Swiss
         {
             get
             {
-                // TODO:  Add EnumItemCollection.SyncRoot getter implementation
+                //! TODO:  Add EnumItemCollection.SyncRoot getter implementation
                 return null;
             }
         }
@@ -194,7 +194,7 @@ namespace Swiss
             }
             set
             {
-                // TODO:  Add EnumItemCollection.this setter implementation
+                //! TODO:  Add EnumItemCollection.this setter implementation
             }
         }
 
@@ -219,7 +219,7 @@ namespace Swiss
         /// </returns>
         public int Add(object value)
         {
-            // TODO:  Add EnumItemCollection.Add implementation
+            //! TODO:  Add EnumItemCollection.Add implementation
             return 0;
         }
 
@@ -231,7 +231,7 @@ namespace Swiss
         ///                                                   is read-only. </exception>
         public void Clear()
         {
-            // TODO:  Add EnumItemCollection.Clear implementation
+            //! TODO:  Add EnumItemCollection.Clear implementation
         }
 
         /// <summary>
@@ -246,7 +246,7 @@ namespace Swiss
         /// </returns>
         public bool Contains(object value)
         {
-            // TODO:  Add EnumItemCollection.Contains implementation
+            //! TODO:  Add EnumItemCollection.Contains implementation
             return false;
         }
 
@@ -267,7 +267,7 @@ namespace Swiss
         ///                      begins. </param>
         public void CopyTo(Array array, int index)
         {
-            // TODO:  Add EnumItemCollection.CopyTo implementation
+            //! TODO:  Add EnumItemCollection.CopyTo implementation
         }
 
         /// <summary>
@@ -317,7 +317,7 @@ namespace Swiss
         /// </returns>
         public int IndexOf(object value)
         {
-            // TODO:  Add EnumItemCollection.IndexOf implementation
+            //! TODO:  Add EnumItemCollection.IndexOf implementation
             return 0;
         }
 
@@ -338,7 +338,7 @@ namespace Swiss
         /// <param name="value"> The object to insert into the <see cref="T:System.Collections.IList" />. </param>
         public void Insert(int index, object value)
         {
-            // TODO:  Add EnumItemCollection.Insert implementation
+            //! TODO:  Add EnumItemCollection.Insert implementation
         }
 
         /// <summary>
@@ -354,7 +354,7 @@ namespace Swiss
         /// <param name="value"> The object to remove from the <see cref="T:System.Collections.IList" />. </param>
         public void Remove(object value)
         {
-            // TODO:  Add EnumItemCollection.Remove implementation
+            //! TODO:  Add EnumItemCollection.Remove implementation
         }
 
         /// <summary>
@@ -371,7 +371,7 @@ namespace Swiss
         /// <param name="index"> The zero-based index of the item to remove. </param>
         public void RemoveAt(int index)
         {
-            // TODO:  Add EnumItemCollection.RemoveAt implementation
+            //! TODO: Add EnumItemCollection.RemoveAt implementation
         }
 
         /// <summary>

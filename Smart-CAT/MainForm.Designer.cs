@@ -31,9 +31,9 @@ namespace StealthAssessmentWizard
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend4 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.panelManager1 = new Controls.PanelManager();
             this.StartNew_Panel = new Controls.ManagedPanel();
@@ -140,9 +140,9 @@ namespace StealthAssessmentWizard
             this.panelManager1.Controls.Add(this.Finish_Panel);
             this.panelManager1.Location = new System.Drawing.Point(5, 8);
             this.panelManager1.Name = "panelManager1";
-            this.panelManager1.SelectedIndex = 4;
-            this.panelManager1.SelectedPanel = this.SupportFunction_Panel;
-            this.panelManager1.Size = new System.Drawing.Size(778, 391);
+            this.panelManager1.SelectedIndex = 5;
+            this.panelManager1.SelectedPanel = this.Finish_Panel;
+            this.panelManager1.Size = new System.Drawing.Size(743, 391);
             this.panelManager1.TabIndex = 6;
             this.panelManager1.SelectedIndexChanged += new System.EventHandler(this.PanelManager1_SelectedIndexChanged);
             // 
@@ -155,7 +155,7 @@ namespace StealthAssessmentWizard
             this.StartNew_Panel.Controls.Add(this.label1);
             this.StartNew_Panel.Location = new System.Drawing.Point(0, 0);
             this.StartNew_Panel.Name = "StartNew_Panel";
-            this.StartNew_Panel.Size = new System.Drawing.Size(792, 391);
+            this.StartNew_Panel.Size = new System.Drawing.Size(751, 391);
             this.StartNew_Panel.Text = "Start New";
             // 
             // label5
@@ -214,7 +214,7 @@ namespace StealthAssessmentWizard
             this.ImportData_Panel.Controls.Add(this.label7);
             this.ImportData_Panel.Location = new System.Drawing.Point(0, 0);
             this.ImportData_Panel.Name = "ImportData_Panel";
-            this.ImportData_Panel.Size = new System.Drawing.Size(792, 391);
+            this.ImportData_Panel.Size = new System.Drawing.Size(751, 391);
             this.ImportData_Panel.Text = "Import Data";
             // 
             // button1
@@ -256,7 +256,7 @@ namespace StealthAssessmentWizard
             this.ConfigureECD_Panel.Controls.Add(this.label10);
             this.ConfigureECD_Panel.Location = new System.Drawing.Point(0, 0);
             this.ConfigureECD_Panel.Name = "ConfigureECD_Panel";
-            this.ConfigureECD_Panel.Size = new System.Drawing.Size(792, 391);
+            this.ConfigureECD_Panel.Size = new System.Drawing.Size(751, 391);
             this.ConfigureECD_Panel.Text = "Configure ECD";
             // 
             // label13
@@ -470,7 +470,7 @@ namespace StealthAssessmentWizard
             this.OptimizeML_Panel.Controls.Add(this.label15);
             this.OptimizeML_Panel.Location = new System.Drawing.Point(0, 0);
             this.OptimizeML_Panel.Name = "OptimizeML_Panel";
-            this.OptimizeML_Panel.Size = new System.Drawing.Size(792, 391);
+            this.OptimizeML_Panel.Size = new System.Drawing.Size(743, 391);
             this.OptimizeML_Panel.Text = "Optimize ML";
             // 
             // label16
@@ -489,7 +489,7 @@ namespace StealthAssessmentWizard
             | System.Windows.Forms.AnchorStyles.Right)));
             this.propertyGrid1.Location = new System.Drawing.Point(91, 119);
             this.propertyGrid1.Name = "propertyGrid1";
-            this.propertyGrid1.Size = new System.Drawing.Size(409, 223);
+            this.propertyGrid1.Size = new System.Drawing.Size(376, 240);
             this.propertyGrid1.TabIndex = 16;
             // 
             // MLAlgoritmSelector
@@ -498,7 +498,7 @@ namespace StealthAssessmentWizard
             this.MLAlgoritmSelector.FormattingEnabled = true;
             this.MLAlgoritmSelector.Location = new System.Drawing.Point(201, 91);
             this.MLAlgoritmSelector.Name = "MLAlgoritmSelector";
-            this.MLAlgoritmSelector.Size = new System.Drawing.Size(299, 21);
+            this.MLAlgoritmSelector.Size = new System.Drawing.Size(266, 21);
             this.MLAlgoritmSelector.TabIndex = 15;
             this.MLAlgoritmSelector.SelectedIndexChanged += new System.EventHandler(this.ComboBox1_SelectedIndexChanged);
             // 
@@ -529,7 +529,7 @@ namespace StealthAssessmentWizard
             this.SupportFunction_Panel.Controls.Add(this.label24);
             this.SupportFunction_Panel.Location = new System.Drawing.Point(0, 0);
             this.SupportFunction_Panel.Name = "SupportFunction_Panel";
-            this.SupportFunction_Panel.Size = new System.Drawing.Size(778, 391);
+            this.SupportFunction_Panel.Size = new System.Drawing.Size(743, 391);
             this.SupportFunction_Panel.Text = "Support Function";
             // 
             // LoadVandVExternalData
@@ -549,7 +549,7 @@ namespace StealthAssessmentWizard
             | System.Windows.Forms.AnchorStyles.Right)));
             this.propertyGrid2.Location = new System.Drawing.Point(91, 119);
             this.propertyGrid2.Name = "propertyGrid2";
-            this.propertyGrid2.Size = new System.Drawing.Size(2762, 1396);
+            this.propertyGrid2.Size = new System.Drawing.Size(232, 240);
             this.propertyGrid2.TabIndex = 19;
             // 
             // label23
@@ -581,7 +581,7 @@ namespace StealthAssessmentWizard
             this.Finish_Panel.Controls.Add(this.label4);
             this.Finish_Panel.Location = new System.Drawing.Point(0, 0);
             this.Finish_Panel.Name = "Finish_Panel";
-            this.Finish_Panel.Size = new System.Drawing.Size(792, 391);
+            this.Finish_Panel.Size = new System.Drawing.Size(743, 391);
             this.Finish_Panel.Text = "Finish";
             // 
             // button3
@@ -596,17 +596,17 @@ namespace StealthAssessmentWizard
             // 
             // chart1
             // 
-            chartArea4.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea4);
-            legend4.Name = "Legend1";
-            this.chart1.Legends.Add(legend4);
+            chartArea3.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea3);
+            legend3.Name = "Legend1";
+            this.chart1.Legends.Add(legend3);
             this.chart1.Location = new System.Drawing.Point(92, 99);
             this.chart1.Name = "chart1";
-            series4.ChartArea = "ChartArea1";
-            series4.LabelToolTip = "#VAL{D0}";
-            series4.Legend = "Legend1";
-            series4.Name = "Series1";
-            this.chart1.Series.Add(series4);
+            series3.ChartArea = "ChartArea1";
+            series3.LabelToolTip = "#VAL{D0}";
+            series3.Legend = "Legend1";
+            series3.Name = "Series1";
+            this.chart1.Series.Add(series3);
             this.chart1.Size = new System.Drawing.Size(408, 235);
             this.chart1.TabIndex = 19;
             this.chart1.Text = "chart1";

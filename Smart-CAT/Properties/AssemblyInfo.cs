@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Smart-CAT")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("RageAppliedGames")]
 [assembly: AssemblyProduct("Smart-CAT")]
 [assembly: AssemblyCopyright("Copyright © Open University of the Netherlands 2022")]
 [assembly: AssemblyTrademark("")]

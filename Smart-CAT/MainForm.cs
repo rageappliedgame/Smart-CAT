@@ -46,6 +46,9 @@ namespace StealthAssessmentWizard
 
     using Swiss;
 
+    /// <summary>
+    /// The application's main window.
+    /// </summary>
     public partial class MainForm : Form
     {
         #region Fields
@@ -1613,7 +1616,7 @@ namespace StealthAssessmentWizard
 
                 //! Panel 5
                 case (Int32)StateMachine.States.SupportFunction:
-#warning TODO Calculate and Store Rho and Alpha.
+#warning TODO Calculate and Store Rho.
                     propertyGrid2.SelectedObject = new VandVOptions(Double.NaN, Double.NaN);
                     break;
 

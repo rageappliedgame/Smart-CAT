@@ -33,3 +33,7 @@
 *.rar
 /.vs/Smart-CAT/v16
 /.vs
+/MigrationBackup
+/Smart-CAT/obj
+/WixBuilder
+/WixInstaller

@@ -78,7 +78,7 @@ namespace StealthAssessmentWizard
 
         #region Methods
 
-        // // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+        //! TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
         // ~Models()
         // {
         //     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
@@ -121,11 +121,11 @@ namespace StealthAssessmentWizard
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
+                    //! TODO: dispose managed state (managed objects)
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
+                //! TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                //! TODO: set large fields to null
                 disposedValue = true;
             }
         }

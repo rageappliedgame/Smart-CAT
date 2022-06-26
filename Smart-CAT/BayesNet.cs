@@ -2528,13 +2528,13 @@ namespace StealthAssessmentWizard
                     {
                         if (CompetencyModel.facets[x][y] == observables[i].ObservableName)
                         {
-#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
+//#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                             LabelledDataFacets[x][y] = new int[observables[i].Length];
                             break;
                         }
                         else
                         {
-#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
+//#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                             LabelledDataFacets[x][y] = new int[observables[i].Length];
                         }
                     }

@@ -30,6 +30,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WixInstaller", "WixInstalle
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WixBuilder", "WixBuilder\WixBuilder.csproj", "{EE036271-DF37-411F-8C0F-D4A34CA252BF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Releases", "Releases", "{FE4D7F30-A0CE-4982-BEEB-DC47E73A8074}"
+	ProjectSection(SolutionItems) = preProject
+		Releases\Smart-CAT Setup v1.0.2.msi = Releases\Smart-CAT Setup v1.0.2.msi
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (.NET 3.5)|Any CPU = Debug (.NET 3.5)|Any CPU
@@ -76,6 +81,7 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F285D663-6C3A-49CA-AD07-4214FCA2BB01} = {78D21C0D-FA82-4132-8A70-D7F91B4A1D85}
+		{FE4D7F30-A0CE-4982-BEEB-DC47E73A8074} = {78D21C0D-FA82-4132-8A70-D7F91B4A1D85}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {25BDEC69-3571-4422-AB02-0D7FF92AA2B3}

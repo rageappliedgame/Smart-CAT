@@ -229,7 +229,7 @@ namespace StealthAssessmentWizard
 
                 if (checks[0] * checks[1] * checks[2] == 0)
                 {
-                    Logger.Error("Missing Values in Training and Testing Data $.");
+                    Logger.Error($"Missing Values in Multi-Dimensional Training and Testing Data ({"DecisionTreesAccord_C"}).");
 
                     return predicted;
                 }
@@ -426,7 +426,7 @@ namespace StealthAssessmentWizard
 
             if (checks[0] * checks[1] * checks[2] == 0)
             {
-                Logger.Error("Missing Values in Training and Testing Data.");
+                Logger.Error($"Missing Values in Multi-Dimensional Training and Testing Data ({"DecisionTreesAccord_F"}).");
             }
 
             //! Initialize arrays.
@@ -804,7 +804,7 @@ namespace StealthAssessmentWizard
 
                 if (checks[0] * checks[1] * checks[2] == 0)
                 {
-                    Logger.Error("Missing Values in Training and Testing Data.");
+                    Logger.Error($"Missing Values in Multi-Dimensional Training and Testing Data ({"NaiveBayesAccord_C"}).");
 
                     return predicted;
                 }
@@ -861,10 +861,11 @@ namespace StealthAssessmentWizard
                 //! performance of Naive Bayes on the above data set:
                 NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-                nb.Save(Path.Combine(MyData, "NATIVE.TXT"), SerializerCompression.None);
+                nb.Save(Path.Combine(MyData, "NATIVE_MDC.TXT"), SerializerCompression.None);
+                NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyData, "NATIVE_MDC.TXT"));
 
-                predicted = nb.Decide(GameLogsTest);
-                double[][] probs = nb.Probabilities(GameLogsTest);
+                predicted = nb2.Decide(GameLogsTest);
+                double[][] probs = nb2.Probabilities(GameLogsTest);
 
                 using (IniFile ini = new IniFile(Path.Combine(MyData, Competency + "_BayesAccord.ini")))
                 {
@@ -1011,7 +1012,7 @@ namespace StealthAssessmentWizard
 
             if (checks[0] * checks[1] * checks[2] == 0)
             {
-                Logger.Error("Missing Values in Training and Testing Data $.");
+                Logger.Error($"Missing Values in Multi-Dimensional Training and Testing Data ({"NaiveBayesAccord_F"}).");
             }
 
             //! Initialize arrays.
@@ -1069,8 +1070,8 @@ namespace StealthAssessmentWizard
 
             NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-            nb.Save(Path.Combine(MyData, "NATIVE.TXT"), SerializerCompression.None);
-            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyData, "NATIVE.TXT"));
+            nb.Save(Path.Combine(MyData, "NATIVE_MDF.TXT"), SerializerCompression.None);
+            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyData, "NATIVE_MDF.TXT"));
 
             int[] predicted = nb2.Decide(GameLogsTest);
             double[][] probs = nb2.Probabilities(GameLogsTest);
@@ -1296,7 +1297,8 @@ namespace StealthAssessmentWizard
                     DataFrame dfFacet = Utils.engine.CreateDataFrame(columnsObs, columnNamesObs);
                     Utils.engine.SetSymbol("dfFacet", dfFacet);
 
-                    //Run reliability analysis per facet if more than one observables found.
+                    //! Run reliability analysis per facet if more than one observables found.
+                    //! We need 2 or more observables...
                     if (StatisticalSubmodel[i][x].Length > 1)
                     {
                         GenericVector alphaFacet = Utils.engine.Evaluate("alpha(dfFacet, keys=NULL,cumulative=FALSE, title=NULL, max=10,na.rm = TRUE, check.keys = FALSE, n.iter = 1, delete = TRUE, use = 'pairwise', warnings = TRUE, n.obs = NULL)").AsList();
@@ -1329,6 +1331,7 @@ namespace StealthAssessmentWizard
                 Utils.engine.SetSymbol("dfComp", dfComp);
 
                 //! Run reliability analysis per competency if more than one facets found.
+                //! We need 2 or more observables...
                 if (CompetencyModel.competencies[i].Length > 1)
                 {
                     GenericVector alphaComp = Utils.engine.Evaluate("alpha(dfComp, keys=NULL,cumulative=FALSE, title=NULL, max=10,na.rm = TRUE, check.keys = FALSE, n.iter = 1, delete = TRUE, use = 'pairwise', warnings = TRUE, n.obs = NULL)").AsList();
@@ -1360,44 +1363,52 @@ namespace StealthAssessmentWizard
         /// </returns>
         public static (string[], double[]) ReliabilityAnalysisUni(
             string[] CompetencyModel,
-            double[][][] InstUni,
-            string[][] UniEvidenceModel)
+            string[][] UniEvidenceModel,
+            double[][][] InstUni)
         {
             double[] CronAlphaComp = new double[CompetencyModel.Length];
 
             //! Initialize data frame per competency.
             for (int i = 0; i < CompetencyModel.Length; i++)
             {
-                //Initilize data frame per facet.
-                //set column names of data frame per facet.
-                string[] columnNamesFacets = new string[UniEvidenceModel[i].Length];
-                IEnumerable<double>[] columnsFacet = new IEnumerable<double>[UniEvidenceModel[i].Length];
-
-                for (int x = 0; x < UniEvidenceModel[i].Length; x++)
+                //! We need 2 or more observables...
+                if (UniEvidenceModel[i].Length > 1)
                 {
-                    columnNamesFacets[x] = UniEvidenceModel[i][x];
+                    //Initilize data frame per facet.
+                    //set column names of data frame per facet.
+                    string[] columnNamesFacets = new string[UniEvidenceModel[i].Length];
+                    IEnumerable<double>[] columnsFacet = new IEnumerable<double>[UniEvidenceModel[i].Length];
 
-                    //set columns per facet
-                    double[] TempDataFacet = new double[InstUni[i][x].Length];
-                    for (int y = 0; y < InstUni[i][x].Length; y++)
+                    for (int x = 0; x < UniEvidenceModel[i].Length; x++)
                     {
-                        TempDataFacet[y] = InstUni[i][x][y];
+                        columnNamesFacets[x] = UniEvidenceModel[i][x];
+
+                        //set columns per facet
+                        double[] TempDataFacet = new double[InstUni[i][x].Length];
+                        for (int y = 0; y < InstUni[i][x].Length; y++)
+                        {
+                            TempDataFacet[y] = InstUni[i][x][y];
+                        }
+                        columnsFacet[x] = TempDataFacet;
                     }
-                    columnsFacet[x] = TempDataFacet;
+
+                    DataFrame dfComp = Utils.engine.CreateDataFrame(columnsFacet, columnNamesFacets);
+                    Utils.engine.SetSymbol("dfComp", dfComp);
+
+                    //Run reliability analysis per competency if more than one facets found.
+
+                    GenericVector alphaComp = Utils.engine.Evaluate("alpha(dfComp, keys=NULL,cumulative=FALSE, title=NULL, max=10,na.rm = TRUE, check.keys = FALSE, n.iter = 1, delete = TRUE, use = 'pairwise', warnings = TRUE, n.obs = NULL)").AsList();
+
+                    //get cronbach's a per facet
+                    GenericVector RelRes = alphaComp[0].AsList();
+                    NumericVector nvRelRes = RelRes[0].AsNumeric();
+
+                    CronAlphaComp[i] = Math.Round(nvRelRes.First(), 4);
                 }
-
-                DataFrame dfComp = Utils.engine.CreateDataFrame(columnsFacet, columnNamesFacets);
-                Utils.engine.SetSymbol("dfComp", dfComp);
-
-                //Run reliability analysis per competency if more than one facets found.
-
-                GenericVector alphaComp = Utils.engine.Evaluate("alpha(dfComp, keys=NULL,cumulative=FALSE, title=NULL, max=10,na.rm = TRUE, check.keys = FALSE, n.iter = 1, delete = TRUE, use = 'pairwise', warnings = TRUE, n.obs = NULL)").AsList();
-
-                //get cronbach's a per facet
-                GenericVector RelRes = alphaComp[0].AsList();
-                NumericVector nvRelRes = RelRes[0].AsNumeric();
-                CronAlphaComp[i] = Math.Round(nvRelRes.First(), 4);
-
+                else
+                {
+                    CronAlphaComp[i] = Double.NaN;
+                }
             }
 
             return (CompetencyModel, CronAlphaComp);
@@ -1427,7 +1438,7 @@ namespace StealthAssessmentWizard
 
             if (checks[0] * checks[1] * checks[2] == 0)
             {
-                Logger.Error("Missing Values in Training and Testing Data.");
+                Logger.Error($"Missing Values in Uni-Dimensional Training and Testing Data ({"UniDecisionTreesAccord_C"}).");
             }
 
             //! Initialize arrays.
@@ -1622,7 +1633,7 @@ namespace StealthAssessmentWizard
 
             if (checks[0] * checks[1] * checks[2] == 0)
             {
-                Logger.Error("Missing Values in Training and Testing Data $.");
+                Logger.Error($"Missing Values in Uni-Dimensional Training and Testing Data ({"UniNaiveBayesAccord_C"}).");
             }
 
             //! Initialize arrays.
@@ -1680,8 +1691,8 @@ namespace StealthAssessmentWizard
 
             NaiveBayes<NormalDistribution> nb = cv.Learn(GameLogs, LabelledData);
 
-            nb.Save(Path.Combine(MyData, "NATIVE.TXT"), SerializerCompression.None);
-            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyData, "NATIVE.TXT"));
+            nb.Save(Path.Combine(MyData, "NATIVE_UDC.TXT"), SerializerCompression.None);
+            NaiveBayes<NormalDistribution> nb2 = Serializer.Load<NaiveBayes<NormalDistribution>>(Path.Combine(MyData, "NATIVE_UDC.TXT"));
 
             int[] predicted = nb2.Decide(GameLogsTest);
             double[][] probs = nb2.Probabilities(GameLogsTest);
@@ -2528,13 +2539,11 @@ namespace StealthAssessmentWizard
                     {
                         if (CompetencyModel.facets[x][y] == observables[i].ObservableName)
                         {
-//#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                             LabelledDataFacets[x][y] = new int[observables[i].Length];
                             break;
                         }
                         else
                         {
-//#warning out of range error (i: 0..17 bit Item2 is only 11 items (the data excluding labels).
                             LabelledDataFacets[x][y] = new int[observables[i].Length];
                         }
                     }

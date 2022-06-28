@@ -1902,7 +1902,7 @@ namespace StealthAssessmentWizard
             //! Load only the instances for the declared statistical sub-models.
             Debug.Write("Loading instances for the declared statistical submodels... ");
             Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
-            Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
+            Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
             Debug.WriteLine("Completed.\r\n");
 
             //! Visualize ECD Configuration using two ListViews.
@@ -2047,7 +2047,7 @@ namespace StealthAssessmentWizard
                     //! Redo part of Step1 as StatisticalSubmodel may have changed.
                     Debug.Write("Loading instances for the declared statistical submodels... ");
                     Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
-                    Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
+                    Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
                     Debug.WriteLine("Completed.\r\n");
 
                     //! Normalization of the instances for the declared statistical submodels.
@@ -2078,7 +2078,7 @@ namespace StealthAssessmentWizard
                     //! Generate .arff files for competencies.
                     Debug.WriteLine("Generating .arff files for the declared competencies...");
                     BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
-                    BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+                    BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
                     Debug.WriteLine("Generation of .arff files completed.\r\n");
 
 
@@ -2198,6 +2198,7 @@ namespace StealthAssessmentWizard
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
                 Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
+                Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
@@ -2221,36 +2222,50 @@ namespace StealthAssessmentWizard
             //Run reliability analysis for multi-dimensional competencies.
             Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
 
-            //Run reliability analysis for uni-dimensional competencies.
-            Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());
+            {
+                //! Generate .arff files for facets.
+                Debug.WriteLine("Generating .arff files for the declared facets...");
+                BayesNet.GenerateArffFilesForFacets(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
+                Debug.WriteLine("Generation of .arff files completed.\r\n");
 
-            //! Generate .arff files for facets.
-            Debug.WriteLine("Generating .arff files for the declared facets...");
-            BayesNet.GenerateArffFilesForFacets(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
-            Debug.WriteLine("Generation of .arff files completed.\r\n");
+                //! Select ML algorithms for the declared facets.
+                Debug.WriteLine("Select ML algoritms for te declared facets....");
+                try
+                {
+                    Data.LabelledOutputF = BayesNet.SelectMLforFacets(MyData, Data.competencies.ToTuple(), Data.LabelledData);
+                }
+                catch (Exception)
+                {
+                    Logger.Error("Error Selecting ML for Facets of Multi-Dimensional Competencies.");
+                }
+                Debug.WriteLine("Selection completed.\r\n");
+            }
 
-            //! Select ML algorithms for the declared facets.
-            Debug.WriteLine("Select ML algoritms for te declared facets....");
-            Data.LabelledOutputF = BayesNet.SelectMLforFacets(MyData, Data.competencies.ToTuple(), Data.LabelledData);
-            Debug.WriteLine("Selection completed.\r\n");
+            {
+                //! Generate .arff files for competencies.
+                Debug.WriteLine("Generating .arff files for the declared competencies...");
+                BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
+                Debug.WriteLine("Generation of .arff files completed.\r\n");
 
-            //! Generate .arff files for competencies.
-            Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
-            Debug.WriteLine("Generation of .arff files completed.\r\n");
-
-            //! Select ML algorithms for the declared competencies.
-            Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(MyData, Data.competencies.ToTuple(), Data.LabelledData);
-            Debug.WriteLine("Selection completed.\r\n");
+                //! Select ML algorithms for the declared competencies.
+                try
+                {
+                    Debug.WriteLine("Select ML algoritms for te declared competencies....");
+                    Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(MyData, Data.competencies.ToTuple(), Data.LabelledData);
+                }
+                catch (Exception)
+                {
+                    Logger.Error("Error Selecting ML for Multi-Dimensional Competencies.");
+                }
+                Debug.WriteLine("Selection completed.\r\n");
+            }
 
             Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
-
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
-                Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
+                Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
@@ -2269,15 +2284,27 @@ namespace StealthAssessmentWizard
                 Debug.WriteLine("Completed.\r\n");
             }
 
-            //! Generate .arff files for competencies.
-            Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
-            Debug.WriteLine("Generation of .arff files completed.\r\n");
+            {
+                //Run reliability analysis for uni-dimensional competencies.
+                Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel(), Data.InstUni.observables);
 
-            //! Select ML algorithms for the declared competencies.
-            Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
-            Debug.WriteLine("Selection completed.\r\n");
+                //! Generate .arff files for competencies.
+                Debug.WriteLine("Generating .arff files for the declared competencies...");
+                BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+                Debug.WriteLine("Generation of .arff files completed.\r\n");
+
+                //! Select ML algorithms for the declared competencies.
+                Debug.WriteLine("Select ML algoritms for te declared competencies....");
+                try
+                {
+                    Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
+                }
+                catch (Exception)
+                {
+                    Logger.Error("Error Selecting ML for Uni-Dimensional Competencies.");
+                }
+                Debug.WriteLine("Selection completed.\r\n");
+            }
 
             Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
 

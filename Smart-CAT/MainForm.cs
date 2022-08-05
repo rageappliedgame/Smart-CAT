@@ -214,6 +214,8 @@ namespace StealthAssessmentWizard
 
                     if (id.ShowDialog() == DialogResult.OK)
                     {
+                        MakeCompentencyNameUnique(id);
+
                         switch (UniDimensional)
                         {
                             //! Checked.
@@ -224,22 +226,23 @@ namespace StealthAssessmentWizard
                                     lvi.SubItems.Add(String.Join(",", id.CheckedItems.Select(p => p.ToString())));
                                     lvi.ForeColor = id.CheckedItems.Count() == 0
                                         ? Color.Red
-                                        : listView1.ForeColor;
+                                        : lv.ForeColor;
                                     lvi.Group = lv.Groups[0];
                                 }
                                 break;
+
                             //! Checked.
                             //
                             case false:
                                 {
-                                    foreach (ListViewGroup lvg in lv.Groups)
-                                    {
-                                        if (lvg.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            //! Compentency already exists.
-                                            return;
-                                        }
-                                    }
+                                    //foreach (ListViewGroup lvg in lv.Groups)
+                                    //{
+                                    //    if (lvg.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
+                                    //    {
+                                    //        //! Compentency already exists.
+                                    //        return;
+                                    //    }
+                                    //}
 
                                     //! Add Compentency Group and a dummy Facet so Compentency Group shows.
                                     String fid = $"Facet #{lv.Items.Count + 1}";
@@ -257,6 +260,29 @@ namespace StealthAssessmentWizard
             StateMachine.Flags[StateMachine.CONFIGURE_ECD] = ValidateCompetencies();
 
             StateMachine.UpdateControls();
+        }
+
+        private void MakeCompentencyNameUnique(InputSelectDialog id)
+        {
+            //! Make sure the Competency Name is unique as it's used as Sheet Names.
+            // 
+            ListViewGroup[] grp = new ListViewGroup[listView1.Groups.Count];
+            ListViewItem[] itm = new ListViewItem[listView2.Items.Count];
+
+            listView1.Groups.CopyTo(grp, 0);
+            listView2.Items.CopyTo(itm, 0);
+
+            if (grp.Any(p => p.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
+                || itm.Any(p => p.Text.Equals(id.Input, StringComparison.OrdinalIgnoreCase)))
+            {
+                int ndx = 0;
+                do
+                {
+                    id.Input = id.Input.Replace($" ({ndx++})", String.Empty);
+                    id.Input += $" ({ndx})";
+                } while (grp.Any(p => p.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
+                        || itm.Any(p => p.Text.Equals(id.Input, StringComparison.OrdinalIgnoreCase)));
+            }
         }
 
         /// <summary>
@@ -1097,7 +1123,9 @@ namespace StealthAssessmentWizard
 
                             IEnumerable<String> items = Data.observables.Names;
 
-                            IEnumerable<String> chekeditems = lv.SelectedItems[0].SubItems[1].Text.Split(',');
+                            IEnumerable<String> chekeditems = String.IsNullOrEmpty(sub) ?
+                                Array.Empty<string>()
+                            : lv.SelectedItems[0].SubItems[1].Text.Split(',');
 
                             using (InputSelectDialog id = new InputSelectDialog("Edit Competency", "Enter the name of a Competency", lv.SelectedItems[0].Text, items, chekeditems))
                             {
@@ -1105,9 +1133,18 @@ namespace StealthAssessmentWizard
 
                                 if (id.ShowDialog() == DialogResult.OK)
                                 {
+                                    if (lv.SelectedItems[0].Text != id.Input)
+                                    {
+                                        MakeCompentencyNameUnique(id);
+                                    }
+
                                     //! Update observables.
                                     lv.SelectedItems[0].Text = id.Input;
                                     lv.SelectedItems[0].SubItems[1].Text = String.Join(",", id.CheckedItems.Select(p => p.ToString()));
+
+                                    lv.SelectedItems[0].ForeColor = id.CheckedItems.Count() == 0
+                                      ? Color.Red
+                                      : lv.ForeColor;
                                 }
                             }
                         }
@@ -1201,7 +1238,7 @@ namespace StealthAssessmentWizard
                                     lvi.Name = id.Input;
                                     lvi.ForeColor = id.CheckedItems.Count() == 0
                                            ? Color.Red
-                                           : listView1.ForeColor;
+                                           : lv.ForeColor;
                                     lvi.SubItems[1].Text = String.Join(",", id.CheckedItems.Select(p => p.ToString()));
                                 }
                             }

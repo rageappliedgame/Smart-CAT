@@ -127,7 +127,7 @@ namespace StealthAssessmentWizard
         /// </summary>
         internal static IPerformance Performance;
 
-        internal static (double[][][], double[][][]) InstUni = (Array.Empty<double[][]>(), Array.Empty<double[][]>());
+        internal static (double[][][] competencies, double[][][] observables) InstUni = (Array.Empty<double[][]>(), Array.Empty<double[][]>());
 
         internal static double[][][] InstancesUni = Array.Empty<double[][]>();
 

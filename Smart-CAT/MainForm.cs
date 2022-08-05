@@ -214,6 +214,8 @@ namespace StealthAssessmentWizard
 
                     if (id.ShowDialog() == DialogResult.OK)
                     {
+                        MakeCompentencyNameUnique(id);
+
                         switch (UniDimensional)
                         {
                             //! Checked.
@@ -224,22 +226,23 @@ namespace StealthAssessmentWizard
                                     lvi.SubItems.Add(String.Join(",", id.CheckedItems.Select(p => p.ToString())));
                                     lvi.ForeColor = id.CheckedItems.Count() == 0
                                         ? Color.Red
-                                        : listView1.ForeColor;
+                                        : lv.ForeColor;
                                     lvi.Group = lv.Groups[0];
                                 }
                                 break;
+
                             //! Checked.
                             //
                             case false:
                                 {
-                                    foreach (ListViewGroup lvg in lv.Groups)
-                                    {
-                                        if (lvg.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            //! Compentency already exists.
-                                            return;
-                                        }
-                                    }
+                                    //foreach (ListViewGroup lvg in lv.Groups)
+                                    //{
+                                    //    if (lvg.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
+                                    //    {
+                                    //        //! Compentency already exists.
+                                    //        return;
+                                    //    }
+                                    //}
 
                                     //! Add Compentency Group and a dummy Facet so Compentency Group shows.
                                     String fid = $"Facet #{lv.Items.Count + 1}";
@@ -257,6 +260,29 @@ namespace StealthAssessmentWizard
             StateMachine.Flags[StateMachine.CONFIGURE_ECD] = ValidateCompetencies();
 
             StateMachine.UpdateControls();
+        }
+
+        private void MakeCompentencyNameUnique(InputSelectDialog id)
+        {
+            //! Make sure the Competency Name is unique as it's used as Sheet Names.
+            // 
+            ListViewGroup[] grp = new ListViewGroup[listView1.Groups.Count];
+            ListViewItem[] itm = new ListViewItem[listView2.Items.Count];
+
+            listView1.Groups.CopyTo(grp, 0);
+            listView2.Items.CopyTo(itm, 0);
+
+            if (grp.Any(p => p.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
+                || itm.Any(p => p.Text.Equals(id.Input, StringComparison.OrdinalIgnoreCase)))
+            {
+                int ndx = 0;
+                do
+                {
+                    id.Input = id.Input.Replace($" ({ndx++})", String.Empty);
+                    id.Input += $" ({ndx})";
+                } while (grp.Any(p => p.Name.Equals(id.Input, StringComparison.OrdinalIgnoreCase))
+                        || itm.Any(p => p.Text.Equals(id.Input, StringComparison.OrdinalIgnoreCase)));
+            }
         }
 
         /// <summary>
@@ -1097,7 +1123,9 @@ namespace StealthAssessmentWizard
 
                             IEnumerable<String> items = Data.observables.Names;
 
-                            IEnumerable<String> chekeditems = lv.SelectedItems[0].SubItems[1].Text.Split(',');
+                            IEnumerable<String> chekeditems = String.IsNullOrEmpty(sub) ?
+                                Array.Empty<string>()
+                            : lv.SelectedItems[0].SubItems[1].Text.Split(',');
 
                             using (InputSelectDialog id = new InputSelectDialog("Edit Competency", "Enter the name of a Competency", lv.SelectedItems[0].Text, items, chekeditems))
                             {
@@ -1105,9 +1133,18 @@ namespace StealthAssessmentWizard
 
                                 if (id.ShowDialog() == DialogResult.OK)
                                 {
+                                    if (lv.SelectedItems[0].Text != id.Input)
+                                    {
+                                        MakeCompentencyNameUnique(id);
+                                    }
+
                                     //! Update observables.
                                     lv.SelectedItems[0].Text = id.Input;
                                     lv.SelectedItems[0].SubItems[1].Text = String.Join(",", id.CheckedItems.Select(p => p.ToString()));
+
+                                    lv.SelectedItems[0].ForeColor = id.CheckedItems.Count() == 0
+                                      ? Color.Red
+                                      : lv.ForeColor;
                                 }
                             }
                         }
@@ -1201,7 +1238,7 @@ namespace StealthAssessmentWizard
                                     lvi.Name = id.Input;
                                     lvi.ForeColor = id.CheckedItems.Count() == 0
                                            ? Color.Red
-                                           : listView1.ForeColor;
+                                           : lv.ForeColor;
                                     lvi.SubItems[1].Text = String.Join(",", id.CheckedItems.Select(p => p.ToString()));
                                 }
                             }
@@ -1902,7 +1939,7 @@ namespace StealthAssessmentWizard
             //! Load only the instances for the declared statistical sub-models.
             Debug.Write("Loading instances for the declared statistical submodels... ");
             Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
-            Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
+            Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
             Debug.WriteLine("Completed.\r\n");
 
             //! Visualize ECD Configuration using two ListViews.
@@ -2047,7 +2084,7 @@ namespace StealthAssessmentWizard
                     //! Redo part of Step1 as StatisticalSubmodel may have changed.
                     Debug.Write("Loading instances for the declared statistical submodels... ");
                     Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
-                    Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
+                    Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
                     Debug.WriteLine("Completed.\r\n");
 
                     //! Normalization of the instances for the declared statistical submodels.
@@ -2078,7 +2115,7 @@ namespace StealthAssessmentWizard
                     //! Generate .arff files for competencies.
                     Debug.WriteLine("Generating .arff files for the declared competencies...");
                     BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
-                    BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+                    BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
                     Debug.WriteLine("Generation of .arff files completed.\r\n");
 
 
@@ -2198,6 +2235,7 @@ namespace StealthAssessmentWizard
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
                 Data.Inst = BayesNet.LoadInstances(Data.observables, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel());
+                Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
@@ -2221,36 +2259,50 @@ namespace StealthAssessmentWizard
             //Run reliability analysis for multi-dimensional competencies.
             Data.cronbachAlphaMulti = BayesNet.ReliabilityAnalysisMulti(Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Inst.observables);
 
-            //Run reliability analysis for uni-dimensional competencies.
-            Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.InstUni.Item2, Data.unicompetencies.ToUniEvidenceModel());
+            {
+                //! Generate .arff files for facets.
+                Debug.WriteLine("Generating .arff files for the declared facets...");
+                BayesNet.GenerateArffFilesForFacets(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
+                Debug.WriteLine("Generation of .arff files completed.\r\n");
 
-            //! Generate .arff files for facets.
-            Debug.WriteLine("Generating .arff files for the declared facets...");
-            BayesNet.GenerateArffFilesForFacets(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.Instances, Data.CheckLabels, Data.LabelledData);
-            Debug.WriteLine("Generation of .arff files completed.\r\n");
+                //! Select ML algorithms for the declared facets.
+                Debug.WriteLine("Select ML algoritms for te declared facets....");
+                try
+                {
+                    Data.LabelledOutputF = BayesNet.SelectMLforFacets(MyData, Data.competencies.ToTuple(), Data.LabelledData);
+                }
+                catch (Exception)
+                {
+                    Logger.Error("Error Selecting ML for Facets of Multi-Dimensional Competencies.");
+                }
+                Debug.WriteLine("Selection completed.\r\n");
+            }
 
-            //! Select ML algorithms for the declared facets.
-            Debug.WriteLine("Select ML algoritms for te declared facets....");
-            Data.LabelledOutputF = BayesNet.SelectMLforFacets(MyData, Data.competencies.ToTuple(), Data.LabelledData);
-            Debug.WriteLine("Selection completed.\r\n");
+            {
+                //! Generate .arff files for competencies.
+                Debug.WriteLine("Generating .arff files for the declared competencies...");
+                BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
+                Debug.WriteLine("Generation of .arff files completed.\r\n");
 
-            //! Generate .arff files for competencies.
-            Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForCompetencies(MyData, Data.competencies.ToTuple(), Data.competencies.ToStatisticalSubmodel(), Data.CheckLabels, Data.LabelledData);
-            Debug.WriteLine("Generation of .arff files completed.\r\n");
-
-            //! Select ML algorithms for the declared competencies.
-            Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(MyData, Data.competencies.ToTuple(), Data.LabelledData);
-            Debug.WriteLine("Selection completed.\r\n");
+                //! Select ML algorithms for the declared competencies.
+                try
+                {
+                    Debug.WriteLine("Select ML algoritms for te declared competencies....");
+                    Data.LabelledOutputC = BayesNet.SelectMLforCompetencies(MyData, Data.competencies.ToTuple(), Data.LabelledData);
+                }
+                catch (Exception)
+                {
+                    Logger.Error("Error Selecting ML for Multi-Dimensional Competencies.");
+                }
+                Debug.WriteLine("Selection completed.\r\n");
+            }
 
             Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
-
             {
                 //! Redo part of Step1 as StatisticalSubmodel may have changed.
 
                 Debug.Write("Loading instances for the declared statistical submodels...");
-                Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel());
+                Data.InstUni = BayesNet.LoadInstancesUni(Data.observables, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel());
                 Debug.WriteLine("Completed.\r\n");
 
                 //! Normalization of the instances for the declared statistical submodels.
@@ -2269,15 +2321,27 @@ namespace StealthAssessmentWizard
                 Debug.WriteLine("Completed.\r\n");
             }
 
-            //! Generate .arff files for competencies.
-            Debug.WriteLine("Generating .arff files for the declared competencies...");
-            BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToUniEvidenceModel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
-            Debug.WriteLine("Generation of .arff files completed.\r\n");
+            {
+                //Run reliability analysis for uni-dimensional competencies.
+                Data.cronbachAlphaUni = BayesNet.ReliabilityAnalysisUni(Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel(), Data.InstUni.observables);
 
-            //! Select ML algorithms for the declared competencies.
-            Debug.WriteLine("Select ML algoritms for te declared competencies....");
-            Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
-            Debug.WriteLine("Selection completed.\r\n");
+                //! Generate .arff files for competencies.
+                Debug.WriteLine("Generating .arff files for the declared competencies...");
+                BayesNet.GenerateArffFilesForUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.unicompetencies.ToStatisticalSubmodel(), Data.InstancesUni, Data.CheckLabelsUni, Data.LabelledDataUni);
+                Debug.WriteLine("Generation of .arff files completed.\r\n");
+
+                //! Select ML algorithms for the declared competencies.
+                Debug.WriteLine("Select ML algoritms for te declared competencies....");
+                try
+                {
+                    Data.UniLabelledOutputC = BayesNet.SelectMLforUniCompetencies(MyData, Data.unicompetencies.ToTuple(), Data.LabelledDataUni);
+                }
+                catch (Exception)
+                {
+                    Logger.Error("Error Selecting ML for Uni-Dimensional Competencies.");
+                }
+                Debug.WriteLine("Selection completed.\r\n");
+            }
 
             Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
 

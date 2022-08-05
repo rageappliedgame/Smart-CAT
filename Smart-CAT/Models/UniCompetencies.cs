@@ -319,7 +319,7 @@ namespace StealthAssessmentWizard
         /// <returns>
         /// This object as a string[][][].
         /// </returns>
-        public string[][] ToUniEvidenceModel()
+        public string[][] ToStatisticalSubmodel()
         {
             //[CompetencyModel]
             //Competencies=Skating, Running

@@ -1626,7 +1626,7 @@ namespace StealthAssessmentWizard
 
             Int32 cnt = header.Attributes.Count;
 
-            //! Add instances in training and testing data
+            //! Add instances in training and testing data.
             checks[0] = randData.Count(p => p[cnt - 1].Equals(0));
             checks[1] = randData.Count(p => p[cnt - 1].Equals(1));
             checks[2] = randData.Count(p => p[cnt - 1].Equals(2));

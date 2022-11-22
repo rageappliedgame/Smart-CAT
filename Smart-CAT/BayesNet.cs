@@ -61,6 +61,9 @@ namespace StealthAssessmentWizard
 
 #endif
 
+    /// <summary>
+    /// The bayes net.
+    /// </summary>
     public static partial class BayesNet
     {
         #region Methods
@@ -70,7 +73,9 @@ namespace StealthAssessmentWizard
         /// level.
         /// </summary>
         ///
-        /// <param name="CompetencyModel"> The competency model. </param>
+        /// <param name="MultiCompetencies"> The competency model. </param>
+        /// <param name="Output">            The output. </param>
+        /// <param name="ExternalData">      Information describing the external. </param>
         ///
         /// <returns>
         /// A (double[][],double[][][])
@@ -132,7 +137,9 @@ namespace StealthAssessmentWizard
         /// level.
         /// </summary>
         ///
-        /// <param name="CompetencyModel"> The competency model. </param>
+        /// <param name="UniCompetencies"> The competency model. </param>
+        /// <param name="Output">          The output. </param>
+        /// <param name="ExternalData">    Information describing the external. </param>
         ///
         /// <returns>
         /// A (double[][],double[][][])
@@ -194,6 +201,7 @@ namespace StealthAssessmentWizard
         /// Runs Decision Trees C45 from the Accord library.
         /// </summary>
         ///
+        /// <param name="MyData">     Information describing my. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         ///
@@ -768,6 +776,7 @@ namespace StealthAssessmentWizard
         /// Naive Bayes accord for competencies.
         /// </summary>
         ///
+        /// <param name="MyData">     Information describing my. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         ///
@@ -1355,8 +1364,8 @@ namespace StealthAssessmentWizard
         /// </summary>
         ///
         /// <param name="CompetencyModel">  The competency model. </param>
-        /// <param name="InstUni">          The instance uni. </param>
         /// <param name="UniEvidenceModel"> The uni evidence model. </param>
+        /// <param name="InstUni">          The instance uni. </param>
         ///
         /// <returns>
         /// A Tuple.
@@ -1414,6 +1423,17 @@ namespace StealthAssessmentWizard
             return (CompetencyModel, CronAlphaComp);
         }
 
+        /// <summary>
+        /// Uni decision trees accord c.
+        /// </summary>
+        ///
+        /// <param name="MyData">     Information describing my. </param>
+        /// <param name="reader">     The reader. </param>
+        /// <param name="Competency"> The competency. </param>
+        ///
+        /// <returns>
+        /// An int[].
+        /// </returns>
         public static int[] UniDecisionTreesAccord_C(
             String MyData,
             ArffReader reader,
@@ -1589,7 +1609,7 @@ namespace StealthAssessmentWizard
         /// Uni naive bayes accord c.
         /// </summary>
         ///
-        /// <param name="MyData">  my project. </param>
+        /// <param name="MyData">     my project. </param>
         /// <param name="reader">     The reader. </param>
         /// <param name="Competency"> The competency. </param>
         ///
@@ -1808,6 +1828,27 @@ namespace StealthAssessmentWizard
         }
 
         /// <summary>
+        /// All labelled uni.
+        /// </summary>
+        ///
+        /// <param name="competencies"> The competencies. </param>
+        ///
+        /// <returns>
+        /// True if it succeeds, false if it fails.
+        /// </returns>
+        internal static bool AllLabelledUni(bool[][] competencies)
+        {
+            //! Count missing competency labels.
+            //
+            if (competencies.Count(p => p[0] == false) != 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Check labeling.
         /// </summary>
         ///
@@ -1855,6 +1896,16 @@ namespace StealthAssessmentWizard
             return CheckLabels;
         }
 
+        /// <summary>
+        /// Check labelling uni.
+        /// </summary>
+        ///
+        /// <param name="observables">        The observables. </param>
+        /// <param name="UniCompetencyModel"> The uni competency model. </param>
+        ///
+        /// <returns>
+        /// A bool[][].
+        /// </returns>
         internal static bool[][] CheckLabellingUni(
             Observables observables,
             String[] UniCompetencyModel)
@@ -2584,6 +2635,16 @@ namespace StealthAssessmentWizard
             return LabelledData;
         }
 
+        /// <summary>
+        /// Gets labelled data uni.
+        /// </summary>
+        ///
+        /// <param name="UniCompetencyModel"> The uni competency model. </param>
+        /// <param name="observables">        The observables. </param>
+        ///
+        /// <returns>
+        /// An array of int[].
+        /// </returns>
         internal static int[][] GetLabelledDataUni(
             String[] UniCompetencyModel,
             Observables observables)
@@ -3220,13 +3281,15 @@ namespace StealthAssessmentWizard
         /// Select Labels for facets.
         /// </summary>
         ///
+        /// <param name="MyData">          Information describing my. </param>
         /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="CheckLabels">     The check labels. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
         /// <returns>
         /// A (int[][],int[][][],int[][][])
         /// </returns>
+        ///
+        /// ### <param name="CheckLabels"> The check labels. </param>
         internal static (int[][] competencies, int[][][] facets, int[][][] output) SelectLabelsforFacets(
             String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,
@@ -3304,6 +3367,7 @@ namespace StealthAssessmentWizard
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.
             for (int x = 0; x < UniCompetencyModel.Length; x++)
             {
+                Logger.Warn($"No labeled data has been found for '{UniCompetencyModel[x]}'.");
 
                 //===R
 
@@ -3344,18 +3408,15 @@ namespace StealthAssessmentWizard
         /// Select ML for competencies.
         /// </summary>
         ///
+        /// <param name="MyData">          Information describing my. </param>
         /// <param name="CompetencyModel"> The competency model. </param>
-        /// <param name="CheckLabels">     The check labels. </param>
         /// <param name="LabelledData">    Information describing the labeled data. </param>
         ///
         /// <returns>
         /// A (int[][],int[][][],int[][])
         /// </returns>
         ///
-        /// ### <param name="competencyModel"> The competency model. </param>
-        ///
-        /// ### <param name="checkLabels">  The check labels. </param>
-        /// ### <param name="labelledData"> Information describing the labeled data. </param>
+        /// ### <param name="CheckLabels"> The check labels. </param>
         internal static (int[][] competencies, int[][][] facets, int[][] output) SelectMLforCompetencies(
             String MyData,
             (string[] competencies, string[][] facets) CompetencyModel,

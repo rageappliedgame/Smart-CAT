@@ -414,7 +414,11 @@ namespace StealthAssessmentWizard
             }
         }
 
-
+        /// <summary>
+        /// Adds a model.
+        /// </summary>
+        ///
+        /// <param name="filename"> Filename of the file. </param>
         internal static void AddModel(string filename)
         {
             //! Browse for labeled data for each declared facet and decide which ML algorithm to apply accordingly.

@@ -53,8 +53,14 @@ namespace StealthAssessmentWizard
     {
         #region Fields
 
+        /// <summary>
+        /// (Immutable) The algorithm items.
+        /// </summary>
         private readonly EnumItemCollection AlgorithmItems = new EnumItemCollection(typeof(MLAlgorithms));
 
+        /// <summary>
+        /// The selected font.
+        /// </summary>
 #pragma warning disable IDE0044 // Add readonly modifier
         private Font SelectedFont = null;
 #pragma warning restore IDE0044 // Add readonly modifier
@@ -74,13 +80,40 @@ namespace StealthAssessmentWizard
         /// (Immutable) my projects.
         /// </summary>
         private readonly String MyProjects = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Smart-CAT Projects");
+
+        /// <summary>
+        /// My project.
+        /// </summary>
         private String MyProject = String.Empty;
+
+        /// <summary>
+        /// Information describing my.
+        /// </summary>
         private String MyData = String.Empty;
+
+        /// <summary>
+        /// My input.
+        /// </summary>
         private String MyInput = String.Empty;
 
+        /// <summary>
+        /// (Immutable) The step 1 background worker.
+        /// </summary>
         private readonly BackgroundWorker Step1BackgroundWorker = new BackgroundWorker();
+
+        /// <summary>
+        /// (Immutable) The step 2 background worker.
+        /// </summary>
         private readonly BackgroundWorker Step2BackgroundWorker = new BackgroundWorker();
+
+        /// <summary>
+        /// (Immutable) The step 3 background worker.
+        /// </summary>
         private readonly BackgroundWorker Step3BackgroundWorker = new BackgroundWorker();
+
+        /// <summary>
+        /// (Immutable) The step 4 background worker.
+        /// </summary>
         private readonly BackgroundWorker Step4BackgroundWorker = new BackgroundWorker();
 
         #endregion Fields
@@ -262,6 +295,11 @@ namespace StealthAssessmentWizard
             StateMachine.UpdateControls();
         }
 
+        /// <summary>
+        /// Makes compentency name unique.
+        /// </summary>
+        ///
+        /// <param name="id"> The identifier. </param>
         private void MakeCompentencyNameUnique(InputSelectDialog id)
         {
             //! Make sure the Competency Name is unique as it's used as Sheet Names.
@@ -2076,7 +2114,7 @@ namespace StealthAssessmentWizard
 
             Data.CheckLabelsUni = BayesNet.CheckLabellingUni(Data.observables, Data.unicompetencies.ToTuple());
 
-            if (!BayesNet.AllLabelled(Data.CheckLabels))
+            if (!(BayesNet.AllLabelled(Data.CheckLabels) && BayesNet.AllLabelledUni(Data.CheckLabelsUni)))
             {
                 (sender as BackgroundWorker).ReportProgress(3);
 
@@ -2129,6 +2167,7 @@ namespace StealthAssessmentWizard
 
                 {
                     Data.OutputLabels = (competencies: Data.LabelledOutputC.output, facets: Data.LabelledOutputF.output);
+                    Data.OutputLabelsUni = Data.UniLabelledOutputC.output;
                 }
 
                 (sender as BackgroundWorker).ReportProgress(4);
@@ -2140,7 +2179,7 @@ namespace StealthAssessmentWizard
                     Debug.WriteLine("Adding labels for the declared competencies to Excel file...");
                     Excel.AddLabelsforCompetencies(Data.competencies.ToTuple(), Data.CheckLabels, Data.OutputLabels, filenameTS);
                     Debug.WriteLine("Adding labels for the declared uni-competencies to Excel file...");
-                    Excel.AddLabelsforUniCompetencies(Data.unicompetencies.ToTuple(), Data.CheckLabelsUni, Data.UniLabelledOutputC.Item3, filenameTS);
+                    Excel.AddLabelsforUniCompetencies(Data.unicompetencies.ToTuple(), Data.CheckLabelsUni, Data.OutputLabelsUni, filenameTS);
                     Debug.WriteLine("Adding labels completed.\r\n");
 
                     Data.observables = BayesNet.LoadAllData(filename);

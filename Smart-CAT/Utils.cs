@@ -127,6 +127,26 @@ namespace StealthAssessmentWizard
                 Logger.Info($"MyDocuments: '{mydocuments}'.");
             }
 
+            //! Check if mydocuments exists, if not select a folder.
+            if (!Directory.Exists(mydocuments))
+            {
+                using (FolderBrowserDialog fb = new FolderBrowserDialog()
+                {
+                    ShowNewFolderButton = true,
+                    Description = "Select MyDocuments Folder"
+                })
+                {
+                    if (fb.ShowDialog() == DialogResult.OK)
+                    {
+                        mydocuments = fb.SelectedPath;
+                    }
+                    else
+                    {
+                        Application.Exit();
+                    }
+                }
+            }
+
             label.InvokeIfRequired(o =>
             {
                 label.Text = "Installing R packages";
@@ -161,6 +181,11 @@ namespace StealthAssessmentWizard
                 // String rpath = $"{mydocuments.Replace("\\", "/")}/R/win-library/{ver}";
 
                 String rpath = Path.Combine(mydocuments, @"R\win-library", ver);
+                if (!Directory.Exists(rpath))
+                {
+                    Directory.CreateDirectory(rpath);
+                }
+
                 rpath = rpath.Replace(@"\", @"\\");
 
                 Logger.Info($"R Install Path: '{rpath}'.");

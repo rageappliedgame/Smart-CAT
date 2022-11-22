@@ -122,6 +122,8 @@ namespace StealthAssessmentWizard
         /// </summary>
         internal static (int[][] competencies, int[][][] facets) OutputLabels = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[][]>());
 
+        internal static int[][] OutputLabelsUni;
+
         /// <summary>
         /// The performance.
         /// </summary>
@@ -135,7 +137,7 @@ namespace StealthAssessmentWizard
 
         internal static int[][] LabelledDataUni = Array.Empty<int[]>();
 
-        internal static (int[][], int[][], int[][]) UniLabelledOutputC = (Array.Empty<int[]>(), Array.Empty<int[]>(), Array.Empty<int[]>());
+        internal static (int[][] competencies, int[][] facets, int[][] output) UniLabelledOutputC = (competencies: Array.Empty<int[]>(), facets: Array.Empty<int[]>(), output: Array.Empty<int[]>());
 
         internal static (string[], double[][]) spearmansMulti = (Array.Empty<string>(), Array.Empty<double[]>());
 
